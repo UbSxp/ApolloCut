@@ -10,7 +10,7 @@ Branch: `funcionalidades/estudio`
 |---|----------------|-----------|--------|-----------|------------------------|
 | 1 | Cortes automáticos (arquivo, pasta monitorada) | A | **Parcial** | `src/core/cut-engine.js`: pipeline completo local; fake provider para testes | Link (YouTube/Drive) = Cat. B; vídeos >1h testados em chunks; heurística sem LLM |
 | 2 | Legendas automáticas (estilos, palavra por palavra, destaque, tradução, export SRT/ASS) | A/B | **Implementado** | `src/core/captions-advanced.js`: export SRT/ASS/VTT, TranslationProvider, bulk translate | UI no ateliê pendente; integração com editor |
-| 3 | Dublagem de áudio com IA (vários idiomas) | B | **Não iniciado** | `src/providers/interfaces.js` + fake/real TTSProvider | Requer ElevenLabs/outro TTS; sync com vídeo |
+| 3 | Dublagem de áudio com IA (vários idiomas) | B | **Implementado** | `src/core/dubbing.js`: TTS multi-voz/idioma, sync, bulk-dub, substituição faixa | UI no ateliê pendente; provedores reais desativados |
 | 4 | Reenquadramento inteligente 16:9→9:16 | A | **Implementado** | `src/core/reframe-engine.js`: YuNet, tracking, 6 layouts, zonas seguras, render | YuNet carrega ONNX via CDN na 1ª vez; MediaPipe fallback pendente |
 | 5 | Editor de cortes, edição em massa, Brand Kit, templates | A | **Implementado** | `src/core/editor.js`: timeline, split/join, bulk edit, Brand Kit, templates, projetos | UI no ateliê pendente; integração com app.js |
 | 6 | Cortes de lives (Twitch, Kick) | B | **Não iniciado** | `SocialPublishProvider` + yt-dlp/streamlink detection pendente | Importação por link = Cat. B |
@@ -47,7 +47,7 @@ Branch: `funcionalidades/estudio`
 | 5 | Editor, edição em massa, Brand Kit, templates | ✅ | `checkpoint-10-editor-brandkit` |
 | 6 | Legendas avançadas (tradução, ASS) | ✅ | `checkpoint-11-captions-advanced` |
 | 7 | Compositor thumbnails + provedor imagem | ⏳ | `checkpoint-13-thumbnails` |
-| 8 | Dublagem (TTS) | ⏳ | `checkpoint-14-dublagem` |
+| 8 | Dublagem (TTS) | ✅ | `checkpoint-13-dubbing` |
 | 9 | Agendamento/publicação (OAuth) | ⏳ | `checkpoint-15-agendamento` |
 | 10 | Monitoramento lives | ⏳ | `checkpoint-16-lives` |
 | 11 | Geração vídeo + troca personagem | ⏳ | `checkpoint-17-geracao-video` |
