@@ -10,7 +10,7 @@
   const ids = `landing studioScreen studioBack studioBrand newFilmBtn openStudioBtn fileInput srtInput
     dropzone fileName fileMeta studioKind studioStateLabel analysisBadge studioSteps
     frame previewVideo captions frameCaptionNote frameWatermark frameEmpty previewLabel previewFormat
-    playBtn seekRange seekMarks timeLabel focusRange focusVal quickCaptionsBtn quickCoverBtn
+    playBtn seekRange seekMarks timeLabel focusRange focusVal quickCaptionsBtn quickCoverBtn coverBtn kitBtn exportBtn
     lenRange lenLabel countRange countLabel ratioGrid analyzeBtn analysisHint analysisNote
     analysisSummary sumSamples sumSelected sumScore sumNote activeClipInfo activeClipTitle activeClipMeta
     captionStatus captionStatusTitle captionStatusText importSrtBtn whisperBtn styleGrid styleHint
@@ -259,7 +259,7 @@
 
   function waitForMetadata(video, timeout = 20000) {
     return new Promise((resolve, reject) => {
-      if (video.readyState >= 1 && Number.isFinite(video.duration) && video.duration > 0) {
+      if (video.readyState >= 1) {
         resolve();
         return;
       }
@@ -278,6 +278,48 @@
       video.addEventListener("loadedmetadata", onMeta);
       video.addEventListener("error", onError);
     });
+  }
+
+  async function resolveVideoDuration(video) {
+    if (Number.isFinite(video.duration) && video.duration > 0) return video.duration;
+    try {
+      if (video.seekable && video.seekable.length) {
+        const end = video.seekable.end(video.seekable.length - 1);
+        if (Number.isFinite(end) && end > 0) return end;
+      }
+    } catch (_) {}
+    const original = video.currentTime || 0;
+    const found = await new Promise((resolve) => {
+      let done = false;
+      const cleanup = () => {
+        video.removeEventListener("durationchange", finish);
+        video.removeEventListener("seeked", finish);
+        clearTimeout(timer);
+      };
+      const finish = () => {
+        if (done) return;
+        done = true;
+        cleanup();
+        resolve(Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 0);
+      };
+      const timer = setTimeout(finish, 1800);
+      video.addEventListener("durationchange", finish);
+      video.addEventListener("seeked", finish);
+      try {
+        video.currentTime = 1e7;
+      } catch (_) {
+        finish();
+      }
+    });
+    try { video.currentTime = original; } catch (_) {}
+    if (found > 0) return found;
+    try {
+      if (video.seekable && video.seekable.length) {
+        const end = video.seekable.end(video.seekable.length - 1);
+        if (Number.isFinite(end) && end > 0) return end;
+      }
+    } catch (_) {}
+    return 0;
   }
 
   function resetFilmState() {
@@ -356,7 +398,7 @@
       return;
     }
 
-    state.duration = Number.isFinite(els.previewVideo.duration) ? els.previewVideo.duration : 0;
+    state.duration = await resolveVideoDuration(els.previewVideo);
     state.width = els.previewVideo.videoWidth || 0;
     state.height = els.previewVideo.videoHeight || 0;
 
@@ -727,6 +769,7 @@
     let prevLuma = null;
     try {
       await waitForMetadata(els.samplerVideo, 15000);
+      await resolveVideoDuration(els.samplerVideo);
       const sampler = els.samplerVideo;
       const times = Array.from({ length: total }, (_, i) => (state.duration * (i + 0.5)) / total);
       const canvas = document.createElement("canvas");
@@ -1555,8 +1598,6 @@
         }
         segments.push({ start, end: best });
         start = best;
-        cut = start + 12;
-        if (best <= start) break;
       }
       if (end - start >= 0.32) segments.push({ start, end });
     }
@@ -1730,7 +1771,8 @@
       updateClipTitles();
       renderClips();
       selectClip(clip.id, false);
-      renderCaptions(els.previewVideo.currentTime || clip.start);
+      pausePreview();
+      seekPreview(clip.start + 0.12);
       updateCaptionStatus();
       updateSteps();
       setWhisperStage("write", 100, "Legendas prontas.");
@@ -2638,7 +2680,6 @@
 
     state.export.running = true;
     state.export.cancel = false;
-    state.export.cancel && (state.export.cancel = false);
     pausePreview();
     els.exportResult.hidden = true;
     els.exportProgress.hidden = false;
@@ -2668,6 +2709,7 @@
       exportVideo.pause();
       exportVideo.muted = false;
       await waitForMetadata(exportVideo, 20000);
+      await resolveVideoDuration(exportVideo);
       await seekVideo(exportVideo, clip.start + 0.02, 9000);
       if (state.export.cancel) throw new Error("cancelled");
 
@@ -2758,11 +2800,11 @@
       if (!blob.size) throw new Error("empty-blob");
       finishExport(blob, mime, duration, clip, sample);
     } catch (error) {
-      console.error(error);
       if (error && error.message === "cancelled") {
         updateExportProgress(0, "Renderização cancelada.");
         toast("Renderização cancelada. Nenhum arquivo foi baixado.");
       } else {
+        console.error(error);
         els.exportStatus.textContent = "A renderização falhou.";
         toast("Não foi possível renderizar. Tente a amostra de 12 s ou outro navegador.", "error", 7000);
       }
@@ -2778,5 +2820,325 @@
     }
   }
 
-  // PART7
+  /* ============================================================
+     INICIALIZAÇÃO E EVENTOS
+     ============================================================ */
+
+  function applySettingsUI() {
+    const s = state.settings;
+    els.lenRange.value = String(s.length);
+    els.countRange.value = String(s.count);
+    els.focusRange.value = String(s.focus);
+    els.lenLabel.textContent = `${s.length} s`;
+    els.countLabel.textContent = `${s.count} cortes`;
+    els.langSelect.value = s.lang;
+    els.brandInput.value = s.brand;
+    setRangeFill(els.lenRange);
+    setRangeFill(els.countRange);
+    setRangeFill(els.focusRange);
+    setStyle(s.style, false);
+    setRatio(s.ratio, false);
+    updateFocusLabel();
+    updateWatermark();
+    updateAnalysisHint();
+    updatePublishPanel();
+    updateSteps();
+    updateHeaderCta();
+  }
+
+  let coverBusy = false;
+  let coverTitleTimer = 0;
+
+  function bindEvents() {
+    document.querySelectorAll(".js-pick").forEach((btn) => {
+      btn.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        pickFile();
+      });
+    });
+
+    els.fileInput.addEventListener("change", (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (file) loadFile(file);
+      event.target.value = "";
+    });
+
+    els.openStudioBtn.addEventListener("click", () => {
+      if (state.ready) showStudio(); else pickFile();
+    });
+    els.studioBack.addEventListener("click", showLanding);
+    els.studioBrand.addEventListener("click", (event) => {
+      event.preventDefault();
+      showLanding();
+    });
+    els.newFilmBtn.addEventListener("click", pickFile);
+
+    const drop = els.dropzone;
+    drop.addEventListener("click", (event) => {
+      if (event.target.closest("button, a, input, select, textarea")) return;
+      pickFile();
+    });
+    drop.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        pickFile();
+      }
+    });
+    ["dragenter", "dragover"].forEach((type) => {
+      drop.addEventListener(type, (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        drop.classList.add("dragging");
+      });
+    });
+    ["dragleave", "dragend"].forEach((type) => {
+      drop.addEventListener(type, (event) => {
+        event.preventDefault();
+        drop.classList.remove("dragging");
+      });
+    });
+    drop.addEventListener("drop", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      drop.classList.remove("dragging");
+      const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+      if (file) loadFile(file);
+    });
+    document.addEventListener("dragover", (event) => event.preventDefault());
+    document.addEventListener("drop", (event) => {
+      if (!drop.contains(event.target)) event.preventDefault();
+    });
+
+    els.previewVideo.addEventListener("click", togglePlay);
+    els.playBtn.addEventListener("click", togglePlay);
+    els.previewVideo.addEventListener("play", () => {
+      els.playBtn.classList.add("playing");
+      startPlayerLoop();
+    });
+    els.previewVideo.addEventListener("pause", () => {
+      els.playBtn.classList.remove("playing");
+      updatePlayerUI();
+      renderCaptions(els.previewVideo.currentTime);
+    });
+    els.previewVideo.addEventListener("timeupdate", () => {
+      updatePlayerUI();
+      renderCaptions(els.previewVideo.currentTime);
+    });
+    els.previewVideo.addEventListener("seeked", () => {
+      updatePlayerUI();
+      renderCaptions(els.previewVideo.currentTime);
+    });
+    els.previewVideo.addEventListener("ended", () => {
+      els.playBtn.classList.remove("playing");
+      renderCaptions(els.previewVideo.currentTime);
+    });
+    els.previewVideo.addEventListener("error", () => {
+      toast("O vídeo encontrou um erro de reprodução.", "error");
+    });
+
+    els.seekRange.addEventListener("input", () => {
+      seekPreview(Number(els.seekRange.value));
+      setRangeFill(els.seekRange);
+    });
+
+    els.focusRange.addEventListener("input", () => {
+      state.settings.focus = Number(els.focusRange.value);
+      updateFocusLabel();
+      saveSettings();
+    });
+
+    els.lenRange.addEventListener("input", () => {
+      state.settings.length = Number(els.lenRange.value);
+      els.lenLabel.textContent = `${state.settings.length} s`;
+      setRangeFill(els.lenRange);
+    });
+    els.lenRange.addEventListener("change", () => {
+      saveSettings();
+      if (state.analysis.samples.length && !state.analysis.running) {
+        deriveClips();
+        toast("Cortes recalculados com a mesma leitura.");
+      }
+    });
+
+    els.countRange.addEventListener("input", () => {
+      state.settings.count = Number(els.countRange.value);
+      els.countLabel.textContent = `${state.settings.count} cortes`;
+      setRangeFill(els.countRange);
+    });
+    els.countRange.addEventListener("change", () => {
+      saveSettings();
+      if (state.analysis.samples.length && !state.analysis.running) {
+        deriveClips();
+        toast("Cortes recalculados com a mesma leitura.");
+      }
+    });
+
+    els.ratioGrid.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-ratio]");
+      if (!button) return;
+      setRatio(button.dataset.ratio);
+    });
+
+    els.styleGrid.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-style]");
+      if (!button) return;
+      setStyle(button.dataset.style);
+    });
+
+    els.langSelect.addEventListener("change", () => {
+      state.settings.lang = els.langSelect.value;
+      saveSettings();
+    });
+
+    els.brandInput.addEventListener("input", () => {
+      state.settings.brand = els.brandInput.value.slice(0, 32);
+      saveSettings();
+      updateWatermark();
+    });
+
+    els.analyzeBtn.addEventListener("click", startAnalysis);
+    els.analysisCancel.addEventListener("click", cancelAnalysis);
+    els.analysisCancelBtn.addEventListener("click", cancelAnalysis);
+
+    document.querySelectorAll(".console-tab").forEach((button) => {
+      button.addEventListener("click", () => setTab(button.dataset.tab));
+    });
+
+    els.quickCaptionsBtn.addEventListener("click", () => {
+      setTab("captions");
+      if (window.innerWidth < 1120) els.tabCaptions.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    els.quickCoverBtn.addEventListener("click", openCover);
+
+    els.importSrtBtn.addEventListener("click", () => {
+      els.srtInput.value = "";
+      els.srtInput.click();
+    });
+    els.srtInput.addEventListener("change", (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (file) importSrtFile(file);
+      event.target.value = "";
+    });
+
+    els.whisperBtn.addEventListener("click", openWhisper);
+    els.whisperStart.addEventListener("click", runWhisper);
+    els.whisperCancel.addEventListener("click", cancelWhisper);
+    els.whisperClose.addEventListener("click", cancelWhisper);
+
+    els.coverBtn.addEventListener("click", openCover);
+    els.coverClose.addEventListener("click", () => closeOverlay(els.coverOverlay));
+    els.coverDownload.addEventListener("click", downloadCover);
+    els.coverPreset.addEventListener("change", () => renderCover());
+    els.coverTitle.addEventListener("input", () => {
+      clearTimeout(coverTitleTimer);
+      coverTitleTimer = setTimeout(() => {
+        if (!els.coverOverlay.hidden) renderCover();
+      }, 150);
+    });
+    els.coverRandomBtn.addEventListener("click", async () => {
+      const clip = currentClip();
+      if (!clip || coverBusy) return;
+      coverBusy = true;
+      els.coverLoading.hidden = false;
+      state.cover.token += 1;
+      const token = state.cover.token;
+      const time = clip.start + clip.length * (0.15 + Math.random() * 0.7);
+      try {
+        await grabCoverFrame(time, token);
+        if (token === state.cover.token) renderCover();
+      } catch (_) {
+        toast("Não foi possível capturar outro quadro.", "error");
+      } finally {
+        coverBusy = false;
+        els.coverLoading.hidden = true;
+      }
+    });
+
+    els.kitBtn.addEventListener("click", openKit);
+    els.kitClose.addEventListener("click", () => closeOverlay(els.kitOverlay));
+    els.kitDownloadTxt.addEventListener("click", downloadKit);
+    els.kitDownloadCover.addEventListener("click", () => {
+      closeOverlay(els.kitOverlay);
+      openCover();
+    });
+    els.kitExport.addEventListener("click", () => {
+      closeOverlay(els.kitOverlay);
+      openExport();
+    });
+    document.querySelectorAll(".js-copy").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const target = document.getElementById(button.dataset.target);
+        if (!target) return;
+        const ok = await copyText(target.textContent || "");
+        toast(ok ? "Copiado para a área de transferência." : "Não foi possível copiar. Selecione o texto manualmente.", ok ? "ok" : "error");
+      });
+    });
+
+    els.exportBtn.addEventListener("click", openExport);
+    els.exportStart.addEventListener("click", startExport);
+    els.exportCancel.addEventListener("click", cancelExport);
+    els.exportClose.addEventListener("click", cancelExport);
+    els.sampleExport.addEventListener("change", updateExportTag);
+
+    function onKeydown(event) {
+      if (event.key === "Escape") {
+        if (!els.analysisOverlay.hidden) {
+          if (state.analysis.running) cancelAnalysis(); else closeOverlay(els.analysisOverlay);
+          return;
+        }
+        if (!els.whisperOverlay.hidden) {
+          if (state.capture.running) cancelWhisper(); else closeOverlay(els.whisperOverlay);
+          return;
+        }
+        if (!els.exportOverlay.hidden) {
+          if (state.export.running) cancelExport(); else closeOverlay(els.exportOverlay);
+          return;
+        }
+        if (!els.coverOverlay.hidden) {
+          closeOverlay(els.coverOverlay);
+          return;
+        }
+        if (!els.kitOverlay.hidden) {
+          closeOverlay(els.kitOverlay);
+        }
+        return;
+      }
+
+      if (els.studioScreen.hidden) return;
+      if (document.querySelector(".overlay:not([hidden])")) return;
+      const target = event.target;
+      if (target && target.closest("input, select, textarea, button, a, [contenteditable='true']")) return;
+
+      if (event.code === "Space") {
+        event.preventDefault();
+        togglePlay();
+      } else if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        seekPreview(els.previewVideo.currentTime - 5);
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        seekPreview(els.previewVideo.currentTime + 5);
+      }
+    }
+    document.addEventListener("keydown", onKeydown);
+
+    window.addEventListener("beforeunload", () => {
+      pausePreview();
+      if (state.export.url) {
+        URL.revokeObjectURL(state.export.url);
+        state.export.url = null;
+      }
+    });
+  }
+
+  function init() {
+    loadSettings();
+    applySettingsUI();
+    bindEvents();
+    els.samplerVideo.muted = true;
+    setTab("scene");
+  }
+
+  init();
 })();
