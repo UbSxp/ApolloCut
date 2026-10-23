@@ -1,4 +1,4 @@
-# Bom dia — resumo da noite
+﻿# Bom dia — resumo da noite
 
 ## O que foi feito primeiro
 
@@ -59,7 +59,7 @@
 | Testes | nenhum no repositório | 9 puros + 1 UI |
 | Exportação de fumaça | MP4 9:16, ~4,2 MB | continua passando |
 
-Tempo observado de transcrição no Edge headless (inclui download do modelo na primeira vez): ~44 s para 16 s de vídeo; ~102 s para 60 s de vídeo. O download do modelo é de cerca de 240 MB na primeira vez.
+Tempo observado de transcrição no Edge headless (inclui download do modelo na primeira vez): ~58 s para 16 s de vídeo (incluindo o primeiro download); ~102 s para 60 s de vídeo. O download do modelo é de cerca de 240 MB na primeira vez.
 
 ## O que ficou no backlog e por quê
 
@@ -121,6 +121,7 @@ git status --short
 - Estado recebido: tag `checkpoint-00-base`.
 - Correções de legendas: tag `checkpoint-01-legendas`.
 - Correções de tema: tag `checkpoint-02-tema`.
+- Acessibilidade e captura: tag `checkpoint-03-acessibilidade`.
 - Branch da noite: `noite/aprimoramento`.
 
 Exemplo para voltar ao estado recebido:

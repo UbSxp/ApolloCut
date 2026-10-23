@@ -1,9 +1,9 @@
-# Progresso do ApolloCut
+﻿# Progresso do ApolloCut
 
 Última atualização: 22/10/2026 23:17  
 Branch: `noite/aprimoramento`  
 Base recebida: `51b1885` (tag `checkpoint-00-base`)  
-Último commit: `2cb4b41` (tags `checkpoint-01-legendas` e `checkpoint-02-tema`)
+Último commit: `9d7700a` (tag `checkpoint-03-acessibilidade`); correções críticas em `2cb4b41` (tags `checkpoint-01-legendas` e `checkpoint-02-tema`)
 
 ## Estado atual
 
@@ -72,7 +72,7 @@ Correções:
 
 Evidência real:
 
-- `ptbr-fala.webm` (16 s): transcrição `O Sol nasce sobre o mar. A lira de Apolo guarda o tempo. Este é um teste de legendas em português do Brasil. A palavra certa precisa aparecer no momento certo.`
+- `ptbr-fala.webm` (16 s, ~58 s incluindo o primeiro download do modelo): transcrição `O Sol nasce sobre o mar. A lira de Apolo guarda o tempo. Este é um teste de legendas em português do Brasil. A palavra certa precisa aparecer no momento certo.`
 - 31 palavras com timestamp do modelo.
 - Em 1,1 s a palavra ativa foi `sobre`; em 3,2 s, `lira`; em 12,6 s, `precisa`.
 - SRT `teste.srt` no `sample.mp4`: status `SRT alinhado`, 7 blocos, 4 palavras visíveis e 1 ativa em 1,1 s.

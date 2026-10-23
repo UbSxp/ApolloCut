@@ -66,9 +66,22 @@ async function dismissOpening(page) {
   await dismissOpening(page);
   assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), "light");
 
-  await page.evaluate(() => document.querySelector(".js-settings").click());
+  await page.evaluate(() => {
+    const button = document.querySelector(".js-settings");
+    button.focus();
+    button.click();
+  });
   await new Promise((resolve) => setTimeout(resolve, 120));
   assert.equal(await page.evaluate(() => document.getElementById("settingsOverlay").hidden), false);
+  assert.equal(
+    await page.evaluate(() => document.getElementById("settingsOverlay").contains(document.activeElement)),
+    true
+  );
+  for (let index = 0; index < 8; index += 1) await page.keyboard.press("Tab");
+  assert.equal(
+    await page.evaluate(() => document.getElementById("settingsOverlay").contains(document.activeElement)),
+    true
+  );
   await page.evaluate(() => document.querySelector('[data-theme-choice="auto"]').click());
   assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), "dark");
   assert.equal(
@@ -84,6 +97,10 @@ async function dismissOpening(page) {
   await page.select("#settingsLang", "pt");
   await page.evaluate(() => document.getElementById("settingsDone").click());
   assert.equal(await page.evaluate(() => document.getElementById("settingsOverlay").hidden), true);
+  assert.equal(
+    await page.evaluate(() => document.activeElement && document.activeElement.classList.contains("js-settings")),
+    true
+  );
 
   assert.deepEqual(errors, []);
   console.log("Tema claro, escuro, automático, persistência e idioma: OK");
