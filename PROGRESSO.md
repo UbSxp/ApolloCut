@@ -42,8 +42,8 @@ Próximo passo exato:
 ## Estado atual
 
 **Branch:** `funcionalidades/estudio` (base: `9b6b7cf` / `checkpoint-07-zona-segura`)  
-**Último commit:** `fb07e0d` — feat: reenquadramento inteligente 16:9→9:16 (Item 4)  
-**Tag:** `checkpoint-09-reframe`
+**Último commit:** `a873ed0` — feat: editor, edição em massa, brand kit, templates e projetos (Item 5+13)  
+**Tag:** `checkpoint-10-editor-brandkit`
 
 ### Concluído nesta sessão
 
@@ -80,19 +80,27 @@ Próximo passo exato:
 - Editor manual: callbacks `onLayoutChange`, `onManualCrop` para UI.
 - Arquivo: `src/core/reframe-engine.js` (exporta `reframeVideo`, `renderReframedVideo`, `enqueueReframeJob`, `reframeWorker`).
 
+**Editor, Edição em Massa, Brand Kit, Templates e Projetos (Item 5 + 13 — Categoria A):**
+- Timeline com zoom, playhead, seleção, multi-seleção.
+- Cortes: aprovação/rejeição, ajuste de início/fim por quadro, divisão (split), junção (join), reindexação automática.
+- Edição em massa: seleção múltipla + ações (aprovar, estilo legenda, marca d'água, layout reenquadramento, deletar).
+- Brand Kit: logo (dataURL), cores, fontes, estilo de legenda, marca d'água (posição/opacidade), vinheta intro/outro.
+- Templates: podcast, gameplay, tutorial, vlog, shorts — aplicam ratio, estilo legenda, layout reenquadramento, marca d'água.
+- Projetos (Item 13): IndexedDB persistente — criar, salvar, carregar, listar, deletar; estado completo (vídeo, cortes, brand kit, template, configurações).
+- Integração com reenquadramento: `computeCutReframe` por corte, `renderCutReframed` para exportação.
+- Arquivo: `src/core/editor.js` (exporta `createProject`, `analyzeProjectCuts`, `bulkEditCuts`, `applyTemplate`, `updateBrandKit`, `enqueueBatchExportJob`, etc.).
+
 **Testes:** suíte existente passa (`npm run test:all` — 9 legendas + UI tema + exportação 1080×1920 9.98s).
 
 ### Em andamento
-- Integração do motor de cortes no `app.js` (botão "Analisar com IA", painel de sugestões, prévia de miniaturas).
-- Integração do reenquadramento no ateliê (aba "Enquadramento", selector de layout, keyframes).
-- Testes automatizados do motor de cortes e reenquadramento (usando fake providers).
+- Integração UI do motor de cortes + reenquadramento + editor no `app.js` (abas "Cortes", "Enquadramento", "Editor", painel de Brand Kit).
+- Testes automatizados do editor (usando fake providers).
 
-### Próximo passo exato (Item 5 — Editor, Edição em Massa, Brand Kit, Templates)
-1. Aba "Editor" no ateliê: timeline com cortes, ajuste de início/fim por quadro, divisão/junção.
-2. Edição em massa: selecionar múltiplos cortes, aplicar mesma ação (estilo legenda, marca d'água, reenquadramento).
-3. Brand Kit: logo, fontes, cores, estilo de legenda, vinheta, marca d'água — salvo no `localStorage`/IndexedDB.
-4. Templates reutilizáveis: preset de configurações por tipo de conteúdo (podcast, gameplay, aula, vlog).
-5. Persistência de projetos (Item 13): estado completo salvo/restaurado ao fechar/abrir app.
+### Próximo passo exato (Item 6 — Legendas Avançadas: Tradução + Export ASS)
+1. TranslationProvider fake + real (integração com LibreTranslate/DeepL/OpenAI).
+2. Exportação ASS (formato Advanced SubStation Alpha) com estilos, posicionamento, karaoke.
+3. UI no ateliê: aba "Legendas" com tradução, edição de estilo, export SRT/ASS.
+4. Integração com editor: bulk-edit de estilo de legenda, tradução em massa.
 
 ## Backlog (ordem de prioridade)
 

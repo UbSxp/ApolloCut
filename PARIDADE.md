@@ -12,7 +12,7 @@ Branch: `funcionalidades/estudio`
 | 2 | Legendas automáticas (estilos, palavra por palavra, destaque, tradução, export SRT/ASS) | A | **Parcial** | `lib/captions.js` + 9 testes; UI de legendas no ateliê | Tradução = Cat. B (TranslationProvider); export ASS não implementado |
 | 3 | Dublagem de áudio com IA (vários idiomas) | B | **Não iniciado** | `src/providers/interfaces.js` + fake/real TTSProvider | Requer ElevenLabs/outro TTS; sync com vídeo |
 | 4 | Reenquadramento inteligente 16:9→9:16 | A | **Implementado** | `src/core/reframe-engine.js`: YuNet, tracking, 6 layouts, zonas seguras, render | YuNet carrega ONNX via CDN na 1ª vez; MediaPipe fallback pendente |
-| 5 | Editor de cortes, edição em massa, Brand Kit, templates | A | **Não iniciado** | Ateliê base existe (abas Cena/Legendas/Publicar) | Timeline, divisão/junção, Brand Kit, templates = pendentes |
+| 5 | Editor de cortes, edição em massa, Brand Kit, templates | A | **Implementado** | `src/core/editor.js`: timeline, split/join, bulk edit, Brand Kit, templates, projetos | UI no ateliê pendente; integração com app.js |
 | 6 | Cortes de lives (Twitch, Kick) | B | **Não iniciado** | `SocialPublishProvider` + yt-dlp/streamlink detection pendente | Importação por link = Cat. B |
 | 7 | Agendamento e publicação automática (OAuth) | B | **Não iniciado** | `SocialPublishProvider` esqueleto (YouTube) | Requer tokens OAuth no keyring |
 | 8 | Geração de vídeo com IA (texto/imagem → 9:16/16:9) | B | **Não iniciado** | `VideoGenerationProvider` (Replicate esqueleto) | Custo por segundo, múltiplos modelos |
@@ -25,9 +25,9 @@ Branch: `funcionalidades/estudio`
 ## Resumo por Categoria
 
 ### Categoria A (local e completo) — 5 itens + partes de 9
-- **Implementados**: 1 (motor cortes), 2 (legendas base), 4 (reenquadramento), 11 (orçamento), 13 (fila base)
-- **Parciais**: 5 (editor base), 9 (compositor thumbnails)
-- **Faltando**: 5 (edição em massa, Brand Kit, templates), 13 (projetos completos, estatísticas), 2 (tradução, export ASS)
+- **Implementados**: 1 (motor cortes), 2 (legendas base), 4 (reenquadramento), 5 (editor/brandkit/templates), 11 (orçamento), 13 (fila base + projetos)
+- **Parciais**: 9 (compositor thumbnails)
+- **Faltando**: 13 (estatísticas), 2 (tradução, export ASS)
 
 ### Categoria B (provedor externo plugável) — 8 itens + partes de 1, 6, 9
 - **Base pronta**: Interfaces + fake providers + esqueletos reais desativados
@@ -44,7 +44,7 @@ Branch: `funcionalidades/estudio`
 | 2 | Arquitetura provedores, fila, orçamento | ✅ | `checkpoint-08-providers-queue-budget` |
 | 3 | Motor de cortes com IA | ✅ | `checkpoint-08-providers-queue-budget` (incluído) |
 | 4 | Reenquadramento inteligente | ✅ | `checkpoint-09-reframe` |
-| 5 | Editor, edição em massa, Brand Kit, templates | 🔄 **Próximo** | `checkpoint-11-editor-brandkit` (planejado) |
+| 5 | Editor, edição em massa, Brand Kit, templates | ✅ | `checkpoint-10-editor-brandkit` |
 | 6 | Legendas avançadas (tradução, ASS) | ⏳ | `checkpoint-12-legendas-avancadas` |
 | 7 | Compositor thumbnails + provedor imagem | ⏳ | `checkpoint-13-thumbnails` |
 | 8 | Dublagem (TTS) | ⏳ | `checkpoint-14-dublagem` |
@@ -69,8 +69,7 @@ Branch: `funcionalidades/estudio`
 
 ## Próximos Checkpoints Planejados
 
-- `checkpoint-10-editor-ui` — Integração UI motor cortes + reenquadramento no ateliê
-- `checkpoint-11-editor-brandkit` — Editor completo, edição em massa, Brand Kit, templates
+- `checkpoint-11-editor-ui` — Integração UI motor cortes + reenquadramento no ateliê
 - `checkpoint-12-legendas-avancadas` — Tradução + export ASS
 - `checkpoint-13-thumbnails` — Compositor + ImageGenProvider
 - `checkpoint-14-dublagem` — TTS (ElevenLabs fake/real)
