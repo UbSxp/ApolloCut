@@ -3,7 +3,7 @@
 Última atualização: 22/10/2026 23:17  
 Branch: `noite/aprimoramento`  
 Base recebida: `51b1885` (tag `checkpoint-00-base`)  
-Último commit: `1d9f21d` (tag `checkpoint-05-exportacao`); correções críticas em `2cb4b41` (tags `checkpoint-01-legendas` e `checkpoint-02-tema`); acessibilidade em `9d7700a` (`checkpoint-03-acessibilidade`) e `4b1ef37` (`checkpoint-04-foco`)
+Último commit de código: `1d9f21d` (tag `checkpoint-05-exportacao`); correções críticas em `2cb4b41` (tags `checkpoint-01-legendas` e `checkpoint-02-tema`); acessibilidade em `9d7700a` (`checkpoint-03-acessibilidade`) e `4b1ef37` (`checkpoint-04-foco`)
 
 ## Estado atual
 
