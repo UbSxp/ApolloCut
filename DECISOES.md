@@ -1,4 +1,46 @@
-# Decisões da rodada noturna
+# Decisões
+
+## 23/10/2026 — rodada 06
+
+### Exportação: gravar depois do `play()`
+
+- Contexto: o `MediaRecorder` começava antes de o vídeo reproduzir; o início podia sair congelado ou sem áudio.
+- Opções: iniciar antes e tentar compensar; iniciar depois de `play()`; usar FFmpeg (não existe no projeto).
+- Escolha: desenhar o primeiro quadro, aguardar `play()` e então iniciar o recorder.
+- Motivo: elimina a causa do congelamento sem depender de ferramenta externa. O custo é uma defasagem de poucos milissegundos no início, coberta pela margem dos testes.
+- Reversão: `git revert 9652a16`.
+
+### Exportação: falhar quando o corte fica incompleto
+
+- Contexto: um arquivo truncado era exibido como concluído.
+- Opções: baixar mesmo assim com aviso; impedir o download; tentar completar automaticamente.
+- Escolha: se a duração capturada ficar mais de 0,25 s abaixo do alvo, não baixar e mostrar erro.
+- Motivo: é melhor não entregar um arquivo errado. O usuário pode tentar novamente ou usar a amostra.
+- Reversão: `git revert 9652a16`.
+
+### Amostra de exportação nasce desmarcada
+
+- Contexto: a amostra de 12 s vinha marcada e podia encurtar o corte sem o usuário perceber.
+- Opções: manter marcada; desmarcar; remover a opção.
+- Escolha: desmarcar por padrão e só tratar como amostra quando o corte tiver mais de 12 s.
+- Motivo: exportar o corte inteiro é a expectativa natural; a amostra continua disponível para teste.
+- Reversão: `git revert 9652a16`.
+
+### Atualização do `puppeteer-core`
+
+- Contexto: `23.11.1` tinha 7 vulnerabilidades altas de desenvolvimento.
+- Opções: manter e documentar; atualizar para `25.16.0`.
+- Escolha: atualizar e rodar toda a suíte.
+- Motivo: `npm audit` zerou e os testes continuaram passando. A dependência não entra no app publicado.
+- Reversão: `git revert 9652a16`.
+
+### Sem CSP nesta rodada
+
+- Contexto: o app usa um script inline no `<head>` para evitar FOUC de tema.
+- Opções: adicionar CSP com `unsafe-inline`; remover o inline e aceitar FOUC; deixar para depois.
+- Escolha: adicionar apenas `referrer=no-referrer` e registrar CSP no backlog.
+- Motivo: uma CSP com `unsafe-inline` daria falsa sensação de proteção; remover o inline exigiria mudar a arquitetura de carregamento.
+- Reversão: não se aplica. da rodada noturna
 
 ## 22/10/2026 22:37 — branch e estado inicial
 

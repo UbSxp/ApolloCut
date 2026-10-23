@@ -2585,7 +2585,7 @@
 
     const lineHeight = fontSize * 1.12;
     const portrait = h >= w;
-    const blockBottom = h * (portrait ? 0.92 : 0.93);
+    const blockBottom = h * (portrait ? 0.90 : 0.92);
     const firstY = blockBottom - (lines.length - 1) * lineHeight - lineHeight / 2;
     const space = ctx.measureText(" ").width;
     const padX = fontSize * 0.13;

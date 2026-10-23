@@ -23,7 +23,7 @@ Não há FFmpeg no PATH e o app é 100% navegador. A exportação usa `MediaReco
 - ausência de quadros pretos/congelados nas bordas;
 - bitrate/CRF controlados.
 
-O MP4 gerado no Edge foi validado apenas por assinatura de container (`ftyp`, `moov`, `avc1`, `mp4a`), não por `ffprobe` nem por reprodução em iPhone/Android.
+O MP4 gerado no Edge foi validado por assinatura de container (`ftyp`, `moov`, `avc1`, `mp4a`), perfil `avcC` High/nível 4.2 e reprodução no próprio Edge (1080×1920, 9,97 s). O `mvhd` registra duração 0 por ser MP4 fragmentado. Não foi validado por `ffprobe` nem em iPhone/Android.
 
 Decisão necessária: aceitar a limitação do navegador ou autorizar uma etapa futura com backend local FFmpeg.
 
@@ -43,13 +43,15 @@ Os fixtures atuais são curtos e sintéticos (`sample.mp4`, `long.webm`, `ptbr-f
 
 ## 4. Acessibilidade e foco em modais
 
-Há foco visível em boa parte dos controles, mas ainda falta auditar:
+Foco visível, foco preso nos modais, retorno de foco, anúncio de progresso e foco no resultado da exportação já estão implementados. Ainda falta auditar:
 
-- foco preso dentro dos modais;
-- retorno de foco ao fechar;
-- anúncio de progresso em `aria-live`;
 - navegação completa por teclado no editor de legendas;
+- leitura com NVDA, JAWS ou VoiceOver reais;
 - contraste de todos os estados (hover, foco, desabilitado) nos dois temas.
+
+## 4.1. CSP e script inline
+
+O app usa um script inline no `<head>` para aplicar o tema antes da primeira pintura. Uma CSP estrita exigiria remover esse inline ou usar `unsafe-inline`. A decisão atual foi manter o inline e adicionar apenas `referrer=no-referrer`; CSP fica no backlog.
 
 ## 5. Limpeza de arquivos temporários
 

@@ -1,5 +1,19 @@
 # Mudanças
 
+## 23/10/2026 — exportação confiável e ateliê
+
+- O ateliê agora ocupa a tela inteira, sem cabeçalho e rodapé aparecendo depois dele.
+- Os botões dos cartões de corte voltaram a funcionar.
+- A exportação não começa mais com o vídeo congelado: o primeiro quadro é desenhado e a gravação começa junto com a reprodução.
+- Se o navegador entregar um arquivo incompleto, o app avisa e não baixa um vídeo truncado como se estivesse pronto.
+- A exportação tenta H.264 High e usa o formato real entregue pelo navegador no nome do arquivo.
+- A legenda queimada agora fica na mesma posição, largura e estilo da prévia.
+- Barras de progresso, toasts e resultado da exportação passaram a ser anunciados por leitores de tela.
+- O download recebe foco ao terminar; o ateliê também recebe foco ao abrir.
+- O teste de exportação agora abre o MP4 final e confere duração, resolução e ausência de erro de mídia.
+- Dependência de testes atualizada; `npm audit` sem vulnerabilidades.
+- Novo fixture `sem-audio.webm` e teste de fumaça com vídeo mudo.
+
 ## 22/10/2026 — correção de legendas e temas
 
 ### Legendas

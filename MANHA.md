@@ -1,5 +1,45 @@
 ﻿# Bom dia — resumo da noite
 
+## Atualização — 23/10/2026 — commit `9652a16`
+
+Tag: `checkpoint-06-exportacao`.
+
+Nesta rodada, depois dos dois bugs críticos, corrigi o que ainda impedia o uso confiável:
+
+- **Ateliê:** a tela agora ocupa o topo, sem cabeçalho/rodapé aparecendo depois; o foco entra nela.
+- **Cortes:** os botões “Ver”, “Legendas” e “Exportar” dos cartões voltaram a funcionar.
+- **Exportação:** o primeiro quadro é desenhado e a gravação começa com o `play()`, evitando início congelado; a duração capturada é medida e um arquivo truncado não é mais baixado como sucesso.
+- **Codec:** o app tenta H.264 High 4.0 e usa o MIME real do `MediaRecorder` para nomear o arquivo.
+- **Legenda queimada:** posição, largura e fundos `marmore`/`ditirambo` alinhados à prévia; bloco a 90% da altura, dentro da zona segura.
+- **Acessibilidade:** progresso com `role="progressbar"`, toasts/resultado anunciados, foco no download e no ateliê.
+- **Dependências:** `puppeteer-core` atualizado para `25.16.0`; `npm audit` sem vulnerabilidades.
+- **Teste real:** o MP4 final é aberto no navegador; 1080×1920, 9,97 s, `avc1`/`mp4a`, sem erro de mídia. O perfil lido do `avcC` é High (0x64), nível 4.2.
+- **Vídeo sem áudio:** fixture `sem-audio.webm` importado, analisado e exportado sem erro (MP4 1080×1920, 4,94 s). O arquivo final contém uma faixa AAC silenciosa.
+
+Ainda não posso afirmar que passa em iPhone/Android reais, que tem `yuv420p`/`faststart` garantidos ou que a sincronia fica abaixo de 40 ms em arquivos longos: não há FFmpeg/`ffprobe` nem aparelhos conectados. O `mvhd` do MP4 gerado registra duração 0, embora o Edge reproduza o arquivo inteiro; isso é uma limitação do `MediaRecorder` e está no backlog.
+
+### Comandos para conferir
+
+```powershell
+cd C:\Users\DUARDIN\ApolloCut
+npm install
+npm run test:all
+npm audit --omit=optional
+```
+
+Para ver o app: `Start-Process "C:\Users\DUARDIN\ApolloCut\index.html"`.
+
+Para voltar atrás: `git checkout checkpoint-06-exportacao` ou `git revert 9652a16`.
+
+### O que ainda depende de você
+
+- Decidir se o runtime/modelo do Whisper deve ser embarcado para uso 100% offline (~240 MB).
+- Testar em iPhone/Android e com vídeos reais longos.
+- Decidir se aceita a limitação do `MediaRecorder` ou se autoriza um backend local com FFmpeg em uma etapa futura.
+- Autorizar a próxima rodada de design/recursos (projetos recentes, fila, desfazer/refazer).
+
+## Histórico da primeira rodada
+
 ## O que foi feito primeiro
 
 ### 1. Legendas
@@ -68,7 +108,7 @@ Tempo observado de transcrição no Edge headless (inclui download do modelo na 
 1. **Offline real (P1):** o runtime do Transformers.js e o modelo ainda vêm de CDN/Hugging Face. Embarcar ~240 MB no projeto é uma decisão de distribuição que precisa de aprovação.
 2. **Exportação garantida (P1):** não há FFmpeg; o `MediaRecorder` não garante H.264 High, `yuv420p`, AAC 48 kHz ou `faststart` em todos os navegadores.
 3. **Vídeos reais (P1):** faltam testes com arquivos longos de celular/OBS, VFR, rotação, HDR, 10 bits e múltiplas faixas.
-4. **Acessibilidade (P2):** falta foco preso em modais, retorno de foco, anúncio de progresso e auditoria completa por teclado.
+4. **Acessibilidade (P2):** foco preso, retorno de foco e anúncio de progresso já estão implementados; falta auditoria com leitor de tela real.
 5. **Desempenho (P2):** sem cache de transcrição e sem limite de concorrência; vídeos longos ficam lentos.
 6. **Legendas (P2):** quebra de linha semântica, zona segura por plataforma, exportação SRT/ASS.
 7. **UX (P3):** projetos recentes, fila de exportação, desfazer/refazer, salvamento automático.

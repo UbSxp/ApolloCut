@@ -1,6 +1,7 @@
 # Fixtures de teste
 
 - `sample.mp4`: vídeo curto de 10 s, 1280×720, sem fala, usado no fluxo de análise/exportação.
+- `sem-audio.webm`: vídeo de 5 s, 720×1280, sem faixa de áudio, usado no teste de importação e exportação de arquivo mudo.
 - `long.webm`: vídeo de 60 s com áudio de fala, usado para testar chunking e arquivos mais longos.
 - `ptbr-fala.wav`: áudio sintético em português do Brasil, gerado localmente com a voz Microsoft Maria (Windows SAPI). Texto de referência: “O sol nasce sobre o mar. A lira de Apolo guarda o tempo. Este é um teste de legendas em português do Brasil. A palavra certa precisa aparecer no momento certo.”
 - `ptbr-fala.webm`: o mesmo áudio com uma faixa de vídeo sintética 1280×720, usado para testar upload, análise e Whisper no app.

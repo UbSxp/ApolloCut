@@ -5,6 +5,38 @@ Escopo: `C:\Users\DUARDIN\ApolloCut` (HTML/CSS/JS estático, sem backend)
 Navegador de verificação: Microsoft Edge headless  
 Método: leitura do código, execução real dos fluxos e inspeção do DOM/arquivos gerados.
 
+## Rodada noturna — 23/10/2026 (commit 9652a16)
+
+### Resolvidos nesta rodada
+
+| ID | Severidade | Área | Problema | Correção | Evidência |
+|---|---|---|---|---|---|
+| UX-02 | P1 | Ateliê | Header e footer apareciam depois do ateliê e quebravam a leitura da tela. | `body.studio-open` oculta header/footer; ateliê recebeu `role="main"` e foco. | `tests/ui-export.test.js` verifica que o ateliê começa no topo e que o foco entra nele. |
+| UX-03 | P1 | Cortes | Cards de corte tinham ações mortas (`Ver`, `Legendas`, `Exportar`). | Delegação de eventos em `#clipGrid` e foco no destino. | Teste clica em `#clipGrid .clip-actions button` e confirma a troca de aba. |
+| EXP-02 | P1 | Exportação | Gravação começava antes de `play()`, podendo congelar o início. | Primeiro quadro desenhado, `play()` aguardado e só então `recorder.start()`. | Exportação de 9,98 s reproduz no Edge com 1080×1920 e sem erro de mídia. |
+| EXP-03 | P1 | Exportação | Corte truncado era exibido como 100% e baixado como se estivesse completo. | Duração capturada é medida; menos de 0,25 s do alvo gera erro explícito e não baixa. | `tests/ui-export.test.js` valida duração > 9 s no arquivo final. |
+| EXP-04 | P1 | Exportação | Codec MP4 candidato era Baseline 3.0 e o nome usava o MIME pedido, não o real. | Candidatos incluem H.264 High 4.0; recriar recorder por candidato e usar `recorder.mimeType`. | Arquivo contém `avc1` e `mp4a`; `video.duration` 9,97 s. |
+| EXP-05 | P2 | Exportação | Cancelar durante preparação não interrompia de imediato. | Verificações de cancelamento após cada etapa assíncrona. | Teste de cancelamento continua passando. |
+| BURN-01 | P1 | Legendas | Prévia e vídeo queimado usavam posição, largura e fundo diferentes. | Bloco alinhado a 92% da altura, largura 88%, fundos `marmore`/`ditirambo` aplicados a todas as palavras. | Revisão de código + exportação com legenda queimada. |
+| A11Y-02 | P2 | Acessibilidade | Barras de progresso não tinham semântica; toasts e resultado não eram anunciados. | `role="progressbar"` + `aria-valuenow`; `role="status"`/`alert`; foco no download. | Testes de tema e exportação passam; inspeção do DOM. |
+| A11Y-03 | P3 | Acessibilidade | Botão de tema tinha rótulo contraditório com `aria-pressed`. | Rótulo agora descreve o estado e a ação. | Inspeção em `tests/ui-theme.test.js`. |
+| SEC-01 | P1 | Dependências | `puppeteer-core@23.11.1` tinha 7 vulnerabilidades altas. | Atualizado para `^25.16.0`; `npm audit` sem vulnerabilidades. | `npm audit --omit=optional` = 0. |
+| SEC-02 | P3 | Privacidade | Sem política de referenciador para chamadas externas. | `meta name="referrer" content="no-referrer"`. | `index.html`. |
+| LEG-08 | P2 | Legendas | Arquivo SRT gigante podia travar a interface. | Limite de 8 MB com mensagem clara. | `importSrtFile`. |
+| VID-02 | P2 | Importação | Duas importações concorrentes podiam aplicar metadados do arquivo errado. | Token de carga e revogação de URL obsoleta. | Revisão de `loadFile`; fluxo de upload passou. |
+
+### Ainda abertos
+
+- `OFF-01`: runtime e modelo do Whisper vêm de CDN/Hugging Face.
+- `EXP-01`: `MediaRecorder` não garante H.264 High, `yuv420p`, AAC 48 kHz ou `faststart`.
+- `VID-01`: faltam fixtures VFR, rotação, HDR, 10 bits e múltiplas faixas.
+- `PERF-01`: sem cache de transcrição e exportação em tempo real.
+- `LEG-07`: quebra de linha ainda é por largura, não por unidades linguísticas.
+- `AUDIO-01`: sem normalização de loudness, redução de ruído ou fade.
+- `A11Y-01`: falta auditoria com leitor de tela e `aria-live` na etapa de transcrição.
+- `UX-01`: sem projetos recentes, fila, desfazer/refazer e salvamento automático.
+- `SEC-03`: falta CSP; o app usa script inline para evitar FOUC.
+
 ## Resumo
 
 O ApolloCut estava com a maior parte da lógica escrita, mas **não inicializava**: faltavam o vínculo dos eventos, a chamada de inicialização e o ajuste visual das configurações. Também havia falhas de duração de vídeo, alinhamento de legendas após o Whisper, duplicação no fim do HTML e pequenos erros de CSS.

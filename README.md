@@ -45,11 +45,12 @@ npm run test:all
 - `npm run check`: verifica a sintaxe de `app.js` e `lib/captions.js`.
 - `npm test`: testes puros de parser SRT/VTT, rebase, recorte, agrupamento e alucinações.
 - `npm run test:ui`: testa tema claro/escuro/automático, persistência, modal de ajustes e idioma.
-- `npm run test:export`: importa SRT e exporta uma amostra 9:16 com legenda queimada, verificando o MP4 gerado.
+- `npm run test:export`: importa SRT e exporta um corte 9:16 com legenda queimada, conferindo bytes, codecs, duração, resolução e reprodução do MP4 gerado.
 
 Os fixtures ficam em `tests/fixtures`:
 
 - `sample.mp4`: vídeo curto sem fala.
+- `sem-audio.webm`: 5 s, 720×1280, sem faixa de áudio.
 - `long.webm`: 60 s com áudio.
 - `ptbr-fala.webm`: 16 s com fala sintética em português do Brasil.
 - `vertical-ptbr.webm`: 16 s, 1080×1920, com a mesma fala; usado na regressão vertical.
@@ -58,6 +59,7 @@ Os fixtures ficam em `tests/fixtures`:
 ## Limitações conhecidas
 
 - A exportação usa `MediaRecorder`; o codec final depende do navegador. O app tenta MP4 H.264/AAC e cai para WebM quando necessário.
+- O MP4 gerado é fragmentado: o cabeçalho `mvhd` pode registrar duração 0, embora o arquivo reproduza até o fim no Edge/Chrome. A compatibilidade com iPhone/Android ainda não foi verificada em aparelho real.
 - A primeira transcrição baixa o modelo Whisper de um CDN/Hugging Face. Veja `PENDENCIAS_PARA_O_USUARIO.md`.
 - A transcrição roda no navegador e pode ser lenta em vídeos longos.
 - A análise visual sugere cortes por movimento, luz e mudança de cena; não entende o conteúdo semanticamente.
@@ -72,3 +74,4 @@ Os fixtures ficam em `tests/fixtures`:
 - `tests/`: testes e fixtures.
 - `DESIGN.md`: direção visual.
 - `PROGRESSO.md`, `DECISOES.md`, `AUDITORIA.md`, `PENDENCIAS_PARA_O_USUARIO.md`: memória da rodada.
+- `THIRD_PARTY_NOTICES.md`: licenças de fontes, runtime e ferramentas.

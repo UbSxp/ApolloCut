@@ -5,6 +5,36 @@ Branch: `noite/aprimoramento`
 Base recebida: `51b1885` (tag `checkpoint-00-base`)  
 Último commit de código: `1d9f21d` (tag `checkpoint-05-exportacao`); correções críticas em `2cb4b41` (tags `checkpoint-01-legendas` e `checkpoint-02-tema`); acessibilidade em `9d7700a` (`checkpoint-03-acessibilidade`) e `4b1ef37` (`checkpoint-04-foco`)
 
+## Rodada 06 — 23/10/2026 — commit `9652a16`
+
+Tag: `checkpoint-06-exportacao`.
+
+Concluído:
+
+- Ateliê ocupa a tela inteira; header e footer não aparecem mais depois dele.
+- Cards de corte voltaram a abrir cena, legendas e exportação.
+- Exportação começa a gravar depois do `play()`, mede a duração capturada e falha se o corte ficar incompleto.
+- Codec MP4 tenta H.264 High 4.0 e o nome/extensão usam o MIME real do `MediaRecorder`.
+- Prévia e legenda queimada alinhadas em posição, largura e fundo.
+- Barras de progresso com semântica, toasts e resultado anunciados, foco no download e no ateliê.
+- `puppeteer-core` atualizado para `25.16.0`; `npm audit` sem vulnerabilidades.
+- Teste de exportação agora abre o MP4 final e confere duração, resolução e ausência de erro de mídia.
+
+Evidência:
+
+- `npm run test:all`: 9 testes de legenda, tema e exportação passando.
+- MP4 final: 1080×1920, 9,97 s, `avc1`, `mp4a`, reproduz no Edge.
+- `npm audit --omit=optional`: 0 vulnerabilidades.
+- Abertura automática: overlay fecha em 1,8 s; seletor abre; foco vai para o ateliê.
+- Vídeo mudo `tests/fixtures/sem-audio.webm` (720×1280, 5 s): importado, analisado e exportado em MP4 1080×1920 de 4,94 s, sem erro.
+- Quadro extraído do MP4 em 1,2 s mostra a legenda dentro da zona segura, com a palavra ativa em dourado.
+
+Próximo passo exato:
+
+1. Atualizar `MANHA.md` com esta rodada.
+2. Medir acessibilidade e legenda vertical; se estável, gerar `noite-final`.
+3. Reabrir o app com `Start-Process "C:\Users\DUARDIN\ApolloCut\index.html"`.
+
 ## Estado atual
 
 O app é estático: HTML, CSS e JavaScript no navegador, sem build e sem backend. O vídeo é lido pelo elemento `<video>`, a análise amostra quadros em canvas, a transcrição usa Transformers.js + Whisper local e a exportação usa `MediaRecorder` em tempo real.

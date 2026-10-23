@@ -761,7 +761,7 @@ select { appearance: none; padding-right: 38px; background-image: linear-gradien
 .frame.r169 { aspect-ratio: 16 / 9; max-width: 100%; }
 .frame video { width: 100%; height: 100%; object-fit: cover; object-position: var(--focus, 50%) 50%; }
 .frame-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0, 0, 0, 0.04) 40%, rgba(0, 0, 0, 0.42)); pointer-events: none; }
-.frame-captions { position: absolute; left: 6%; right: 6%; bottom: 8%; display: grid; justify-items: center; gap: 4px; z-index: 3; pointer-events: none; }
+.frame-captions { position: absolute; left: 6%; right: 6%; bottom: 10%; display: grid; justify-items: center; gap: 4px; z-index: 3; pointer-events: none; }
 .cap-line { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.18em 0.34em; max-width: 100%; animation: capIn 220ms var(--ease-out) both; }
 .cap-word { display: inline-block; padding: 0.02em 0.12em; border-radius: 0.14em; color: var(--stage-text); text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7); line-height: 1.16; }
 .cap-word.active { color: #17130f; background: var(--gold-bright); text-shadow: none; }
