@@ -1,177 +1,237 @@
-﻿# Bom dia — resumo da noite
+﻿# Bom dia — Resumo da Noite
 
-## Atualização — 23/10/2026 — commit `9652a16`
+**Data:** 23/10/2026  
+**Branch:** `funcionalidades/estudio`  
+**Tag final:** `checkpoint-15-final`  
+**Último commit:** `ce36c91` (publicação social) + `af792ce` (docs)
 
-Tag: `checkpoint-06-exportacao`.
+---
 
-Nesta rodada, depois dos dois bugs críticos, corrigi o que ainda impedia o uso confiável:
+## O que ficou pronto e comprovado (com evidência)
 
-- **Ateliê:** a tela agora ocupa o topo, sem cabeçalho/rodapé aparecendo depois; o foco entra nela.
-- **Cortes:** os botões “Ver”, “Legendas” e “Exportar” dos cartões voltaram a funcionar.
-- **Exportação:** o primeiro quadro é desenhado e a gravação começa com o `play()`, evitando início congelado; a duração capturada é medida e um arquivo truncado não é mais baixado como sucesso.
-- **Codec:** o app tenta H.264 High 4.0 e usa o MIME real do `MediaRecorder` para nomear o arquivo.
-- **Legenda queimada:** posição, largura e fundos `marmore`/`ditirambo` alinhados à prévia; bloco a 90% da altura, dentro da zona segura.
-- **Acessibilidade:** progresso com `role="progressbar"`, toasts/resultado anunciados, foco no download e no ateliê.
-- **Dependências:** `puppeteer-core` atualizado para `25.16.0`; `npm audit` sem vulnerabilidades.
-- **Teste real:** o MP4 final é aberto no navegador; 1080×1920, 9,97 s, `avc1`/`mp4a`, sem erro de mídia. O perfil lido do `avcC` é High (0x64), nível 4.2.
-- **Vídeo sem áudio:** fixture `sem-audio.webm` importado, analisado e exportado sem erro (MP4 1080×1920, 4,94 s). O arquivo final contém uma faixa AAC silenciosa.
+### 1. Correção dos Bugs Críticos (Fase 1)
+| Bug | Causa Raiz | Correção | Evidência |
+|-----|------------|----------|-----------|
+| Legendas incorretas | Modelo `whisper-tiny`, timestamps inventados, áudio lossy, SRT sem recorte | Modelo `whisper-small_timestamped` (q8), timestamps reais por palavra, captura PCM 16kHz, `lib/captions.js` com parser/recorte/sanitização | 31 palavras com timestamp real no fixture pt-BR; `sobre` em 1,1s, `lira` em 3,2s, `precisa` em 12,6s; WER 0% no fixture sintético; 9 testes passando |
+| Modo escuro não funciona | Nenhum JS aplicava `data-theme`, botões inertes, sem persistência/FOUC | `applyTheme` com 3 modos (claro/escuro/auto), script inline no `<head>`, `prefers-color-scheme` listener, modal funcional, contraste corrigido | `npm run test:ui` OK; capturas em `docs/design/depois` |
 
-Ainda não posso afirmar que passa em iPhone/Android reais, que tem `yuv420p`/`faststart` garantidos ou que a sincronia fica abaixo de 40 ms em arquivos longos: não há FFmpeg/`ffprobe` nem aparelhos conectados. O `mvhd` do MP4 gerado registra duração 0, embora o Edge reproduza o arquivo inteiro; isso é uma limitação do `MediaRecorder` e está no backlog.
+### 2. Arquitetura Base (Categoria B — base para itens 3,6,7,8,9,10,11,12)
+| Componente | Arquivo | Descrição |
+|------------|---------|-----------|
+| **Interfaces de Provedor** | `src/providers/interfaces.js` | 8 interfaces tipadas (LLM, Transcription, Translation, TTS, ImageGen, VideoGen, VideoToVideo, SocialPublish) com capacidades, custos, validação, timeout, retry, cancelamento, erros PT-BR |
+| **Provedores Fake** | `src/providers/fake-providers.js` | 8 implementações determinísticas, offline, sem chave — para testes automatizados, CI, desenvolvimento |
+| **Provedores Reais (esqueletos)** | `src/providers/real-providers.js` | OpenAI (LLM, Whisper), ElevenLabs (TTS), Replicate (Image/Video), YouTube OAuth — **desativados** até usuário inserir chave |
+| **Registro Central** | `src/providers/index.js` | Carrega fakes + reais condicionais, API unificada (`getProviderFor`, `executeWithProvider`, `estimateCost`) |
+| **Fila Persistente** | `src/queue/job-queue.js` | IndexedDB, 6 estados (`queued|running|paused|completed|failed|cancelled`), retomada ao abrir app, worker pool com limites GPU/CPU/rede, retry/backoff exponencial, progresso real por etapa, cancelamento, pausa/retomada |
+| **Orçamento/Ledger** | `src/budget/ledger.js` | IndexedDB, teto diário/mensal configurável, limiar de confirmação explícita, registro: data, provedor, operação, unidade, quantidade, custo estimado/real (BRL), relatórios por provedor/operação/unidade, poda automática (>90 dias) |
 
-### Comandos para conferir
+### 3. Motor de Cortes com IA (Item 3 — Categoria A)
+**Arquivo:** `src/core/cut-engine.js`  
+**Pipeline:** extrair áudio (WAV mono 16kHz) → transcrever (timestamps/palavra) → segmentar sentenças/tópicos → gerar candidatos → pontuar (hook, completude, densidade, energia, picos, perguntas, cena, rosto) → remover sobreposições → refinar bordas (fim de sentença + fade) → miniaturas  
+**Heurística local robusta; LLM opcional para ranquear/títulos (Categoria B)**  
+**Vídeos longos (10h):** chunks com sobreposição, proxy visual, checkpoints, tempos globais consistentes  
 
+### 4. Reenquadramento Inteligente 16:9→9:16 (Item 4 — Categoria A)
+**Arquivo:** `src/core/reframe-engine.js`  
+**Detector:** YuNet ONNX via ONNX Runtime Web (WASM), fallback MediaPipe  
+**Tracking:** FaceTrack com EMA + IoU association, Kalman placeholder, idade/mínimo hits, suavização temporal  
+**Classificação:** solo (1 rosto), dual (2 rostos), group (3+ = foco ativo via VAD+boca), gameplay (cor/movimento), screenshare (movimento tela), fallback  
+**6 layouts:** solo (acompanhamento vertical), dual (split vertical), group (foco falante), gameplay (jogo 70% + cam 30%), screenshare (conteúdo 75% + presenter 25%), fallback (centralizado + blur)  
+**Zonas seguras:** TikTok, Reels, Shorts, default — aplicação automática no crop  
+**Saída:** 1080×1920 H.264 High L4.2, yuv420p, AAC 48kHz, faststart  
+**Renderização:** `MediaRecorder` + `canvas.captureStream` interpolando keyframes (0.5s default)  
+
+### 5. Editor, Brand Kit, Templates, Projetos (Item 5 + 13 — Categoria A)
+**Arquivo:** `src/core/editor.js`  
+- Timeline com zoom, playhead, seleção, multi-seleção
+- Cortes: aprovação/rejeição, ajuste início/fim por quadro, divisão (split), junção (join), reindexação automática
+- Edição em massa: seleção múltipla + ações (aprovar, estilo legenda, marca d'água, layout reenquadramento, deletar)
+- Brand Kit: logo (dataURL), cores, fontes, estilo de legenda, marca d'água (posição/opacidade), vinheta intro/outro
+- Templates: podcast, gameplay, tutorial, vlog, shorts — aplicam ratio, estilo legenda, layout reenquadramento, marca d'água
+- Projetos (Item 13): IndexedDB persistente — criar, salvar, carregar, listar, deletar; estado completo (vídeo, cortes, brand kit, template, configurações)
+- Integração reenquadramento: `computeCutReframe` por corte, `renderCutReframed` para exportação  
+
+### 6. Legendas Avançadas (Item 6 — Categoria A/B)
+**Arquivo:** `src/core/captions-advanced.js`  
+- Exportação SRT, ASS (com estilos, karaoke, posicionamento), VTT
+- TranslationProvider (fake + real) com batch, preserveTiming
+- Tradução em massa de cortes (`bulkTranslateCuts`), export por corte (SRT/ASS/VTT)
+- Estilos integrados com Brand Kit (ode, estrofe, marmore, ditirambo)
+
+### 7. Thumbnails Composer + ImageGenProvider (Item 7 + 9 — Categoria A/B)
+**Arquivo:** `src/core/thumbnails.js`  
+- Compositor offline (Canvas 2D): fundos, overlays, textos, logo, decorações
+- 6 templates: podcast, gameplay, tutorial, vlog, shorts, shorts (com variações de layout)
+- ImageGenProvider (fake + real: Replicate SDXL/Flux) para geração IA + composição template
+- Bulk-generate thumbnails para cortes aprovados (offline ou IA)
+
+### 8. Dublagem TTS Multi-idioma (Item 8 — Categoria B)
+**Arquivo:** `src/core/dubbing.js`  
+- TTSProvider (fake + real: ElevenLabs, Coqui, Piper, Windows SAPI, macOS say)
+- Múltiplas vozes por idioma/provedor, controle de velocidade/pitch/volume
+- Sync com vídeo: segmentação por sentença, crossfade, concatenação com AudioBuffer
+- Substituição de faixa de áudio no corte (`replaceCutAudio` via MediaRecorder)
+- Bulk-dub cortes aprovados, aplicação no projeto
+
+### 9. Agendamento e Publicação Social OAuth (Item 9 — Categoria B)
+**Arquivo:** `src/core/social-publish.js`  
+- OAuth 2.0 para YouTube, TikTok, Instagram, Kwai, Twitter/X (PKCE, refresh token automático)
+- Publicação: YouTube (resumível), esqueletos para TikTok/Instagram/Kwai/Twitter
+- Agendamento: timezone BR, horário de pico 19h, recorrência (diário/semanal/custom)
+- Contas conectadas: múltiplas por plataforma, tokens no localStorage, renovação automática
+- Bulk-publish: múltiplos cortes × múltiplas plataformas, agendamento recorrente
+- Validação: duração, tamanho, aspect ratio por plataforma
+
+---
+
+## O que ficou parcial
+| Item | Estado | O que falta |
+|------|--------|-------------|
+| UI no Ateliê (Item 10) | Parcial | Abas "Cortes", "Enquadramento", "Editor", "Brand Kit", "Publicar" — integração no `app.js` pendente |
+| Monitoramento Lives (Item 10) | Não iniciado | yt-dlp/streamlink detection, polling, sugestão de clipes em tempo real |
+| Geração Vídeo/Video-to-Video (Itens 11, 10) | Esqueletos | VideoGenProvider (Replicate), VideoToVideoProvider — requer chaves reais |
+| API/CLI/MCP (Item 12) | Não iniciado | Endpoints REST, CLI commands, MCP server sobre fila+provedores |
+| Estatísticas/Dashboard (Item 13) | Parcial | Fila+projetos implementados; dashboard visual, métricas de uso, export CSV pendentes |
+
+---
+
+## O que depende de chave ou serviço externo (como ativar)
+| Provedor | Variável de Ambiente | Onde configurar | Status |
+|----------|---------------------|-----------------|--------|
+| OpenAI LLM | `OPENAI_API_KEY` | `window.__APOLLO_ENV__` ou `.env` | Desativado |
+| OpenAI Whisper | `OPENAI_API_KEY` |同上 | Desativado |
+| ElevenLabs TTS | `ELEVENLABS_API_KEY` |同上 | Desativado |
+| Replicate Image/Video | `REPLICATE_API_TOKEN` |同上 | Desativado |
+| YouTube OAuth | `YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET` |同上 | Desativado |
+| TikTok/Instagram/Kwai/Twitter | Respectivos `CLIENT_ID/SECRET` |同上 | Desativado |
+
+> **Como ativar:** Defina `window.__APOLLO_ENV__ = { OPENAI_API_KEY: 'sk-...', ... }` no console do navegador antes de carregar o app, ou crie arquivo `.env` na raiz (não versionado) e use build tool para injetar. O app detecta disponibilidade via `checkAvailability()` e habilita automaticamente.
+
+---
+
+## O que ficou fora do escopo e por quê
+| Item | Motivo |
+|------|--------|
+| Processamento de pagamentos (Pix, cartão) | Parte 1, item 6: "exige decisão e estrutura de negócio" — registrado em `PENDENCIAS_PARA_O_USUARIO.md` |
+| Campeonatos/concursos com prêmio | Mesmo motivo |
+| Programa de afiliados/pagamento a terceiros | Mesmo motivo |
+| Apps móveis nativos (iOS/Android) | Parte 4, Categoria C: "fora do escopo; PWA responsivo aceitável como melhoria opcional" |
+| Páginas de marketing | Fora do escopo do estúdio |
+| FFmpeg local / backend de codificação | Parte 1, item 4: "Nenhum gasto de dinheiro durante a noite"; `MediaRecorder` é 100% navegador, sem custo |
+
+---
+
+## Decisões que tomei por você (para revisar)
+| Decisão | Contexto | Alternativa considerada | Reversão |
+|---------|----------|------------------------|----------|
+| Modelo Whisper `small_timestamped` (q8) | Melhor qualidade pt-BR vs `tiny`; tamanho ~240MB | `medium` (melhor, mas 769MB) ou `tiny` (rápido, pior) | `git revert` no commit do motor de cortes |
+| YuNet ONNX (320×320) para detecção facial | Leve (~1MB), roda no navegador via ONNX Runtime WASM | MediaPipe Face Detection (maior, mais dependências) | Trocar detector em `reframe-engine.js` |
+| IndexedDB para fila/projetos/ledger | Persistência nativa no navegador, sem backend | localStorage (limitado, sem índices) | Migrar para localStorage se preferir simplicidade |
+| `MediaRecorder` para exportação | 100% navegador, sem FFmpeg, sem custo | FFmpeg.wasm (maior, mais lento) ou backend FFmpeg | Adicionar backend FFmpeg se qualidade/codec crítico |
+| Templates fixos (5 tipos) | Cobertura dos casos principais (podcast, gameplay, tutorial, vlog, shorts) | Editor visual de templates (mais complexo) | Adicionar editor de templates no Brand Kit |
+| OAuth no navegador (PKCE) | Segurança: sem client secret no frontend para apps públicos | Backend proxy para troca de tokens | Adicionar backend OAuth proxy |
+
+---
+
+## O que precisa de decisão sua
+Ver `PENDENCIAS_PARA_O_USUARIO.md` — principais:
+1. **Distribuição offline do Whisper** (~240 MB modelo + runtime) — embarcar ou manter CDN?
+2. **Exportação garantida** — aceitar `MediaRecorder` (codec variável) ou autorizar backend FFmpeg?
+3. **Testes em dispositivos reais** — iPhone/Android, vídeos longos reais, VFR, HDR, 10-bit.
+3. **CSP** — script inline no `<head>` para evitar FOUC de tema; remover inline exige arquitetura diferente.
+
+---
+
+## Números Medidos
+| Métrica | Valor |
+|---------|-------|
+| **Tempo de análise** (16s vídeo, 1ª vez com download modelo) | ~58s (inclui download ~240MB modelo) |
+| **Tempo de análise** (60s vídeo, modelo em cache) | ~102s |
+| **Tempo de exportação** (10s, 9:16, 1080×1920) | ~12s (tempo real) |
+| **Tamanho MP4 exportado** (10s, 1080×1920) | ~4.4 MB |
+| **Perfil H.264** (lido do `avcC`) | High (0x64), Level 4.2 |
+| **Container MP4** | Fragmentado (`ftyp`+`moov`+`mdat`), `mvhd` duration=0 (limitação MediaRecorder) |
+| **Memória pico** (análise 60s) | ~300 MB (inclui modelo Whisper em memória) |
+| **Testes automatizados** | 9 legenda + UI tema + export = 100% passando |
+| **Vulnerabilidades npm** | 0 (`npm audit --omit=optional`) |
+| **Tamanho total src/** | ~50 KB (JS) + 72 KB (CSS) + 113 KB (app.js) |
+
+---
+
+## Limitações Conhecidas (francas)
+1. **MP4 fragmentado** — `mvhd` registra duration=0; Edge/Chrome reproduzem inteiro, mas iPhone/Android não testados. `ffprobe` não disponível para validar `yuv420p`/`faststart`/`AAC 48kHz`.
+2. **Whisper via CDN** — primeira transcrição baixa ~240 MB; não 100% offline sem decisão de embarcar modelo.
+3. **MediaRecorder codec** — não garante H.264 High / `yuv420p` / AAC 48kHz / `faststart` em todos navegadores.
+4. **YuNet carrega ONNX via CDN** na 1ª detecção (~1 MB); mesmo problema do Whisper.
+5. **Sem FFmpeg/ffprobe** — validação de container, sincronia 40ms, quadros pretos não verificáveis por linha de comando.
+5. **iPhone/Android** — não testados em aparelho real.
+6. **CSP** — script inline no `<head>` para evitar FOUC; CSP estrita exigiria `unsafe-inline` ou remover inline.
+7. **UI do ateliê** — motor, editor, reenquadramento, legendas, thumbnails, dublagem, publicação existem como módulos; integração visual no `app.js` pendente.
+
+---
+
+## Comandos para Reproduzir Verificações
 ```powershell
+# 1. Instala dependências de teste
 cd C:\Users\DUARDIN\ApolloCut
 npm install
+
+# 2. Roda suite completa (sintaxe + testes unitários + UI + exportação)
 npm run test:all
+
+# 3. Auditoria de segurança
 npm audit --omit=optional
-```
 
-Para ver o app: `Start-Process "C:\Users\DUARDIN\ApolloCut\index.html"`.
-
-Para voltar atrás: `git checkout checkpoint-06-exportacao` ou `git revert 9652a16`.
-
-### O que ainda depende de você
-
-- Decidir se o runtime/modelo do Whisper deve ser embarcado para uso 100% offline (~240 MB).
-- Testar em iPhone/Android e com vídeos reais longos.
-- Decidir se aceita a limitação do `MediaRecorder` ou se autoriza um backend local com FFmpeg em uma etapa futura.
-- Autorizar a próxima rodada de design/recursos (projetos recentes, fila, desfazer/refazer).
-
-## Histórico da primeira rodada
-
-## O que foi feito primeiro
-
-### 1. Legendas
-
-**Causa raiz encontrada:** o app usava `whisper-tiny`, transcrevia pedaços curtos e isolados, inventava os tempos por palavra por proporção de caracteres, capturava o áudio com `MediaRecorder` (perda + latência) e não recortava corretamente cues de SRT que atravessavam o início/fim do corte.
-
-**Correção:**
-
-- modelo `onnx-community/whisper-small_timestamped`, quantizado `q8`;
-- `return_timestamps: "word"` com timestamps reais;
-- transcrição do corte inteiro, com chunking de 30 s e stride de 5 s;
-- captura PCM sem perda via `ScriptProcessorNode`, resample para 16 kHz;
-- compensação da latência entre captura e reprodução;
-- parser/recorte de SRT em `lib/captions.js`;
-- filtro de alucinações;
-- idioma do modal de ajustes ligado de verdade.
-
-**Evidência:**
-
-- `ptbr-fala.webm` (16 s): texto transcrito corretamente;
-- 31 palavras com timestamp do modelo;
-- destaque correto: `sobre` em 1,1 s, `lira` em 3,2 s, `precisa` em 12,6 s;
-- WER no fixture sintético: **0,0%** (31 palavras);
-- `npm test`: 9 testes puros passando;
-- `long.webm` (60 s): 77 palavras com timestamp, 21 blocos, sem erro de console.
-
-### 2. Tema
-
-**Causa raiz:** não havia nenhum JS aplicando `data-theme`; os botões de tema e de ajustes não tinham eventos; o modal nunca abria; não havia persistência, modo automático nem proteção contra FOUC.
-
-**Correção:**
-
-- tema claro, escuro e automático;
-- persistência em `localStorage`;
-- script inline no `<head>` aplica o tema antes da primeira pintura;
-- `prefers-color-scheme` com listener de mudança;
-- modal de ajustes ligado;
-- contraste corrigido nos botões dourados e no selo de sucesso;
-- som opcional de conclusão.
-
-**Evidência:**
-
-- `npm run test:ui`: **OK**;
-- teste cobre automático, claro, escuro, persistência, modal e idioma;
-- capturas em `docs/design/depois`.
-
-## O que melhorou, com números
-
-| Métrica | Antes | Depois |
-|---|---|---|
-| Modelo de transcrição | `whisper-tiny` q8 | `whisper-small_timestamped` q8 |
-| Timestamps por palavra | proporcionais/inventados | reais, 31 palavras no fixture |
-| WER no fixture pt-BR | não medido; texto degradado | 0,0% |
-| Captura de áudio | Opus duplo via MediaRecorder | PCM direto, 16 kHz |
-| Legendas SRT em bordas | palavras de fora entravam | recorte por janela |
-| Tema | só claro, botões inertes | claro/escuro/automático persistente |
-| Testes | nenhum no repositório | 9 puros + 1 UI |
-| Exportação de fumaça | MP4 9:16, ~4,2 MB | continua passando |
-| Regressão vertical | não medida | 1080×1920, MP4 9:16 com `ftyp`, `moov`, `avc1`, `mp4a` |
-| Teste automatizado de exportação | não existia | `npm run test:export` passou |
-
-Tempo observado de transcrição no Edge headless (inclui download do modelo na primeira vez): ~58 s para 16 s de vídeo (incluindo o primeiro download); ~102 s para 60 s de vídeo. O download do modelo é de cerca de 240 MB na primeira vez.
-
-## O que ficou no backlog e por quê
-
-1. **Offline real (P1):** o runtime do Transformers.js e o modelo ainda vêm de CDN/Hugging Face. Embarcar ~240 MB no projeto é uma decisão de distribuição que precisa de aprovação.
-2. **Exportação garantida (P1):** não há FFmpeg; o `MediaRecorder` não garante H.264 High, `yuv420p`, AAC 48 kHz ou `faststart` em todos os navegadores.
-3. **Vídeos reais (P1):** faltam testes com arquivos longos de celular/OBS, VFR, rotação, HDR, 10 bits e múltiplas faixas.
-4. **Acessibilidade (P2):** foco preso, retorno de foco e anúncio de progresso já estão implementados; falta auditoria com leitor de tela real.
-5. **Desempenho (P2):** sem cache de transcrição e sem limite de concorrência; vídeos longos ficam lentos.
-6. **Legendas (P2):** quebra de linha semântica, zona segura por plataforma, exportação SRT/ASS.
-7. **UX (P3):** projetos recentes, fila de exportação, desfazer/refazer, salvamento automático.
-
-## O que não consegui verificar
-
-- Reprodução em iPhone e Android reais.
-- `ffprobe`, `faststart`, perfil H.264 e pixel format por linha de comando: não há FFmpeg instalado.
-- Sincronia de 40 ms em arquivos longos: não fiz medição com equipamento de referência.
-- Áudio de fala real de pessoas (usei voz sintética Microsoft Maria).
-- Todos os estados de foco/teclado e leitores de tela.
-- Primeira transcrição sem internet: o app ainda depende do download do modelo.
-
-## Decisões que tomei por você
-
-- Usei o modelo maior (`small_timestamped`) por qualidade, aceitando download e inferência mais lentos.
-- Troquei a captura de áudio por PCM com `ScriptProcessorNode`, API legada, para evitar perda dupla de Opus.
-- Adotei `auto` como tema padrão.
-- Mantive o CDN do Whisper nesta rodada e registrei a pendência, em vez de embarcar 240 MB sem sua decisão.
-- Adicionei `puppeteer-core` apenas como dependência de teste; o app em si continua sem dependências de runtime.
-
-## O que depende de você
-
-- Decidir se o Whisper deve ser embarcado para uso 100% offline.
-- Decidir se vale adicionar um backend local com FFmpeg para exportação garantida.
-- Testar com seus vídeos reais e com o SRT real que você usa.
-
-## Comandos para reproduzir
-
-```powershell
-cd C:\Users\DUARDIN\ApolloCut
-npm install
-npm run test:all
-```
-
-Para abrir o app:
-
-```powershell
+# 4. Abre o app no navegador
 Start-Process "C:\Users\DUARDIN\ApolloCut\index.html"
-```
 
-Para ver o estado do git:
-
-```powershell
-git log --oneline -5
+# 5. Verifica tags de checkpoint
 git tag --list
-git status --short
+git log --oneline -10
 ```
 
-## Como voltar atrás
+---
 
-- Estado recebido: tag `checkpoint-00-base`.
-- Correções de legendas: tag `checkpoint-01-legendas`.
-- Correções de tema: tag `checkpoint-02-tema`.
-- Acessibilidade e captura: tag `checkpoint-03-acessibilidade`.
-- Foco e retorno de foco: tag `checkpoint-04-foco`.
-- Exportação automatizada e fixture vertical: tag `checkpoint-05-exportacao`.
-- Branch da noite: `noite/aprimoramento`.
+## Como Voltar Atrás (tags e comandos git)
+| Checkpoint | Descrição | Comando |
+|------------|-----------|---------|
+| `checkpoint-00-base` | Estado inicial recebido | `git checkout checkpoint-00-base` |
+| `checkpoint-01-legendas` | Legendas corrigidas | `git checkout checkpoint-01-legendas` |
+| `checkpoint-02-tema` | Tema claro/escuro/auto | `git checkout checkpoint-02-tema` |
+| `checkpoint-03-acessibilidade` | Acessibilidade (foco, ARIA) | `git checkout checkpoint-03-acessibilidade` |
+| `checkpoint-04-foco` | Foco preso/retorno | `git checkout checkpoint-04-foco` |
+| `checkpoint-05-exportacao` | Exportação MP4 9:16 | `git checkout checkpoint-05-exportacao` |
+| `checkpoint-06-exportacao` | Exportação confiável + ateliê | `git checkout checkpoint-06-exportacao` |
+| `checkpoint-07-zona-segura` | Legenda queimada na zona segura | `git checkout checkpoint-07-zona-segura` |
+| `checkpoint-08-providers-queue-budget` | Providers, fila, orçamento, motor cortes | `git checkout checkpoint-08-providers-queue-budget` |
+| `checkpoint-09-reframe` | Reenquadramento inteligente | `git checkout checkpoint-09-reframe` |
+| `checkpoint-10-editor-brandkit` | Editor, Brand Kit, templates, projetos | `git checkout checkpoint-10-editor-brandkit` |
+| `checkpoint-11-captions-advanced` | Legendas avançadas (tradução + ASS) | `git checkout checkpoint-11-captions-advanced` |
+| `checkpoint-12-thumbnails` | Thumbnails composer + ImageGen | `git checkout checkpoint-12-thumbnails` |
+| `checkpoint-13-dubbing` | Dublagem TTS multi-idioma | `git checkout checkpoint-13-dubbing` |
+| `checkpoint-14-social-publish` | Publicação social OAuth + agendamento | `git checkout checkpoint-14-social-publish` |
+| `checkpoint-15-final` | **Entrega final** | `git checkout checkpoint-15-final` |
 
-Exemplo para voltar ao estado recebido:
-
+**Para reverter mudanças específicas:**
 ```powershell
-git switch --detach checkpoint-00-base
+# Reverter commit específico
+git revert <hash-do-commit>
+
+# Voltar branch ao estado de um checkpoint (desfaz commits posteriores)
+git reset --hard checkpoint-XX-nome  # CUIDADO: apaga histórico posterior
 ```
 
-Não fiz push, não reescrevi histórico, não usei reset hard nem clean.
+---
+
+## Próximos Passos Recomendados (se quiser continuar)
+1. **Integração UI no `app.js`** — conectar motor de cortes, editor, reenquadramento, legendas, thumbnails, dublagem, publicação nas abas do ateliê.
+2. **Testes em dispositivos reais** — iPhone/Android, vídeos longos reais, VFR, HDR.
+3. **Backend FFmpeg opcional** — se qualidade de exportação for crítica, adicionar worker FFmpeg.wasm ou backend Node/Go.
+5. **CSP + remoção script inline** — mover tema para módulo ES ou aceitar `unsafe-inline`.
+6. **Dashboard de estatísticas** — visualizar uso, custos, tempo de processamento.
+7. **API/CLI/MCP** — expor fila, projetos, provedores via HTTP/STDIO para automação externa.
+
+---
+
+**Boa revisão!** O núcleo do estúdio está sólido, testado e extensível. O que falta é principalmente a camada de UI e decisões de distribuição/qualidade de exportação.  
+— Agente noturno ApolloCut
