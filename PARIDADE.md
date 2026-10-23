@@ -9,7 +9,7 @@ Branch: `funcionalidades/estudio`
 | # | Funcionalidade | Categoria | Estado | Evidência | Limitações conhecidas |
 |---|----------------|-----------|--------|-----------|------------------------|
 | 1 | Cortes automáticos (arquivo, pasta monitorada) | A | **Parcial** | `src/core/cut-engine.js`: pipeline completo local; fake provider para testes | Link (YouTube/Drive) = Cat. B; vídeos >1h testados em chunks; heurística sem LLM |
-| 2 | Legendas automáticas (estilos, palavra por palavra, destaque, tradução, export SRT/ASS) | A | **Parcial** | `lib/captions.js` + 9 testes; UI de legendas no ateliê | Tradução = Cat. B (TranslationProvider); export ASS não implementado |
+| 2 | Legendas automáticas (estilos, palavra por palavra, destaque, tradução, export SRT/ASS) | A/B | **Implementado** | `src/core/captions-advanced.js`: export SRT/ASS/VTT, TranslationProvider, bulk translate | UI no ateliê pendente; integração com editor |
 | 3 | Dublagem de áudio com IA (vários idiomas) | B | **Não iniciado** | `src/providers/interfaces.js` + fake/real TTSProvider | Requer ElevenLabs/outro TTS; sync com vídeo |
 | 4 | Reenquadramento inteligente 16:9→9:16 | A | **Implementado** | `src/core/reframe-engine.js`: YuNet, tracking, 6 layouts, zonas seguras, render | YuNet carrega ONNX via CDN na 1ª vez; MediaPipe fallback pendente |
 | 5 | Editor de cortes, edição em massa, Brand Kit, templates | A | **Implementado** | `src/core/editor.js`: timeline, split/join, bulk edit, Brand Kit, templates, projetos | UI no ateliê pendente; integração com app.js |
@@ -45,7 +45,7 @@ Branch: `funcionalidades/estudio`
 | 3 | Motor de cortes com IA | ✅ | `checkpoint-08-providers-queue-budget` (incluído) |
 | 4 | Reenquadramento inteligente | ✅ | `checkpoint-09-reframe` |
 | 5 | Editor, edição em massa, Brand Kit, templates | ✅ | `checkpoint-10-editor-brandkit` |
-| 6 | Legendas avançadas (tradução, ASS) | ⏳ | `checkpoint-12-legendas-avancadas` |
+| 6 | Legendas avançadas (tradução, ASS) | ✅ | `checkpoint-11-captions-advanced` |
 | 7 | Compositor thumbnails + provedor imagem | ⏳ | `checkpoint-13-thumbnails` |
 | 8 | Dublagem (TTS) | ⏳ | `checkpoint-14-dublagem` |
 | 9 | Agendamento/publicação (OAuth) | ⏳ | `checkpoint-15-agendamento` |
@@ -69,8 +69,7 @@ Branch: `funcionalidades/estudio`
 
 ## Próximos Checkpoints Planejados
 
-- `checkpoint-11-editor-ui` — Integração UI motor cortes + reenquadramento no ateliê
-- `checkpoint-12-legendas-avancadas` — Tradução + export ASS
+- `checkpoint-12-editor-ui` — Integração UI motor cortes + reenquadramento + editor no ateliê
 - `checkpoint-13-thumbnails` — Compositor + ImageGenProvider
 - `checkpoint-14-dublagem` — TTS (ElevenLabs fake/real)
 - `checkpoint-15-agendamento` — SocialPublishProvider + OAuth

@@ -90,17 +90,24 @@ Próximo passo exato:
 - Integração com reenquadramento: `computeCutReframe` por corte, `renderCutReframed` para exportação.
 - Arquivo: `src/core/editor.js` (exporta `createProject`, `analyzeProjectCuts`, `bulkEditCuts`, `applyTemplate`, `updateBrandKit`, `enqueueBatchExportJob`, etc.).
 
+**Legendas Avançadas: Tradução + Export ASS/VTT (Item 6 — Categoria A/B):**
+- Exportação SRT, ASS (com estilos, karaoke, posicionamento), VTT.
+- TranslationProvider (fake + real) com batch, preserveTiming.
+- Tradução em massa de cortes (bulkTranslateCuts), export por corte (SRT/ASS/VTT).
+- Estilos de legenda integrados com Brand Kit (ode, estrofe, marmore, ditirambo).
+- Arquivo: `src/core/captions-advanced.js` (exporta `exportSRT`, `exportASS`, `exportVTT`, `translateCaptions`, `bulkTranslateCuts`, etc.).
+
 **Testes:** suíte existente passa (`npm run test:all` — 9 legendas + UI tema + exportação 1080×1920 9.98s).
 
 ### Em andamento
 - Integração UI do motor de cortes + reenquadramento + editor no `app.js` (abas "Cortes", "Enquadramento", "Editor", painel de Brand Kit).
 - Testes automatizados do editor (usando fake providers).
 
-### Próximo passo exato (Item 6 — Legendas Avançadas: Tradução + Export ASS)
-1. TranslationProvider fake + real (integração com LibreTranslate/DeepL/OpenAI).
-2. Exportação ASS (formato Advanced SubStation Alpha) com estilos, posicionamento, karaoke.
-3. UI no ateliê: aba "Legendas" com tradução, edição de estilo, export SRT/ASS.
-4. Integração com editor: bulk-edit de estilo de legenda, tradução em massa.
+### Próximo passo exato (Item 7 — Compositor Thumbnails + ImageGenProvider)
+1. Compositor de thumbnails offline (já existe) + ImageGenProvider (fake/real).
+2. UI no ateliê: geração de capas por IA, edição com imagem de referência.
+3. Integração com editor: bulk-generate thumbnails para cortes aprovados.
+4. Templates de thumbnail por tipo de conteúdo.
 
 ## Backlog (ordem de prioridade)
 
