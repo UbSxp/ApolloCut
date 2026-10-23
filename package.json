@@ -2,6 +2,7 @@
   "name": "apollocut",
   "version": "0.2.0",
   "private": true,
+  "license": "UNLICENSED",
   "description": "Ateliê local de cortes verticais com legendas e exportação no navegador.",
   "scripts": {
     "check": "node --check app.js && node --check lib/captions.js",
@@ -11,6 +12,6 @@
     "test:all": "npm run check && npm run test && npm run test:ui && npm run test:export"
   },
   "devDependencies": {
-    "puppeteer-core": "^23.11.1"
+    "puppeteer-core": "^25.16.0"
   }
 }

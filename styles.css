@@ -165,6 +165,8 @@ body {
 }
 
 body.studio-open { background: var(--bg); }
+body.studio-open .site-header,
+body.studio-open .site-footer { display: none; }
 body.modal-open { overflow: hidden; }
 body.is-processing .ambient-rays,
 body.is-processing .ambient-dust { animation-play-state: paused; opacity: 0.35; }

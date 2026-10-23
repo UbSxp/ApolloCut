@@ -82,6 +82,7 @@
     cover: { frame: null, time: 0, token: 0 },
     kit: null,
     ui: { tab: "scene", lastFocus: null },
+    loadToken: 0,
     settings: { ...DEFAULT_SETTINGS },
     captionView: { group: -1, clipId: null, ref: null },
     playerRaf: 0,
@@ -120,15 +121,22 @@
     const el = document.createElement("div");
     el.className = `toast${type === "error" ? " error" : ""}`;
     el.textContent = message;
+    el.setAttribute("role", type === "error" ? "alert" : "status");
+    el.tabIndex = 0;
     els.toasts.append(el);
-    const timer = setTimeout(() => {
-      el.classList.add("out");
-      setTimeout(() => el.remove(), 260);
-    }, ms);
-    el.addEventListener("click", () => {
+    let timer = 0;
+    const dismiss = () => {
       clearTimeout(timer);
       el.classList.add("out");
       setTimeout(() => el.remove(), 220);
+    };
+    timer = setTimeout(dismiss, ms);
+    el.addEventListener("click", dismiss);
+    el.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        dismiss();
+      }
     });
   }
 
@@ -269,8 +277,9 @@
     if (meta) meta.setAttribute("content", THEME_META[theme]);
     document.querySelectorAll(".js-theme").forEach((button) => {
       button.setAttribute("aria-pressed", String(dark));
-      button.setAttribute("aria-label", dark ? "Mudar para o dia" : "Mudar para a noite");
-      button.setAttribute("title", dark ? "Mudar para o dia" : "Mudar para a noite");
+      const label = dark ? "Tema escuro ativo. Mudar para o dia" : "Tema claro ativo. Mudar para a noite";
+      button.setAttribute("aria-label", label);
+      button.setAttribute("title", label);
       const use = button.querySelector("use");
       if (use) use.setAttribute("href", dark ? "#i-sun" : "#i-moon");
     });
@@ -317,11 +326,12 @@
     if (!els.opening || els.opening.hidden || els.opening.classList.contains("is-leaving")) return;
     els.opening.classList.add("is-leaving");
     els.opening.setAttribute("aria-hidden", "true");
+    const wait = state.settings.reducedMotion || window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 60 : 640;
     setTimeout(() => {
       const hadFocus = els.opening.contains(document.activeElement);
       els.opening.hidden = true;
       if (hadFocus && els.openStudioBtn) els.openStudioBtn.focus({ preventScroll: true });
-    }, 640);
+    }, wait);
   }
 
   function showStudio() {
@@ -331,6 +341,7 @@
     document.body.classList.add("studio-open");
     updateHeaderCta();
     window.scrollTo(0, 0);
+    requestAnimationFrame(() => els.studioScreen.focus({ preventScroll: true }));
   }
 
   function showLanding() {
@@ -340,6 +351,7 @@
     document.body.classList.remove("studio-open");
     updateHeaderCta();
     window.scrollTo(0, 0);
+    requestAnimationFrame(() => els.openStudioBtn.focus({ preventScroll: true }));
   }
 
   function setTab(tab) {
@@ -472,11 +484,14 @@
       return;
     }
 
+    const token = state.loadToken + 1;
+    state.loadToken = token;
     pausePreview();
     resetFilmState();
     const oldUrl = state.url;
     state.file = file;
     state.url = URL.createObjectURL(file);
+    const myUrl = state.url;
     state.ready = false;
     state.duration = 0;
     state.width = 0;
@@ -505,23 +520,33 @@
     try {
       await waitForMetadata(els.previewVideo, 30000);
     } catch (_) {
+      if (token !== state.loadToken) return;
       els.frameEmpty.innerHTML = "O navegador não conseguiu abrir este vídeo.<br>Tente um MP4 com H.264.";
       setBadge("Formato não suportado");
       toast("Este formato não abriu no navegador. Prefira MP4 (H.264).", "error", 7000);
       els.fileMeta.textContent = `${fileExt(file.name)} · ilegível neste navegador`;
+      URL.revokeObjectURL(myUrl);
+      if (oldUrl) URL.revokeObjectURL(oldUrl);
+      if (state.url === myUrl) state.url = null;
       return;
     }
+    if (token !== state.loadToken) return;
 
     state.duration = await resolveVideoDuration(els.previewVideo);
+    if (token !== state.loadToken) return;
     state.width = els.previewVideo.videoWidth || 0;
     state.height = els.previewVideo.videoHeight || 0;
 
     if (!state.duration || !state.width || !state.height) {
       els.frameEmpty.innerHTML = "O vídeo não informou duração ou dimensões.<br>Tente outro arquivo.";
       setBadge("Vídeo incompleto");
+      URL.revokeObjectURL(myUrl);
+      if (oldUrl) URL.revokeObjectURL(oldUrl);
+      if (state.url === myUrl) state.url = null;
       return;
     }
 
+    if (token !== state.loadToken) return;
     state.ready = true;
     els.frame.classList.add("ready");
     els.frameEmpty.hidden = true;
@@ -542,6 +567,7 @@
 
     if (oldUrl) setTimeout(() => URL.revokeObjectURL(oldUrl), 1500);
     toast("Filme aberto no ateliê. O arquivo não saiu do seu computador.");
+    requestAnimationFrame(() => els.studioScreen.focus({ preventScroll: true }));
   }
 
   /* ---------- player ---------- */
@@ -594,7 +620,10 @@
     }
     setRangeFill(els.seekRange);
     els.timeLabel.textContent = `${fmtTime(t)} / ${fmtTime(state.duration)}`;
-    els.playBtn.classList.toggle("playing", !els.previewVideo.paused);
+    const playing = !els.previewVideo.paused;
+    els.playBtn.classList.toggle("playing", playing);
+    els.playBtn.setAttribute("aria-label", playing ? "Pausar" : "Reproduzir");
+    els.playBtn.setAttribute("title", playing ? "Pausar" : "Reproduzir");
   }
 
   function playerLoop() {
@@ -833,6 +862,7 @@
   function setAnalysisProgress(done, total, stage, pct) {
     const value = clamp(pct != null ? pct : (total ? (done / total) * 100 : 0), 0, 100);
     els.analysisBar.style.width = `${value}%`;
+    els.analysisBar.setAttribute("aria-valuenow", String(Math.round(value)));
     els.analysisPct.textContent = `${Math.round(value)}%`;
     if (stage) els.analysisStage.textContent = stage;
     els.analysisCounter.textContent = `${done} / ${total} quadros`;
@@ -1090,12 +1120,13 @@
       const card = document.createElement("article");
       card.className = "clip-card";
       card.dataset.id = clip.id;
-      card.tabIndex = 0;
-      card.setAttribute("role", "button");
-      card.setAttribute("aria-label", `Abrir ${clip.title}`);
 
       const thumb = document.createElement("div");
       thumb.className = "clip-thumb";
+      thumb.tabIndex = 0;
+      thumb.setAttribute("role", "button");
+      thumb.dataset.action = "open";
+      thumb.setAttribute("aria-label", `Abrir ${clip.title}`);
       if (clip.thumb) {
         const img = document.createElement("img");
         img.src = clip.thumb;
@@ -1131,7 +1162,13 @@
       const meta = document.createElement("div");
       meta.className = "clip-meta";
       const dur = Math.round(clip.length);
-      meta.innerHTML = `<span>${dur} s</span><i></i><span>${clip.reason}</span><i></i><span>${clip.score ? "potencial " + clip.score : "por tempo"}</span>`;
+      const durationLabel = document.createElement("span");
+      durationLabel.textContent = `${dur} s`;
+      const reasonLabel = document.createElement("span");
+      reasonLabel.textContent = clip.reason;
+      const scoreLabel = document.createElement("span");
+      scoreLabel.textContent = clip.score ? `potencial ${clip.score}` : "por tempo";
+      meta.append(durationLabel, document.createElement("i"), reasonLabel, document.createElement("i"), scoreLabel);
 
       const stateLine = document.createElement("span");
       stateLine.className = "clip-caption-state";
@@ -1214,6 +1251,10 @@
 
   async function importSrtFile(file) {
     if (!file) return;
+    if (file.size > 8 * 1024 * 1024) {
+      toast("Este arquivo de legendas é grande demais. Use um SRT ou VTT com menos de 8 MB.", "error", 7000);
+      return;
+    }
     try {
       const text = await file.text();
       const cues = parseSubtitles(text);
@@ -1346,6 +1387,7 @@
     });
     const value = clamp(Number(pct) || 0, 0, 100);
     els.whisperBar.style.width = `${value}%`;
+    els.whisperBar.setAttribute("aria-valuenow", String(Math.round(value)));
     els.whisperPct.textContent = `${Math.round(value)}%`;
     if (detail) els.whisperStage.textContent = detail;
   }
@@ -2328,7 +2370,8 @@
   function chooseExportMime() {
     if (!window.MediaRecorder) return "";
     const candidates = [
-      "video/mp4;codecs=avc1.42E01E,mp4a.40.2",
+      "video/mp4;codecs=avc1.640028,mp4a.40.2",
+      "video/mp4;codecs=avc1.4D401F,mp4a.40.2",
       "video/mp4;codecs=avc1,mp4a.40.2",
       "video/mp4",
       "video/webm;codecs=vp9,opus",
@@ -2338,13 +2381,37 @@
     return candidates.find((type) => MediaRecorder.isTypeSupported(type)) || "";
   }
 
+  function createExportRecorder(stream, preferredMime) {
+    const candidates = [preferredMime, ...[
+      "video/mp4;codecs=avc1.640028,mp4a.40.2",
+      "video/mp4;codecs=avc1,mp4a.40.2",
+      "video/mp4",
+      "video/webm;codecs=vp9,opus",
+      "video/webm;codecs=vp8,opus",
+      "video/webm",
+    ]].filter(Boolean);
+    for (const mimeType of [...new Set(candidates)]) {
+      try {
+        return new MediaRecorder(stream, {
+          mimeType,
+          videoBitsPerSecond: 7000000,
+          audioBitsPerSecond: 128000,
+        });
+      } catch (_) { /* tenta o próximo container/codec */ }
+    }
+    return new MediaRecorder(stream);
+  }
+
   function updateExportTag() {
     const clip = currentClip();
-    const sample = els.sampleExport.checked;
+    const sample = els.sampleExport.checked && clip && clip.length > 12.05;
     const duration = clip ? (sample ? Math.min(12, clip.length) : clip.length) : 0;
     els.exportTag.textContent = `${state.settings.ratio} · ${Math.round(duration)} s`;
     if (clip) {
       els.exportSub.textContent = `Corte ${ROMAN[clip.index]} · ${fmtTime(clip.start)}–${fmtTime(clip.end)} · ${clamp(state.settings.focus, 0, 100) < 34 ? "enquadramento à esquerda" : clamp(state.settings.focus, 0, 100) > 66 ? "enquadramento à direita" : "enquadramento central"}`;
+    }
+    if (!state.export.running && els.exportStart) {
+      els.exportStart.textContent = sample ? "Renderizar amostra de 12 s" : "Renderizar corte";
     }
   }
 
@@ -2387,6 +2454,7 @@
   function updateExportProgress(pct, label) {
     const value = clamp(Number(pct) || 0, 0, 100);
     els.exportBar.style.width = `${value}%`;
+    els.exportBar.setAttribute("aria-valuenow", String(Math.round(value)));
     els.exportPct.textContent = `${Math.round(value)}%`;
     if (label) els.exportStatus.textContent = label;
   }
@@ -2431,6 +2499,8 @@
         upper: true,
         text: "#fff9ec",
         bg: "#c9a45c",
+        activeBg: "#c9a45c",
+        bgAll: false,
         activeText: "#17130f",
         underline: false,
         spacing: 0.006,
@@ -2442,6 +2512,8 @@
         upper: false,
         text: "#fff8e9",
         bg: null,
+        activeBg: null,
+        bgAll: false,
         activeText: "#ffffff",
         underline: true,
         spacing: 0,
@@ -2451,8 +2523,10 @@
         family: '"Manrope", sans-serif',
         weight: 800,
         upper: true,
-        text: "#ffffff",
+        text: "#17130f",
         bg: "#f4eee2",
+        activeBg: "#c9a45c",
+        bgAll: true,
         activeText: "#17130f",
         underline: false,
         spacing: 0.01,
@@ -2464,7 +2538,9 @@
         upper: true,
         text: "#fff4e3",
         bg: "#a84e2c",
-        activeText: "#fff4e3",
+        activeBg: "#f4eee2",
+        bgAll: true,
+        activeText: "#a95434",
         underline: false,
         spacing: 0.01,
         scale: 0.92,
@@ -2472,7 +2548,7 @@
     };
     const st = styles[styleKey] || styles.ode;
     let fontSize = Math.min(w * 0.074, h * 0.096) * st.scale;
-    const maxWidth = w * 0.84;
+    const maxWidth = w * 0.88;
     const words = group.words.map((word) => ({
       ...word,
       text: st.upper ? word.text.toUpperCase() : word.text,
@@ -2509,11 +2585,10 @@
 
     const lineHeight = fontSize * 1.12;
     const portrait = h >= w;
-    const bottomCenter = h * (portrait ? 0.805 : 0.835);
-    const firstY = bottomCenter - ((lines.length - 1) * lineHeight) / 2;
+    const blockBottom = h * (portrait ? 0.92 : 0.93);
+    const firstY = blockBottom - (lines.length - 1) * lineHeight - lineHeight / 2;
     const space = ctx.measureText(" ").width;
     const padX = fontSize * 0.13;
-    const padY = fontSize * 0.075;
 
     setFont(fontSize);
     ctx.textBaseline = "middle";
@@ -2528,12 +2603,13 @@
       line.forEach((word, index) => {
         const width = widths[index];
         const active = local >= word.start - 0.015 && local <= word.end + 0.015;
+        const hasBg = Boolean(st.bg) && (active || st.bgAll);
 
-        if (active && st.bg) {
+        if (hasBg) {
           ctx.save();
           ctx.shadowColor = "transparent";
           ctx.shadowBlur = 0;
-          ctx.fillStyle = st.bg;
+          ctx.fillStyle = active && st.activeBg ? st.activeBg : st.bg;
           roundRect(
             ctx,
             x - padX,
@@ -2547,7 +2623,7 @@
         }
 
         ctx.save();
-        if (!active || !st.bg) {
+        if (!hasBg) {
           ctx.shadowColor = "rgba(0,0,0,0.78)";
           ctx.shadowBlur = fontSize * 0.16;
           ctx.shadowOffsetY = fontSize * 0.035;
@@ -2609,6 +2685,7 @@
     els.downloadLink.href = state.export.url;
     els.downloadLink.download = name;
     els.exportResult.hidden = false;
+    requestAnimationFrame(() => els.downloadLink.focus({ preventScroll: true }));
     els.exportDone.textContent = "Corte renderizado";
     els.exportFileInfo.textContent = `${ext.toUpperCase()} · ${state.settings.ratio} · ${Math.round(duration)} s · ${fmtBytes(blob.size)}`;
     updateExportProgress(100, "Concluído.");
@@ -2630,8 +2707,14 @@
   }
 
   function cleanupExport() {
+    if (state.export.recorder && state.export.recorder.state !== "inactive") {
+      try { state.export.recorder.stop(); } catch (_) {}
+    }
+    state.export.recorder = null;
     if (state.export.video) {
       try { state.export.video.pause(); } catch (_) {}
+      state.export.video.removeAttribute("src");
+      state.export.video.load();
       state.export.video.remove();
       state.export.video = null;
     }
@@ -2639,7 +2722,6 @@
       try { state.export.actx.close(); } catch (_) {}
       state.export.actx = null;
     }
-    state.export.recorder = null;
   }
 
   function cancelExport() {
@@ -2663,7 +2745,8 @@
       toast("Este navegador não consegue renderizar o clipe. Use Edge ou Chrome.", "error", 7000);
       return;
     }
-    const sample = els.sampleExport.checked;
+    const sampleRequested = els.sampleExport.checked;
+    const sample = sampleRequested && clip.length > 12.05;
     const duration = sample ? Math.min(12, clip.length) : clip.length;
     if (duration < 0.5) {
       toast("Este corte é curto demais para renderizar.", "error");
@@ -2689,12 +2772,16 @@
     els.exportCancel.textContent = "Cancelar";
     updateExportProgress(0, `Preparando ${sample ? "a amostra" : "o corte"}…`);
 
+    const ensure = () => {
+      if (state.export.cancel) throw new Error("cancelled");
+    };
     let exportVideo = null;
     let actx = null;
     let recorder = null;
     let stream = null;
     try {
       await loadCanvasFonts();
+      ensure();
       exportVideo = document.createElement("video");
       exportVideo.src = state.url;
       exportVideo.playsInline = true;
@@ -2709,9 +2796,11 @@
       exportVideo.pause();
       exportVideo.muted = false;
       await waitForMetadata(exportVideo, 20000);
+      ensure();
       await resolveVideoDuration(exportVideo);
-      await seekVideo(exportVideo, clip.start + 0.02, 9000);
-      if (state.export.cancel) throw new Error("cancelled");
+      ensure();
+      await seekVideo(exportVideo, clip.start, 9000);
+      ensure();
 
       const canvas = document.createElement("canvas");
       canvas.width = w;
@@ -2720,6 +2809,8 @@
 
       actx = new (window.AudioContext || window.webkitAudioContext)();
       await actx.resume();
+      ensure();
+      if (actx.state !== "running") throw new Error("audio-suspended");
       state.export.actx = actx;
       const source = actx.createMediaElementSource(exportVideo);
       const dest = actx.createMediaStreamDestination();
@@ -2731,16 +2822,7 @@
       dest.stream.getAudioTracks().forEach((track) => stream.addTrack(track));
       if (!stream.getVideoTracks().length) throw new Error("no-video-track");
 
-      const options = {
-        mimeType: mime,
-        videoBitsPerSecond: 7000000,
-        audioBitsPerSecond: 128000,
-      };
-      try {
-        recorder = new MediaRecorder(stream, options);
-      } catch (_) {
-        recorder = new MediaRecorder(stream, { mimeType: mime });
-      }
+      recorder = createExportRecorder(stream, mime);
       state.export.recorder = recorder;
       const chunks = [];
       const stopped = new Promise((resolve) => {
@@ -2749,16 +2831,18 @@
       recorder.addEventListener("dataavailable", (event) => {
         if (event.data && event.data.size) chunks.push(event.data);
       });
-      recorder.start(250);
 
       try {
         await exportVideo.play();
       } catch (_) {
         throw new Error("play-blocked");
       }
+      ensure();
       updateExportProgress(0, `Renderizando ${state.settings.ratio} · ${Math.round(duration)} s`);
       const startedAt = performance.now();
+      recorder.start(250);
       let stoppedOnce = false;
+      let recordedLocal = 0;
       await new Promise((resolve) => {
         const stop = () => {
           if (stoppedOnce) return;
@@ -2774,8 +2858,9 @@
             stop();
             return;
           }
-          const elapsed = exportVideo.currentTime - (clip.start + 0.02);
+          const elapsed = exportVideo.currentTime - clip.start;
           const local = clamp(elapsed, 0, duration);
+          recordedLocal = Math.max(recordedLocal, local);
           drawExportFrame(canvas, exportVideo, clip, local, { captions: burn, watermark, style: state.settings.style });
           updateExportProgress(
             (local / duration) * 100,
@@ -2796,17 +2881,32 @@
 
       await stopped;
       if (state.export.cancel) throw new Error("cancelled");
-      const blob = new Blob(chunks, { type: mime });
+      const captured = clamp(recordedLocal, 0, duration);
+      if (captured < duration - 0.25) throw new Error("incomplete-export");
+      const actualMime = recorder.mimeType || mime;
+      const blob = new Blob(chunks, { type: actualMime });
       if (!blob.size) throw new Error("empty-blob");
-      finishExport(blob, mime, duration, clip, sample);
+      finishExport(blob, actualMime, captured, clip, sample);
     } catch (error) {
       if (error && error.message === "cancelled") {
         updateExportProgress(0, "Renderização cancelada.");
         toast("Renderização cancelada. Nenhum arquivo foi baixado.");
       } else {
         console.error(error);
-        els.exportStatus.textContent = "A renderização falhou.";
-        toast("Não foi possível renderizar. Tente a amostra de 12 s ou outro navegador.", "error", 7000);
+        const code = error && error.message;
+        if (code === "incomplete-export") {
+          els.exportStatus.textContent = "A renderização ficou incompleta.";
+          toast("O navegador não entregou o corte inteiro. Tente novamente com a amostra de 12 s.", "error", 7000);
+        } else if (code === "audio-suspended") {
+          els.exportStatus.textContent = "O áudio não iniciou.";
+          toast("O navegador bloqueou o áudio. Clique em Renderizar novamente.", "error", 7000);
+        } else if (code === "play-blocked") {
+          els.exportStatus.textContent = "O vídeo não iniciou.";
+          toast("O navegador bloqueou a reprodução. Clique em Renderizar novamente.", "error", 7000);
+        } else {
+          els.exportStatus.textContent = "A renderização falhou.";
+          toast("Não foi possível renderizar. Tente a amostra de 12 s ou outro navegador.", "error", 7000);
+        }
       }
       els.exportStart.disabled = false;
       els.exportStart.textContent = "Tentar novamente";
@@ -3072,9 +3172,37 @@
 
     els.quickCaptionsBtn.addEventListener("click", () => {
       setTab("captions");
-      if (window.innerWidth < 1120) els.tabCaptions.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (window.innerWidth < 1120) {
+        els.tabCaptions.scrollIntoView({ behavior: state.settings.reducedMotion ? "auto" : "smooth", block: "start" });
+      }
     });
     els.quickCoverBtn.addEventListener("click", openCover);
+
+    const handleClipAction = (target) => {
+      const card = target.closest(".clip-card");
+      if (!card) return;
+      const clip = state.clips.find((item) => item.id === card.dataset.id);
+      if (!clip) return;
+      const action = target.closest("[data-action]");
+      const name = action ? action.dataset.action : "open";
+      if (name === "open") {
+        selectClip(clip.id, true);
+        return;
+      }
+      selectClip(clip.id, false);
+      setTab("publish");
+      if (name === "cover") openCover();
+      if (name === "export") openExport();
+    };
+    els.clipGrid.addEventListener("click", (event) => handleClipAction(event.target));
+    els.clipGrid.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      const action = event.target.closest("[data-action]");
+      if (!action) return;
+      event.preventDefault();
+      event.stopPropagation();
+      handleClipAction(action);
+    });
 
     els.importSrtBtn.addEventListener("click", () => {
       els.srtInput.value = "";
@@ -3229,7 +3357,8 @@
     els.samplerVideo.muted = true;
     setTab("scene");
     if (els.opening) {
-      const delay = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 350 : 1500;
+      const reduceMotion = state.settings.reducedMotion || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const delay = reduceMotion ? 350 : 1500;
       setTimeout(dismissOpening, delay);
     }
   }

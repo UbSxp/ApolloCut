@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#F6EFE3" />
   <meta name="color-scheme" content="light dark" />
+  <meta name="referrer" content="no-referrer" />
   <title>ApolloCut — a arte de durar sessenta segundos</title>
   <meta name="description" content="Ateliê local de cortes: transforme longas-metragens em clipes verticais com legendas reais, capas e exportação MP4. Sem upload, sem créditos." />
   <link rel="icon" href="assets/brand/favicon.svg" type="image/svg+xml" />
@@ -90,7 +91,7 @@
       </span>
       <span class="opening-word">ApolloCut</span>
       <span class="opening-sub">ateliê de cortes</span>
-      <button class="opening-skip" id="openingSkip" type="button">Entrar no ateliê</button>
+      <button class="opening-skip" id="openingSkip" type="button" aria-label="Continuar para o ApolloCut">Continuar</button>
     </div>
   </div>
 
@@ -452,7 +453,7 @@
     </div>
   </footer>
 
-  <section class="studio" id="studioScreen" aria-label="Ateliê ApolloCut" hidden>
+  <section class="studio" id="studioScreen" role="main" tabindex="-1" aria-label="Ateliê ApolloCut" hidden>
     <div class="studio-rays" aria-hidden="true"></div>
 
     <header class="studio-header">
@@ -502,7 +503,7 @@
 
           <div class="stage">
             <div class="frame" id="frame" data-cap="ode">
-              <video id="previewVideo" playsinline preload="metadata"></video>
+              <video id="previewVideo" playsinline preload="metadata" aria-label="Prévia do corte selecionado"></video>
               <div class="frame-shade"></div>
               <div class="frame-captions" id="captions"></div>
               <div class="frame-note" id="frameCaptionNote" hidden>sem legendas</div>
@@ -598,7 +599,7 @@
                 <div><span class="panel-kicker">VOZ</span><h2>Legendas</h2></div>
               </div>
 
-              <div class="caption-status" id="captionStatus">
+              <div class="caption-status" id="captionStatus" role="status" aria-live="polite">
                 <span class="status-dot"></span>
                 <div><b id="captionStatusTitle">Sem legendas</b><p id="captionStatusText">Importe o SRT/VTT que acompanha o filme ou transcreva o corte.</p></div>
               </div>
@@ -709,7 +710,7 @@
       </div>
 
       <div class="progress-block">
-        <div class="progress-line"><span id="analysisBar"></span></div>
+        <div class="progress-line"><span id="analysisBar" role="progressbar" aria-label="Progresso da leitura" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span></div>
         <div class="progress-meta"><span id="analysisStage">Preparando o disco.</span><b id="analysisPct">0%</b></div>
       </div>
 
@@ -745,7 +746,7 @@
       <canvas class="wave" id="whisperWave" width="900" height="120" aria-hidden="true"></canvas>
 
       <div class="progress-block">
-        <div class="progress-line"><span id="whisperBar"></span></div>
+        <div class="progress-line"><span id="whisperBar" role="progressbar" aria-label="Progresso da transcrição" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span></div>
         <div class="progress-meta"><span id="whisperStage">Aguardando o início.</span><b id="whisperPct">0%</b></div>
       </div>
 
@@ -828,7 +829,7 @@
         </label>
         <label class="switch-row">
           <span>Amostra de 12 s <small>para testar rápido</small></span>
-          <input type="checkbox" id="sampleExport" checked />
+          <input type="checkbox" id="sampleExport" />
           <i aria-hidden="true"></i>
         </label>
         <label class="switch-row">
@@ -839,11 +840,11 @@
       </div>
 
       <div class="progress-block export-progress" id="exportProgress" hidden>
-        <div class="progress-line"><span id="exportBar"></span></div>
+        <div class="progress-line"><span id="exportBar" role="progressbar" aria-label="Progresso da exportação" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span></div>
         <div class="progress-meta"><span id="exportStatus">Preparando.</span><b id="exportPct">0%</b></div>
       </div>
 
-      <div class="export-result" id="exportResult" hidden>
+      <div class="export-result" id="exportResult" role="status" aria-live="polite" hidden>
         <span class="result-seal" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#i-check"></use></svg></span>
         <div class="result-text">
           <b id="exportDone">Corte renderizado</b>

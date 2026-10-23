@@ -52,6 +52,18 @@ const executablePath = fs.existsSync(EDGE) ? EDGE : CHROME;
     () => !document.getElementById("clipsSection").hidden && document.getElementById("analysisOverlay").hidden,
     { timeout: 120000 }
   );
+  const studioLayout = await page.evaluate(() => ({
+    top: document.getElementById("studioScreen").getBoundingClientRect().top,
+    header: getComputedStyle(document.querySelector(".site-header")).display,
+    footer: getComputedStyle(document.querySelector(".site-footer")).display
+  }));
+  assert.equal(studioLayout.top, 0);
+  assert.equal(studioLayout.header, "none");
+  assert.equal(studioLayout.footer, "none");
+
+  await page.evaluate(() => document.querySelector('#clipGrid .clip-card [data-action="cover"]').click());
+  await page.waitForFunction(() => !document.getElementById("coverOverlay").hidden, { timeout: 10000 });
+  await page.evaluate(() => document.getElementById("coverClose").click());
 
   await page.evaluate(() => document.querySelector('[data-tab="captions"]').click());
   const [srtChooser] = await Promise.all([page.waitForFileChooser({ timeout: 8000 }), page.click("#importSrtBtn")]);
@@ -81,8 +93,24 @@ const executablePath = fs.existsSync(EDGE) ? EDGE : CHROME;
   assert.equal(files.length, 1);
   assert.ok(files[0].bytes > 100000);
   assert.ok(files[0].ftyp || files[0].webm);
+
+  const exportedPage = await browser.newPage();
+  const exportedUrl = "file:///" + path.join(DOWNLOAD, files[0].name).replace(/\\/g, "/");
+  await exportedPage.goto(exportedUrl, { waitUntil: "load" });
+  await new Promise((resolve) => setTimeout(resolve, 800));
+  const playback = await exportedPage.evaluate(() => {
+    const video = document.querySelector("video");
+    return video ? { duration: video.duration, width: video.videoWidth, height: video.videoHeight, error: video.error && video.error.message } : null;
+  });
+  assert.ok(playback);
+  assert.ok(playback.duration > 9 && playback.duration < 11);
+  assert.equal(playback.width, 1080);
+  assert.equal(playback.height, 1920);
+  assert.equal(playback.error, null);
+  await exportedPage.close();
+
   assert.deepEqual(errors, []);
-  console.log(`Exportação: ${files[0].name} (${files[0].bytes} bytes, mp4=${files[0].ftyp}, avc1=${files[0].avc1}, mp4a=${files[0].mp4a})`);
+  console.log(`Exportação: ${files[0].name} (${files[0].bytes} bytes, ${playback.width}×${playback.height}, ${playback.duration.toFixed(2)} s, mp4=${files[0].ftyp}, avc1=${files[0].avc1}, mp4a=${files[0].mp4a})`);
   await browser.close();
 })().catch((error) => {
   console.error("FALHA", error);
