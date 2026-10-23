@@ -5,9 +5,9 @@ Branch: `noite/aprimoramento`
 Base recebida: `51b1885` (tag `checkpoint-00-base`)  
 Último commit de código: `1d9f21d` (tag `checkpoint-05-exportacao`); correções críticas em `2cb4b41` (tags `checkpoint-01-legendas` e `checkpoint-02-tema`); acessibilidade em `9d7700a` (`checkpoint-03-acessibilidade`) e `4b1ef37` (`checkpoint-04-foco`)
 
-## Rodada 06 — 23/10/2026 — commit `9652a16`
+## Rodada 06 — 23/10/2026 — commits `9652a16` e `9b6b7cf`
 
-Tag: `checkpoint-06-exportacao`.
+Tags: `checkpoint-06-exportacao` e `checkpoint-07-zona-segura`.
 
 Concluído:
 
@@ -28,6 +28,10 @@ Evidência:
 - Abertura automática: overlay fecha em 1,8 s; seletor abre; foco vai para o ateliê.
 - Vídeo mudo `tests/fixtures/sem-audio.webm` (720×1280, 5 s): importado, analisado e exportado em MP4 1080×1920 de 4,94 s, sem erro.
 - Quadro extraído do MP4 em 1,2 s mostra a legenda dentro da zona segura, com a palavra ativa em dourado.
+- Cancelamento durante a preparação e durante a gravação: overlay fecha, status “Renderização cancelada.”, resultado oculto e **nenhum arquivo** baixado.
+- Mobile 390×844: landing e ateliê com `scrollWidth` 390, sem overflow; header oculto e ateliê no topo.
+- Perfil H.264 lido do `avcC`: High (0x64), nível 4.2; `mvhd` do MP4 fragmentado registra duração 0, mas o Edge reproduz 9,94 s.
+- Limitação registrada: não há `ffprobe`/FFmpeg no PATH e não houve teste em iPhone/Android.
 
 Próximo passo exato:
 
@@ -36,6 +40,63 @@ Próximo passo exato:
 3. Reabrir o app com `Start-Process "C:\Users\DUARDIN\ApolloCut\index.html"`.
 
 ## Estado atual
+
+**Branch:** `funcionalidades/estudio` (base: `9b6b7cf` / `checkpoint-07-zona-segura`)  
+**Último commit:** `005aa60` — feat: arquitetura de provedores, fila, orçamento e motor de cortes (Item 2+3)  
+**Tag:** `checkpoint-08-providers-queue-budget`
+
+### Concluído nesta sessão
+
+**Arquitetura de Provedores (Categoria B — base para itens 3,6,7,8,9,10,11,12 + link):**
+- 8 interfaces tipadas (`src/providers/interfaces.js`): LLM, Transcription, Translation, TTS, ImageGen, VideoGen, VideoToVideo, SocialPublish — cada uma com capacidades, tabela de custo/unidade, validação, timeout, retry/backoff, cancelamento, erros PT-BR.
+- 8 **provedores fake** (`src/providers/fake-providers.js`): determinísticos, offline, sem chave — para testes automatizados, CI, desenvolvimento.
+- 6 **provedores reais (esqueletos)** (`src/providers/real-providers.js`): OpenAI (LLM, Whisper), ElevenLabs (TTS), Replicate (Image/Video), YouTube OAuth — **desativados** até usuário inserir chave.
+- Registro central (`src/providers/index.js`): carrega fakes + reais condicionais, API unificada (`getProviderFor`, `executeWithProvider`, `estimateCost`).
+
+**Fila Persistente (`src/queue/job-queue.js`):**
+- IndexedDB, 6 estados (`queued|running|paused|completed|failed|cancelled`), retomada ao abrir app.
+- Worker pool com limites GPU/CPU/rede, retry/backoff exponencial, progresso real por etapa, cancelamento, pausa/retomada.
+- Podas automáticas (idade/máximo), contadores por status.
+
+**Orçamento/Ledger (`src/budget/ledger.js`):**
+- IndexedDB, teto diário/mensal configurável, limiar de confirmação explícita.
+- Registro: data, provedor, operação, unidade, quantidade, custo estimado/real (BRL).
+- Relatórios por provedor/operação/unidade, poda automática (>90 dias).
+
+**Motor de Cortes com IA (Item 3 — Categoria A):**
+- Pipeline local: extrair áudio (WAV mono 16kHz) → transcrever (timestamps/palavra) → segmentar sentenças/tópicos → gerar candidatos → pontuar (hook, completude, densidade, energia, picos, perguntas, cena, rosto) → remover sobreposições → refinar bordas (fim de sentença + fade) → miniaturas.
+- Heurística local robusta; LLM opcional para ranquear/títulos (Categoria B).
+- Vídeos longos (10h): chunks com sobreposição, proxy visual, checkpoints, tempos globais consistentes.
+- Arquivo: `src/core/cut-engine.js` (exporta `analyzeVideoForCuts`, `enqueueAnalysisJob`, `analyzeWorker`).
+
+**Testes:** suíte existente passa (`npm run test:all` — 9 legendas + UI tema + exportação 1080×1920 9.98s).
+
+### Em andamento
+- Integração do motor de cortes no `app.js` (botão "Analisar com IA", painel de sugestões, prévia de miniaturas).
+- Testes automatizados do motor de cortes (usando fake providers).
+
+### Próximo passo exato (Item 4 — Reenquadramento Inteligente)
+1. Detector de rostos/ROI leve e offline (YuNet ONNX ou MediaPipe via WASM, licença verificada).
+2. Rastreamento com suavização (Kalman/EMA), reinício em mudança de cena, pista de fala (VAD + movimento boca).
+3. Layouts automáticos: 1 falante (acompanhamento), 2 falantes (split vertical), grupo/podcast (foco ativo), gameplay (jogo+câmera), aula (tela+apresentador), fallback (centralizado + blur).
+4. Zonas seguras por plataforma, saída 1080×1920 H.264 High yuv420p AAC faststart.
+5. Editor de enquadramento no ateliê (troca manual de layout, ajuste de ROI).
+
+## Backlog (ordem de prioridade)
+
+| # | Item | Categoria | Esforço | Notas |
+|---|------|-----------|---------|-------|
+| 1 | Integração UI do motor de cortes no ateliê | A | Médio | Botão "Analisar", cards de sugestão, miniaturas |
+| 2 | Reenquadramento inteligente (YuNet/MediaPipe) | A | Alto | Detector offline, layouts, zonas seguras |
+| 3 | Editor de enquadramento no ateliê | A | Médio | Troca layout, ajuste ROI, keyframes |
+| 4 | Legendas avançadas: tradução + export ASS | A/B | Médio | TranslationProvider fake + real, ASS writer |
+| 5 | Compositor thumbnails offline + provedor imagem | A/B | Baixo | Já tem compositor; adicionar ImageGenProvider |
+| 6 | Dublagem (TTS) | B | Médio | ElevenLabs fake + real, sync com vídeo |
+| 7 | Agendamento/publicação (OAuth) | B | Alto | SocialPublishProvider, tokens no keyring |
+| 8 | Monitoramento lives (Twitch/Kick) | B | Alto | yt-dlp/streamlink detection, polling |
+| 9 | Geração vídeo + troca personagem | B | Muito alto | Replicate/Runway/Luma, VideoToVideoProvider |
+| 10 | API local, CLI, MCP | B | Médio | Sobre fila + provedores |
+| 11 | Estatísticas de uso, polimento, docs | A | Baixo | Dashboard local, README, CHANGELOG |
 
 O app é estático: HTML, CSS e JavaScript no navegador, sem build e sem backend. O vídeo é lido pelo elemento `<video>`, a análise amostra quadros em canvas, a transcrição usa Transformers.js + Whisper local e a exportação usa `MediaRecorder` em tempo real.
 
