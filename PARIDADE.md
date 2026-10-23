@@ -14,7 +14,7 @@ Branch: `funcionalidades/estudio`
 | 4 | Reenquadramento inteligente 16:9→9:16 | A | **Implementado** | `src/core/reframe-engine.js`: YuNet, tracking, 6 layouts, zonas seguras, render | YuNet carrega ONNX via CDN na 1ª vez; MediaPipe fallback pendente |
 | 5 | Editor de cortes, edição em massa, Brand Kit, templates | A | **Implementado** | `src/core/editor.js`: timeline, split/join, bulk edit, Brand Kit, templates, projetos | UI no ateliê pendente; integração com app.js |
 | 6 | Cortes de lives (Twitch, Kick) | B | **Não iniciado** | `SocialPublishProvider` + yt-dlp/streamlink detection pendente | Importação por link = Cat. B |
-| 7 | Agendamento e publicação automática (OAuth) | B | **Não iniciado** | `SocialPublishProvider` esqueleto (YouTube) | Requer tokens OAuth no keyring |
+| 7 | Agendamento e publicação automática (OAuth) | B | **Implementado** | `src/core/social-publish.js`: OAuth YouTube/TikTok/Instagram/Kwai/Twitter, agendamento, contas | UI no ateliê pendente; provedores reais desativados |
 | 8 | Geração de vídeo com IA (texto/imagem → 9:16/16:9) | B | **Não iniciado** | `VideoGenerationProvider` (Replicate esqueleto) | Custo por segundo, múltiplos modelos |
 | 9 | Geração/edição de imagem com IA (capas, thumbnails, ref.) | A/B | **Implementado** | `src/core/thumbnails.js`: compositor offline + ImageGenProvider, templates, bulk-generate | UI no ateliê pendente; integração com editor |
 | 10 | Troca de personagem/cenário/estilo (vídeo-para-vídeo) | B | **Não iniciado** | `VideoToVideoProvider` esqueleto (Replicate) | Requer modelo video-to-video |
@@ -48,7 +48,7 @@ Branch: `funcionalidades/estudio`
 | 6 | Legendas avançadas (tradução, ASS) | ✅ | `checkpoint-11-captions-advanced` |
 | 7 | Compositor thumbnails + provedor imagem | ⏳ | `checkpoint-13-thumbnails` |
 | 8 | Dublagem (TTS) | ✅ | `checkpoint-13-dubbing` |
-| 9 | Agendamento/publicação (OAuth) | ⏳ | `checkpoint-15-agendamento` |
+| 9 | Agendamento/publicação (OAuth) | ✅ | `checkpoint-14-social-publish` |
 | 10 | Monitoramento lives | ⏳ | `checkpoint-16-lives` |
 | 11 | Geração vídeo + troca personagem | ⏳ | `checkpoint-17-geracao-video` |
 | 12 | API local, CLI, MCP | ⏳ | `checkpoint-18-api-cli-mcp` |
