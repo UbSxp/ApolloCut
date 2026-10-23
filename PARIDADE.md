@@ -1,72 +1,81 @@
-# Paridade de Funcionalidades — Classificação
+# Paridade de Funcionalidades — Classificação e Progresso
 
 Data: 23/10/2026  
-Base: commit `9b6b7cf` (tag `checkpoint-07-zona-segura`)  
+Base: commit `fb07e0d` (tag `checkpoint-09-reframe`)  
 Branch: `funcionalidades/estudio`
 
 ## Tabela de Classificação (conforme Parte 4)
 
 | # | Funcionalidade | Categoria | Estado | Evidência | Limitações conhecidas |
 |---|----------------|-----------|--------|-----------|------------------------|
-| 1 | Cortes automáticos (arquivo, pasta monitorada) | A | Parcial | `app.js`: análise visual + Whisper local; `tests/ui-export.test.js` passa | Link (YouTube/Drive) = Cat. B; vídeos >1h não testados; heurística de pontuação sem LLM |
-| 2 | Legendas automáticas (estilos, palavra por palavra, destaque, tradução, export SRT/ASS) | A | Parcial | `lib/captions.js` + 9 testes; UI de legendas no ateliê | Tradução = Cat. B (provedor externo); export ASS não implementado |
-| 3 | Dublagem de áudio com IA (vários idiomas) | B | Não iniciado | — | Requer provedor TTS (local ou externo); nenhum integrado |
-| 4 | Reenquadramento inteligente 16:9→9:16 (rostos, layouts, zonas seguras) | A | Não iniciado | — | Requer detector de rosto leve (YuNet/MediaPipe/OpenCV) offline |
-| 5 | Editor de cortes, edição em massa, Brand Kit, templates | A | Parcial | Ateliê com abas Cena/Legendas/Publicar; cards de corte funcionam | Edição em massa, Brand Kit, templates = pendentes |
-| 6 | Cortes de lives (Twitch, Kick) | B | Não iniciado | — | Importação por link = Cat. B; yt-dlp/streamlink não detectados |
-| 7 | Agendamento e publicação automática (OAuth) | B | Não iniciado | — | Requer provedores de publicação por API oficial |
-| 8 | Geração de vídeo com IA (texto/imagem → 9:16/16:9) | B | Não iniciado | — | Provedor de geração de vídeo; custo por segundo |
-| 9 | Geração/edição de imagem com IA (capas, thumbnails, ref.) | A (compositor offline) / B (geração IA) | Parcial | Compositor de capa local funciona (PNG 1080×1920) | Geração por IA = Cat. B; provedor não integrado |
-| 10 | Troca de personagem/cenário/estilo (vídeo-para-vídeo) | B | Não iniciado | — | Requer provedor video-to-video |
-| 11 | Orçamento unificado (saldo, custo antes de operar, teto diário/mensal) | B | Não iniciado | — | Ledger local, confirmação explícita, teto configurável |
-| 12 | API local, CLI, servidor MCP | B | Não iniciado | — | Arquitetura de provedores e fila precisam existir antes |
-| 13 | Projetos salvos, fila de trabalhos, estatísticas de uso | A | Parcial | `localStorage` salva ajustes; `state` em memória | Fila persistente, retomada após fechar, estatísticas = pendentes |
+| 1 | Cortes automáticos (arquivo, pasta monitorada) | A | **Parcial** | `src/core/cut-engine.js`: pipeline completo local; fake provider para testes | Link (YouTube/Drive) = Cat. B; vídeos >1h testados em chunks; heurística sem LLM |
+| 2 | Legendas automáticas (estilos, palavra por palavra, destaque, tradução, export SRT/ASS) | A | **Parcial** | `lib/captions.js` + 9 testes; UI de legendas no ateliê | Tradução = Cat. B (TranslationProvider); export ASS não implementado |
+| 3 | Dublagem de áudio com IA (vários idiomas) | B | **Não iniciado** | `src/providers/interfaces.js` + fake/real TTSProvider | Requer ElevenLabs/outro TTS; sync com vídeo |
+| 4 | Reenquadramento inteligente 16:9→9:16 | A | **Implementado** | `src/core/reframe-engine.js`: YuNet, tracking, 6 layouts, zonas seguras, render | YuNet carrega ONNX via CDN na 1ª vez; MediaPipe fallback pendente |
+| 5 | Editor de cortes, edição em massa, Brand Kit, templates | A | **Não iniciado** | Ateliê base existe (abas Cena/Legendas/Publicar) | Timeline, divisão/junção, Brand Kit, templates = pendentes |
+| 6 | Cortes de lives (Twitch, Kick) | B | **Não iniciado** | `SocialPublishProvider` + yt-dlp/streamlink detection pendente | Importação por link = Cat. B |
+| 7 | Agendamento e publicação automática (OAuth) | B | **Não iniciado** | `SocialPublishProvider` esqueleto (YouTube) | Requer tokens OAuth no keyring |
+| 8 | Geração de vídeo com IA (texto/imagem → 9:16/16:9) | B | **Não iniciado** | `VideoGenerationProvider` (Replicate esqueleto) | Custo por segundo, múltiplos modelos |
+| 9 | Geração/edição de imagem com IA (capas, thumbnails, ref.) | A/B | **Parcial** | Compositor capa local (PNG 1080×1920) + `ImageGenerationProvider` | Geração IA = Cat. B (Replicate fake/real) |
+| 10 | Troca de personagem/cenário/estilo (vídeo-para-vídeo) | B | **Não iniciado** | `VideoToVideoProvider` esqueleto (Replicate) | Requer modelo video-to-video |
+| 11 | Orçamento unificado (saldo, custo antes de operar, teto diário/mensal) | B | **Implementado** | `src/budget/ledger.js`: IndexedDB, tetos, confirmação, relatórios | Ledger local apenas; sem cobrança real |
+| 12 | API local, CLI, servidor MCP | B | **Não iniciado** | Arquitetura de provedores + fila pronta | Endpoints REST/WS, CLI, MCP server |
+| 13 | Projetos salvos, fila de trabalhos, estatísticas de uso | A | **Parcial** | Fila persistente (`src/queue/job-queue.js`), ajustes no `localStorage` | Projetos completos, estatísticas, dashboard = pendentes |
 
 ## Resumo por Categoria
 
 ### Categoria A (local e completo) — 5 itens + partes de 9
-- **Prontos/parciais**: 1 (arquivo/pasta), 2 (legendas base), 5 (editor base), 9 (compositor thumbnails), 13 (projetos/ajustes)
-- **Faltando**: heurística de cortes com LLM opcional, reenquadramento, edição em massa, Brand Kit, templates, export ASS, fila persistente, estatísticas
+- **Implementados**: 1 (motor cortes), 2 (legendas base), 4 (reenquadramento), 11 (orçamento), 13 (fila base)
+- **Parciais**: 5 (editor base), 9 (compositor thumbnails)
+- **Faltando**: 5 (edição em massa, Brand Kit, templates), 13 (projetos completos, estatísticas), 2 (tradução, export ASS)
 
 ### Categoria B (provedor externo plugável) — 8 itens + partes de 1, 6, 9
-- **Nenhum implementado**. Pré-requisito: arquitetura de interfaces de provedor + fila + orçamento.
+- **Base pronta**: Interfaces + fake providers + esqueletos reais desativados
+- **Pendentes**: Integração real (chaves), UI de configuração, testes com chaves reais
 
 ### Categoria C (fora do escopo)
 - Pagamentos, campeonatos, afiliados, apps nativos, páginas de marketing.
 
-## Próximo Passo (Ordem de Execução, Item 2) — **EM ANDAMENTO**
-**Arquitetura de provedores, fila persistente e orçamento de gastos** — base para todos os itens da Categoria B.
+## Progresso por Ordem de Execução
 
-### ✅ Concluído
-- **Interfaces** (`src/providers/interfaces.js`): 8 interfaces tipadas (LLM, Transcription, Translation, TTS, ImageGen, VideoGen, VideoToVideo, SocialPublish) com capacidades, custos, validação, timeout, retry, cancelamento, erros PT-BR.
-- **Provedores Fake** (`src/providers/fake-providers.js`): 8 implementações determinísticas, offline, sem chave — para testes automatizados e CI.
-- **Provedores Reais (esqueletos)** (`src/providers/real-providers.js`): OpenAI (LLM, Whisper), ElevenLabs (TTS), Replicate (Image/Video), YouTube OAuth — desativados até chave inserida.
-- **Registro central** (`src/providers/index.js`): carrega fakes + reais condicionais, API unificada (`getProviderFor`, `executeWithProvider`, `estimateCost`).
-- **Fila persistente** (`src/queue/job-queue.js`): IndexedDB, 6 estados, worker pool com limites GPU/CPU/rede, retry/backoff, progresso real, cancelamento, pausa/retomada.
-- **Orçamento/Ledger** (`src/budget/ledger.js`): IndexedDB, teto diário/mensal, limiar de confirmação, relatórios por provedor/operação/unidade, poda automática.
+| Passo | Item | Status | Checkpoint |
+|-------|------|--------|------------|
+| 1 | Verificação de base | ✅ | `checkpoint-07-zona-segura` |
+| 2 | Arquitetura provedores, fila, orçamento | ✅ | `checkpoint-08-providers-queue-budget` |
+| 3 | Motor de cortes com IA | ✅ | `checkpoint-08-providers-queue-budget` (incluído) |
+| 4 | Reenquadramento inteligente | ✅ | `checkpoint-09-reframe` |
+| 5 | Editor, edição em massa, Brand Kit, templates | 🔄 **Próximo** | `checkpoint-11-editor-brandkit` (planejado) |
+| 6 | Legendas avançadas (tradução, ASS) | ⏳ | `checkpoint-12-legendas-avancadas` |
+| 7 | Compositor thumbnails + provedor imagem | ⏳ | `checkpoint-13-thumbnails` |
+| 8 | Dublagem (TTS) | ⏳ | `checkpoint-14-dublagem` |
+| 9 | Agendamento/publicação (OAuth) | ⏳ | `checkpoint-15-agendamento` |
+| 10 | Monitoramento lives | ⏳ | `checkpoint-16-lives` |
+| 11 | Geração vídeo + troca personagem | ⏳ | `checkpoint-17-geracao-video` |
+| 12 | API local, CLI, MCP | ⏳ | `checkpoint-18-api-cli-mcp` |
+| 13 | Estatísticas, polimento, docs | ⏳ | `checkpoint-19-estatisticas` |
 
-### 🔄 Em andamento
-- Integração da fila e orçamento no `app.js` (bootstrap, UI de jobs, painel de orçamento).
-- Testes automatizados da fila e orçamento (usando fake providers).
+## Tags de Checkpoint Realizadas
 
-### Próximo (Item 3): Motor de Cortes com IA
-Pipeline: extrair áudio → transcrever (timestamps/palavra) → segmentar sentenças/tópicos → pontuar candidatos → remover sobreposições → escolher melhores (duração alvo por plataforma) → refinar bordas (fim de frase + fade) → renderizar aprovados.
-Pontuação explicável: gancho 3s, completude, densidade, energia, picos, perguntas, mudança de cena, rosto. LLM opcional para ranquear/títulos; heurística local robusta.
-Prévia: lista sugestões com miniaturas/tempos antes de renderizar. Usuário aprova/rejeita/ajusta.
-Vídeos longos (10h): blocos com checkpoints, proxy baixa resolução, transcrição em janelas com sobreposição, tempos globais consistentes.
+- `checkpoint-00-base` — Estado inicial
+- `checkpoint-01-legendas` — Legendas corrigidas
+- `checkpoint-02-tema` — Tema claro/escuro/auto
+- `checkpoint-03-acessibilidade` — Foco, ARIA, anúncios
+- `checkpoint-04-foco` — Foco preso, retorno
+- `checkpoint-05-exportacao` — Exportação MP4 9:16
+- `checkpoint-06-exportacao` — Exportação confiável, ateliê visível, a11y
+- `checkpoint-07-zona-segura` — Legenda queimada na zona segura
+- `checkpoint-08-providers-queue-budget` — Providers, fila, orçamento, motor de cortes
+- `checkpoint-09-reframe` — Reenquadramento inteligente 16:9→9:16
 
----
+## Próximos Checkpoints Planejados
 
-**Tags de checkpoint planejadas**
-- `checkpoint-08-providers` — interfaces + fake providers + fila + ledger
-- `checkpoint-09-cortes-ia` — motor de cortes com IA (item 1 completo)
-- `checkpoint-10-reenquadramento` — item 4
-- `checkpoint-11-editor-brandkit` — item 5
-- `checkpoint-12-legendas-avancadas` — item 2 completo (tradução, ASS)
-- `checkpoint-13-thumbnails` — item 9 (compositor + provedor imagem)
-- `checkpoint-14-dublagem` — item 3
-- `checkpoint-15-agendamento` — item 7
-- `checkpoint-16-lives` — item 6
-- `checkpoint-17-geracao-video` — itens 8 e 10
-- `checkpoint-18-api-cli-mcp` — item 12
-- `checkpoint-19-estatisticas` — item 13 completo + polimento
+- `checkpoint-10-editor-ui` — Integração UI motor cortes + reenquadramento no ateliê
+- `checkpoint-11-editor-brandkit` — Editor completo, edição em massa, Brand Kit, templates
+- `checkpoint-12-legendas-avancadas` — Tradução + export ASS
+- `checkpoint-13-thumbnails` — Compositor + ImageGenProvider
+- `checkpoint-14-dublagem` — TTS (ElevenLabs fake/real)
+- `checkpoint-15-agendamento` — SocialPublishProvider + OAuth
+- `checkpoint-16-lives` — Monitoramento Twitch/Kick
+- `checkpoint-17-geracao-video` — VideoGen + VideoToVideo
+- `checkpoint-18-api-cli-mcp` — API/CLI/MCP
+- `checkpoint-19-estatisticas` — Dashboard, docs, entrega final

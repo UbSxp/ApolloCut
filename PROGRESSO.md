@@ -42,8 +42,8 @@ Próximo passo exato:
 ## Estado atual
 
 **Branch:** `funcionalidades/estudio` (base: `9b6b7cf` / `checkpoint-07-zona-segura`)  
-**Último commit:** `005aa60` — feat: arquitetura de provedores, fila, orçamento e motor de cortes (Item 2+3)  
-**Tag:** `checkpoint-08-providers-queue-budget`
+**Último commit:** `fb07e0d` — feat: reenquadramento inteligente 16:9→9:16 (Item 4)  
+**Tag:** `checkpoint-09-reframe`
 
 ### Concluído nesta sessão
 
@@ -69,18 +69,30 @@ Próximo passo exato:
 - Vídeos longos (10h): chunks com sobreposição, proxy visual, checkpoints, tempos globais consistentes.
 - Arquivo: `src/core/cut-engine.js` (exporta `analyzeVideoForCuts`, `enqueueAnalysisJob`, `analyzeWorker`).
 
+**Reenquadramento Inteligente 16:9→9:16 (Item 4 — Categoria A):**
+- Detector offline: YuNet ONNX via ONNX Runtime Web (WASM), fallback para MediaPipe se necessário.
+- Tracking: FaceTrack com EMA + IoU association, Kalman placeholder, idade/mínimo hits, suavização temporal.
+- Classificação de cena heurística: solo (1 rosto), dual (2 rostos), group (3+ = foco ativo via VAD+boca), gameplay (cor/movimento), screenshare (movimento tela), fallback.
+- 6 layouts automáticos: solo (acompanhamento vertical), dual (split vertical), group (foco falante), gameplay (jogo 70% + cam 30%), screenshare (conteúdo 75% + presenter 25%), fallback (centralizado + blur).
+- Zonas seguras por plataforma (TikTok, Reels, Shorts, default), aplicação automática no crop.
+- Saída 1080×1920 H.264 High L4.2, yuv420p, AAC 48kHz, faststart.
+- Renderização via `MediaRecorder` + `canvas.captureStream` interpolando keyframes (0.5s default).
+- Editor manual: callbacks `onLayoutChange`, `onManualCrop` para UI.
+- Arquivo: `src/core/reframe-engine.js` (exporta `reframeVideo`, `renderReframedVideo`, `enqueueReframeJob`, `reframeWorker`).
+
 **Testes:** suíte existente passa (`npm run test:all` — 9 legendas + UI tema + exportação 1080×1920 9.98s).
 
 ### Em andamento
 - Integração do motor de cortes no `app.js` (botão "Analisar com IA", painel de sugestões, prévia de miniaturas).
-- Testes automatizados do motor de cortes (usando fake providers).
+- Integração do reenquadramento no ateliê (aba "Enquadramento", selector de layout, keyframes).
+- Testes automatizados do motor de cortes e reenquadramento (usando fake providers).
 
-### Próximo passo exato (Item 4 — Reenquadramento Inteligente)
-1. Detector de rostos/ROI leve e offline (YuNet ONNX ou MediaPipe via WASM, licença verificada).
-2. Rastreamento com suavização (Kalman/EMA), reinício em mudança de cena, pista de fala (VAD + movimento boca).
-3. Layouts automáticos: 1 falante (acompanhamento), 2 falantes (split vertical), grupo/podcast (foco ativo), gameplay (jogo+câmera), aula (tela+apresentador), fallback (centralizado + blur).
-4. Zonas seguras por plataforma, saída 1080×1920 H.264 High yuv420p AAC faststart.
-5. Editor de enquadramento no ateliê (troca manual de layout, ajuste de ROI).
+### Próximo passo exato (Item 5 — Editor, Edição em Massa, Brand Kit, Templates)
+1. Aba "Editor" no ateliê: timeline com cortes, ajuste de início/fim por quadro, divisão/junção.
+2. Edição em massa: selecionar múltiplos cortes, aplicar mesma ação (estilo legenda, marca d'água, reenquadramento).
+3. Brand Kit: logo, fontes, cores, estilo de legenda, vinheta, marca d'água — salvo no `localStorage`/IndexedDB.
+4. Templates reutilizáveis: preset de configurações por tipo de conteúdo (podcast, gameplay, aula, vlog).
+5. Persistência de projetos (Item 13): estado completo salvo/restaurado ao fechar/abrir app.
 
 ## Backlog (ordem de prioridade)
 
