@@ -1,0 +1,74 @@
+{
+  "perf": {
+    "navigation": {
+      "domContentLoaded": 396,
+      "load": 460,
+      "ttfb": 1
+    },
+    "paints": {
+      "first-paint": 688,
+      "first-contentful-paint": 688
+    },
+    "resources": [
+      {
+        "name": "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Manrope:wght@400;500;600;700;800&display=swap",
+        "duration": 272,
+        "size": 1451
+      }
+    ],
+    "domNodes": 720,
+    "fonts": {
+      "cinzel": true,
+      "cormorant": true,
+      "manrope": true
+    },
+    "viewport": {
+      "w": 1440,
+      "h": 950
+    },
+    "reducedMotion": false,
+    "overflow": false
+  },
+  "analysisVisible": true,
+  "inventory": {
+    "screens": {
+      "landing": true,
+      "studio": false,
+      "sceneTab": true,
+      "captionsTab": false,
+      "publishTab": false
+    },
+    "modals": [
+      {
+        "id": "analysisOverlay",
+        "hidden": true
+      },
+      {
+        "id": "whisperOverlay",
+        "hidden": true
+      },
+      {
+        "id": "coverOverlay",
+        "hidden": true
+      },
+      {
+        "id": "exportOverlay",
+        "hidden": true
+      },
+      {
+        "id": "kitOverlay",
+        "hidden": true
+      }
+    ],
+    "emptyStates": {
+      "drops": true,
+      "noClips": true,
+      "noCaptions": "Sem legendas",
+      "frameEmpty": false
+    },
+    "buttons": 45,
+    "inputs": 13,
+    "overflow": false
+  },
+  "pageErrors": []
+}

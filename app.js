@@ -7,7 +7,7 @@
   "use strict";
 
   const $id = (id) => document.getElementById(id);
-  const ids = `landing studioScreen studioBack studioBrand newFilmBtn openStudioBtn fileInput srtInput
+  const ids = `opening openingSkip landing studioScreen studioBack studioBrand newFilmBtn openStudioBtn fileInput srtInput
     dropzone fileName fileMeta studioKind studioStateLabel analysisBadge studioSteps
     frame previewVideo captions frameCaptionNote frameWatermark frameEmpty previewLabel previewFormat
     playBtn seekRange seekMarks timeLabel focusRange focusVal quickCaptionsBtn quickCoverBtn coverBtn kitBtn exportBtn
@@ -208,6 +208,15 @@
 
   function updateHeaderCta() {
     els.openStudioBtn.textContent = state.ready ? "Voltar ao ateliê" : "Abrir o ateliê";
+  }
+
+  function dismissOpening() {
+    if (!els.opening || els.opening.hidden || els.opening.classList.contains("is-leaving")) return;
+    els.opening.classList.add("is-leaving");
+    els.opening.setAttribute("aria-hidden", "true");
+    setTimeout(() => {
+      els.opening.hidden = true;
+    }, 640);
   }
 
   function showStudio() {
@@ -2850,6 +2859,8 @@
   let coverTitleTimer = 0;
 
   function bindEvents() {
+    if (els.openingSkip) els.openingSkip.addEventListener("click", dismissOpening);
+
     document.querySelectorAll(".js-pick").forEach((btn) => {
       btn.addEventListener("click", (event) => {
         event.preventDefault();
@@ -3138,6 +3149,10 @@
     bindEvents();
     els.samplerVideo.muted = true;
     setTab("scene");
+    if (els.opening) {
+      const delay = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 350 : 1800;
+      setTimeout(dismissOpening, delay);
+    }
   }
 
   init();

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 72" fill="none" role="img" aria-labelledby="t">
+  <title id="t">ApolloCut — ateliê de cortes</title>
+  <g transform="translate(2 4)">
+    <g stroke="#E0BE78" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="32" cy="32" r="18" stroke-width=".75" opacity=".55"/>
+      <circle cx="32" cy="32" r="9.5"/>
+      <path d="M32 5.5v6M32 52.5v6M5.5 32h6M52.5 32h6M13.2 13.2l4.2 4.2M46.6 46.6l4.2 4.2M13.2 50.8l4.2-4.2M46.6 17.4l4.2-4.2"/>
+      <path d="M21.4 10.6l2.5 5.5M42.6 53.4l-2.5-5.5M10.6 42.6l5.5-2.5M53.4 21.4l-5.5 2.5M10.6 21.4l5.5 2.5M53.4 42.6l-5.5-2.5M21.4 53.4l2.5-5.5M42.6 10.6l-2.5 5.5"/>
+      <path d="M27.2 28.5c-2.9 2.7-4 6.3-3.2 10.1M36.8 28.5c2.9 2.7 4 6.3 3.2 10.1M26.6 30.2h10.8M29.2 31.8v7.4M32 31.8v8.4M34.8 31.8v7.4M27.4 39.6c3 1.4 6.2 1.4 9.2 0"/>
+    </g>
+  </g>
+  <text x="76" y="34" fill="#F4EBDD" font-family="Cormorant Garamond, Georgia, serif" font-size="30" font-weight="600" letter-spacing=".2">ApolloCut</text>
+  <text x="77" y="53" fill="#A9B2BC" font-family="Manrope, Segoe UI, sans-serif" font-size="9" font-weight="600" letter-spacing="2.6">ATELIÊ DE CORTES</text>
+</svg>
