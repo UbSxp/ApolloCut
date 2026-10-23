@@ -3274,6 +3274,116 @@
     els.exportClose.addEventListener("click", cancelExport);
     els.sampleExport.addEventListener("change", updateExportTag);
 
+    /* ----- FAQ (Dúvidas) ----- */
+    const faqSearch = document.getElementById("faqSearch");
+    const faqClear = document.querySelector(".faq-search-clear");
+    const faqExpandAll = document.getElementById("faqExpandAll");
+    const faqCollapseAll = document.getElementById("faqCollapseAll");
+    const faqCategories = document.querySelector(".faq-categories");
+    const faqDetails = document.querySelectorAll("#duvidas details");
+    const faqCategoriesList = Array.from(new Set(
+      Array.from(faqDetails).map(d => d.dataset.category).filter(Boolean)
+    )).sort();
+
+    function renderCategories() {
+      if (!faqCategories || !faqCategoriesList.length) return;
+      faqCategories.innerHTML = faqCategoriesList.map(cat =>
+        `<button type="button" class="faq-category" data-category="${cat}" role="tab" aria-selected="false">${cat.charAt(0).toUpperCase() + cat.slice(1)}</button>`
+      ).join("");
+      const allBtn = document.createElement("button");
+      allBtn.type = "button";
+      allBtn.className = "faq-category active";
+      allBtn.dataset.category = "all";
+      allBtn.role = "tab";
+      allBtn.setAttribute("aria-selected", "true");
+      allBtn.textContent = "Todas";
+      faqCategories.prepend(allBtn);
+      faqCategories.querySelectorAll(".faq-category").forEach(btn => {
+        btn.addEventListener("click", () => filterByCategory(btn.dataset.category));
+      });
+    }
+
+    function filterByCategory(cat) {
+      const buttons = faqCategories?.querySelectorAll(".faq-category") || [];
+      buttons.forEach(btn => {
+        const active = btn.dataset.category === cat;
+        btn.classList.toggle("active", active);
+        btn.setAttribute("aria-selected", active);
+      });
+      faqDetails.forEach(detail => {
+        if (cat === "all" || detail.dataset.category === cat) {
+          detail.hidden = false;
+        } else {
+          detail.hidden = true;
+          detail.open = false;
+        }
+      });
+    }
+
+    function filterByText(text) {
+      const query = text.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      let visibleCount = 0;
+      faqDetails.forEach(detail => {
+        const summary = detail.querySelector("summary");
+        const p = detail.querySelector("p");
+        const text = (summary?.textContent + " " + p?.textContent).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const match = !query || text.includes(query);
+        detail.hidden = !match;
+        if (match) visibleCount++;
+      });
+      const noResults = document.querySelector(".faq-no-results");
+      if (noResults) noResults.remove();
+      if (visibleCount === 0 && query) {
+        const list = document.querySelector(".faq-list");
+        const div = document.createElement("div");
+        div.className = "faq-no-results";
+        div.textContent = "Nenhuma pergunta encontrada.";
+        list.appendChild(div);
+      }
+      if (faqClear) faqClear.hidden = !query;
+    }
+
+    function expandAll() {
+      faqDetails.forEach(d => { if (!d.hidden) d.open = true; });
+    }
+    function collapseAll() {
+      faqDetails.forEach(d => d.open = false);
+    }
+
+    if (faqSearch) {
+      faqSearch.addEventListener("input", (e) => filterByText(e.target.value));
+    }
+    if (faqClear) {
+      faqClear.addEventListener("click", () => {
+        faqSearch.value = "";
+        filterByText("");
+        faqSearch.focus();
+      });
+    }
+    if (faqExpandAll) faqExpandAll.addEventListener("click", expandAll);
+    if (faqCollapseAll) faqCollapseAll.addEventListener("click", collapseAll);
+
+    renderCategories();
+
+    /* Fix keyboard interaction for details/summary */
+    document.querySelectorAll("#duvidas summary").forEach(summary => {
+      summary.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          const detail = summary.closest("details");
+          if (detail) detail.open = !detail.open;
+        } else if (e.key === " ") {
+          // Space is handled by browser natively
+        }
+      });
+    });
+
+    /* Scroll margin for #duvidas */
+    const faqSection = document.getElementById("duvidas");
+    if (faqSection) {
+      faqSection.style.scrollMarginTop = "80px";
+    }
+
     function onKeydown(event) {
       const activeOverlay = document.querySelector(".overlay:not([hidden])")
         || (els.opening && !els.opening.hidden && !els.opening.classList.contains("is-leaving") ? els.opening : null);

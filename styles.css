@@ -683,15 +683,175 @@ select { appearance: none; padding-right: 38px; background-image: linear-gradien
 .plan-card li::before { content: ""; width: 6px; height: 6px; border: 1px solid var(--gold); border-radius: 50%; }
 .plan-fine { text-align: center; color: var(--muted); font-size: 10.5px; }
 
+/* ---------- FAQ (Dúvidas) ---------- */
+
 .faq-list { border-top: 1px solid var(--line); }
-.faq-list details { border-bottom: 1px solid var(--line); }
-.faq-list summary { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 22px 4px; cursor: pointer; list-style: none; font-family: var(--font-display); font-size: clamp(20px, 2.2vw, 28px); font-weight: 600; }
+.faq-list details { border-bottom: 1px solid var(--line); overflow: hidden; }
+.faq-list summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 4px;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--font-display);
+  font-size: clamp(20px, 2.2vw, 28px);
+  font-weight: 600;
+  transition: background-color var(--t-micro), color var(--t-micro);
+}
+.faq-list summary:hover { color: var(--gold); }
 .faq-list summary::-webkit-details-marker { display: none; }
-.faq-list summary span { position: relative; width: 18px; height: 18px; flex: 0 0 auto; }
-.faq-list summary span::before, .faq-list summary span::after { content: ""; position: absolute; left: 50%; top: 50%; width: 14px; height: 1px; background: var(--gold); transform: translate(-50%, -50%); transition: transform var(--t-ui) var(--ease-out); }
+.faq-list summary:focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; border-radius: 4px; }
+.faq-list summary span {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  transition: transform var(--t-ui) var(--ease-out);
+}
+.faq-list summary span::before,
+.faq-list summary span::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 1px;
+  background: var(--gold);
+  transform: translate(-50%, -50%);
+  transition: transform var(--t-ui) var(--ease-out), opacity var(--t-ui) var(--ease-out);
+}
 .faq-list summary span::after { transform: translate(-50%, -50%) rotate(90deg); }
+.faq-list details[open] summary span { transform: rotate(180deg); }
 .faq-list details[open] summary span::after { transform: translate(-50%, -50%) rotate(0deg); }
-.faq-list details p { max-width: 78ch; padding: 0 4px 24px; color: var(--muted); font-size: 14px; line-height: 1.7; }
+.faq-list details p {
+  max-width: 78ch;
+  padding: 0 4px 24px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+  animation: rise 220ms var(--ease-out) both;
+}
+.faq-list details > div {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--t-ui) var(--ease-out);
+}
+.faq-list details[open] > div {
+  grid-template-rows: 1fr;
+}
+.faq-list details > div > p { overflow: hidden; }
+
+/* FAQ Toolbar */
+.faq-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 0 16px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 8px;
+}
+.faq-search {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+  max-width: 400px;
+}
+.faq-search .icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: var(--muted);
+  pointer-events: none;
+}
+.faq-search input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 44px 0 44px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  color: var(--ink);
+  font-size: 13px;
+  transition: border-color var(--t-micro), background var(--t-micro), box-shadow var(--t-micro);
+}
+.faq-search input:focus {
+  border-color: var(--gold);
+  background: var(--surface);
+  outline: none;
+  box-shadow: 0 0 0 4px var(--focus-halo);
+}
+.faq-search input::placeholder { color: var(--muted); opacity: 0.7; }
+.faq-search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--muted);
+  transition: color var(--t-micro), background var(--t-micro);
+}
+.faq-search-clear:hover { color: var(--ink); background: var(--gold-soft); }
+.faq-search-clear .icon { width: 16px; height: 16px; }
+.faq-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.faq-category {
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color var(--t-micro), color var(--t-micro), background var(--t-micro);
+}
+.faq-category:hover { border-color: var(--gold); color: var(--ink); }
+.faq-category.active { border-color: var(--gold); background: var(--gold-soft); color: var(--gold); }
+.faq-actions {
+  display: flex;
+  gap: 8px;
+}
+.faq-no-results {
+  grid-column: 1 / -1;
+  padding: 32px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+  border: 1px dashed var(--line);
+  border-radius: var(--r-lg);
+  background: var(--bg-elevated);
+}
+
+/* Reduced motion for FAQ */
+@media (prefers-reduced-motion: reduce) {
+  .faq-list details p { animation: none; }
+  .faq-list details > div { transition: none; }
+}
+
+html[data-reduced-motion="true"] .faq-list details p { animation: none !important; }
+html[data-reduced-motion="true"] .faq-list details > div { transition: none !important; }
+
+/* Responsive */
+@media (max-width: 760px) {
+  .faq-toolbar { flex-direction: column; align-items: stretch; }
+  .faq-search { max-width: none; }
+  .faq-categories { justify-content: center; }
+  .faq-actions { justify-content: flex-end; }
+}
 
 .closing { position: relative; padding: clamp(80px, 10vw, 140px) 0; text-align: center; overflow: hidden; background: linear-gradient(135deg, color-mix(in srgb, var(--gold-soft) 80%, transparent), transparent 55%), var(--bg-elevated); border-top: 1px solid var(--line); }
 .closing-sun { position: absolute; left: 50%; top: 50%; width: 680px; height: 680px; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle, var(--gold-soft), transparent 64%); pointer-events: none; }

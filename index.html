@@ -355,7 +355,7 @@
       </div>
     </section>
 
-    <section class="section faq" id="duvidas">
+<section class="section faq" id="duvidas" style="scroll-margin-top: 96px;">
       <div class="container">
         <header class="section-head">
           <span class="section-mark">IV</span>
@@ -366,32 +366,45 @@
           <p class="section-intro">Sem promessa de viralizar. Sem letras miúdas. O que o ateliê faz — e o que ele deixa para você.</p>
         </header>
 
+        <div class="faq-toolbar">
+          <label class="faq-search" for="faqSearch">
+            <svg class="icon" aria-hidden="true"><use href="#i-info"></use></svg>
+            <input type="search" id="faqSearch" placeholder="Filtrar perguntas..." aria-label="Filtrar perguntas" autocomplete="off" />
+            <button type="button" class="faq-search-clear" aria-label="Limpar busca" hidden><svg class="icon" aria-hidden="true"><use href="#i-close"></use></svg></button>
+          </label>
+          <div class="faq-categories" role="tablist" aria-label="Categorias de perguntas"></div>
+          <div class="faq-actions">
+            <button type="button" class="btn btn-line btn-sm" id="faqExpandAll" aria-label="Expandir todas">Expandir todas</button>
+            <button type="button" class="btn btn-line btn-sm" id="faqCollapseAll" aria-label="Recolher todas">Recolher todas</button>
+          </div>
+        </div>
+
         <div class="faq-list">
-          <details>
+          <details data-category="privacidade">
             <summary>O meu filme é enviado para algum servidor?<span></span></summary>
             <p>Não. O vídeo é aberto por um endereço local do próprio navegador, e toda a leitura, reprodução e renderização acontecem no seu computador. Se você escolher o Whisper, o modelo de transcrição é baixado da internet — o áudio, não.</p>
           </details>
-          <details>
+          <details data-category="funcionamento">
             <summary>Como o ateliê escolhe os cortes?<span></span></summary>
             <p>Ele não finge ler o roteiro. Amostra o filme em intervalos, mede movimento entre quadros, contraste, cor e mudança de cena, e propõe as janelas visualmente mais intensas. É um ponto de partida honesto; o olho humano continua sendo o melhor editor.</p>
           </details>
-          <details>
+          <details data-category="legendas">
             <summary>As legendas são automáticas?<span></span></summary>
-            <p>Você escolhe. A via mais rápida e exata é importar um arquivo <em>.srt</em> ou <em>.vtt</em>: o ateliê alinha as falas reais ao corte. A segunda via é o Whisper local, que transcreve o áudio do corte no seu navegador. Na primeira vez ele baixa cerca de 40 MB e captura o áudio em tempo real — um corte de 60 segundos leva perto de um minuto para ser ouvido e transcrito.</p>
+            <p>Você escolhe. A via mais rápida e exata é importar um arquivo <em>.srt</em> ou <em>.vtt</em>: o ateliê alinha as falas reais ao corte. A segunda via é o Whisper local, que transcreve o áudio do corte no seu navegador. Na primeira vez ele baixa cerca de 240 MB e captura o áudio em tempo real — um corte de 60 segundos leva cerca de um minuto para ser ouvido e transcrito.</p>
           </details>
-          <details>
+          <details data-category="formatos">
             <summary>Quais formatos de vídeo funcionam?<span></span></summary>
             <p>O navegador precisa conseguir reproduzir o arquivo. MP4 com H.264 é o caminho mais seguro. MOV e WebM funcionam quando o codec é compatível; MKV e codecs antigos podem não abrir. O ateliê avisa e volta ao início se o arquivo não for legível.</p>
           </details>
-          <details>
+          <details data-category="limites">
             <summary>Qual é a duração máxima?<span></span></summary>
             <p>Não há um limite imposto pelo ateliê. O navegador lê o filme sob demanda, e a análise amostra no máximo 48 quadros distribuídos pela duração. Filmes de horas abrem, mas o tempo de busca em disco depende da máquina e do arquivo.</p>
           </details>
-          <details>
+          <details data-category="exportacao">
             <summary>O que sai no arquivo final?<span></span></summary>
             <p>Um MP4 em H.264 + AAC, com o enquadramento escolhido, as legendas queimadas e, se você quiser, a sua assinatura. O navegador pode oferecer WebM como alternativa quando não há suporte a MP4. A capa sai em PNG e a ficha em texto.</p>
           </details>
-          <details>
+          <details data-category="usabilidade">
             <summary>Preciso saber editar vídeo?<span></span></summary>
             <p>Não. O fluxo é: oferecer o filme, ler, legendar, publicar. Você pode ajustar a duração, a quantidade de cortes, o enquadramento, o estilo das legendas e a sua marca — sem linha do tempo, sem plugins.</p>
           </details>
@@ -757,7 +770,7 @@
         <button class="btn btn-gold" id="whisperStart" type="button"><svg class="icon" aria-hidden="true"><use href="#i-lyre"></use></svg>Iniciar transcrição</button>
       </div>
 
-      <p class="fine-print">Primeira vez: o modelo (~40 MB) é baixado da internet. Depois fica em cache. A captura leva o tempo do corte: um clipe de 60 s leva cerca de um minuto para ser ouvido.</p>
+      <p class="fine-print">Primeira vez: o modelo de alta precisão (~240 MB) é baixado da internet. Depois fica em cache. A captura leva o tempo do corte: um clipe de 60 s leva cerca de um minuto para ser ouvido.</p>
     </div>
   </div>
 
