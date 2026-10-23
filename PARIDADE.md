@@ -1,4 +1,4 @@
-# Paridade de Funcionalidades — Classificação e Progresso
+﻿# Paridade de Funcionalidades — Classificação e Progresso
 
 Data: 23/10/2026  
 Base: commit `fb07e0d` (tag `checkpoint-09-reframe`)  
@@ -16,7 +16,7 @@ Branch: `funcionalidades/estudio`
 | 6 | Cortes de lives (Twitch, Kick) | B | **Não iniciado** | `SocialPublishProvider` + yt-dlp/streamlink detection pendente | Importação por link = Cat. B |
 | 7 | Agendamento e publicação automática (OAuth) | B | **Não iniciado** | `SocialPublishProvider` esqueleto (YouTube) | Requer tokens OAuth no keyring |
 | 8 | Geração de vídeo com IA (texto/imagem → 9:16/16:9) | B | **Não iniciado** | `VideoGenerationProvider` (Replicate esqueleto) | Custo por segundo, múltiplos modelos |
-| 9 | Geração/edição de imagem com IA (capas, thumbnails, ref.) | A/B | **Parcial** | Compositor capa local (PNG 1080×1920) + `ImageGenerationProvider` | Geração IA = Cat. B (Replicate fake/real) |
+| 9 | Geração/edição de imagem com IA (capas, thumbnails, ref.) | A/B | **Implementado** | `src/core/thumbnails.js`: compositor offline + ImageGenProvider, templates, bulk-generate | UI no ateliê pendente; integração com editor |
 | 10 | Troca de personagem/cenário/estilo (vídeo-para-vídeo) | B | **Não iniciado** | `VideoToVideoProvider` esqueleto (Replicate) | Requer modelo video-to-video |
 | 11 | Orçamento unificado (saldo, custo antes de operar, teto diário/mensal) | B | **Implementado** | `src/budget/ledger.js`: IndexedDB, tetos, confirmação, relatórios | Ledger local apenas; sem cobrança real |
 | 12 | API local, CLI, servidor MCP | B | **Não iniciado** | Arquitetura de provedores + fila pronta | Endpoints REST/WS, CLI, MCP server |
