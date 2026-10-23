@@ -21,6 +21,36 @@ Após as correções, os fluxos principais foram executados de ponta a ponta e p
 - persistir ajustes após recarregar;
 - usar a interface em tela móvel sem overflow horizontal.
 
+## Rodada noturna — 22/10/2026
+
+### Resolvidos
+
+| ID | Severidade | Área | Problema | Correção | Evidência |
+|---|---|---|---|---|---|
+| LEG-01 | P0 | Legendas | Tempos por palavra eram inventados por proporção de caracteres. | Whisper `small_timestamped` com `return_timestamps: "word"`; fallback explícito. | 31 palavras com timestamp; `sobre` em 1,1 s, `lira` em 3,2 s, `precisa` em 12,6 s. |
+| LEG-02 | P0 | Legendas | Modelo `tiny` errava português e segmentos curtos perdiam contexto. | Modelo maior e transcrição do corte inteiro com chunking. | Texto de referência pt-BR transcrito corretamente em `tests/fixtures/ptbr-fala.webm`. |
+| LEG-03 | P0 | Áudio | `MediaRecorder` recodificava o áudio antes da transcrição. | Captura PCM com `ScriptProcessorNode` e resample para 16 kHz. | Transcrição corrigida de “Apólogo/Arda” para “Apolo/guarda”. |
+| LEG-04 | P1 | Legendas | Cues SRT que cruzavam o corte incluíam palavras de fora. | Distribuição no cue original e recorte por janela. | Testes 4 e 5 de `tests/caption-utils.test.js`. |
+| LEG-05 | P1 | Legendas | Alucinações típicas do Whisper entravam na legenda. | Sanitização de frases conhecidas e texto sem letras/números. | Testes 6 e 8 de `tests/caption-utils.test.js`. |
+| LEG-06 | P1 | Configuração | Idioma do modal de ajustes não fazia nada. | `settingsLang` ligado ao estado e ao seletor do painel. | `tests/ui-theme.test.js` verifica persistência do idioma. |
+| TEMA-01 | P0 | Tema | Nenhum JS aplicava `data-theme`; botões e modal inertes. | `applyTheme`, listeners, persistência e modal ligados. | `npm run test:ui` passou. |
+| TEMA-02 | P1 | Tema | FOUC e ausência de modo automático. | Script inline no `<head>`, `prefers-color-scheme` e listener de mudança. | Teste de tema com mídia escura e `auto`. |
+| TEMA-03 | P1 | Contraste | Hover dourado e selo de sucesso com contraste insuficiente. | Texto escuro nos hovers e override do selo no tema escuro. | Revisão de CSS; capturas em `docs/design/depois`. |
+| ABERTURA-01 | P1 | Entrada | A tela de abertura cobria o app e “Entrar no ateliê” não tinha evento. | Dispensa por clique e automática em 1,5 s. | Fluxo de upload abriu o seletor e o estúdio. |
+
+### Abertos por prioridade
+
+| ID | Severidade | Área | Problema | Impacto | Correção proposta | Esforço |
+|---|---|---|---|---|---|---|
+| OFF-01 | P1 | Dependências | Transformers.js e modelo vêm de CDN/Hugging Face. | Primeira transcrição exige internet; CDN pode sumir. | Empacotar runtime + modelo ou definir download sob demanda como contrato. | Alto |
+| EXP-01 | P1 | Exportação | `MediaRecorder` não garante H.264 High/yuv420p/AAC/faststart. | Compatibilidade e qualidade variam por navegador. | Validar em dispositivos; avaliar backend FFmpeg local. | Alto |
+| VID-01 | P1 | Pipeline | Sem testes com arquivos reais longos, VFR, rotação, HDR, 10 bits e múltiplas faixas. | Falhas silenciosas em casos reais. | Criar fixtures e matriz de testes com ffprobe/ffmpeg. | Médio |
+| A11Y-01 | P2 | Acessibilidade | Falta foco preso em modais, retorno de foco e anúncio de progresso. | Navegação por teclado/leitor de tela incompleta. | Auditoria com teclado e axe; implementar `focus trap` e `aria-live`. | Médio |
+| PERF-01 | P2 | Desempenho | Transcrição e exportação em tempo real; sem cache de transcrição. | Vídeos longos ficam lentos. | Medir, cachear por arquivo/corte e limitar concorrência. | Médio |
+| LEG-07 | P2 | Legendas | Quebra de linha é por largura, sem regra semântica de português. | Linhas podem separar artigo/substantivo. | Implementar quebra por unidades linguísticas e testar. | Baixo |
+| AUDIO-01 | P2 | Áudio | Sem normalização de loudness, redução de ruído ou fade nas emendas. | Volume inconsistente e estalos. | Adicionar análise e processamento no grafo de áudio. | Médio |
+| UX-01 | P3 | UX | Sem projetos recentes, fila de exportação, desfazer/refazer e salvamento automático. | Fluxos longos exigem retrabalho. | Planejar estado persistente e fila. | Alto |
+
 ## Estado encontrado
 
 - `app.js` terminava em `// PART7` + `})();`, sem `bindEvents`, `init` ou `applySettingsUI`.
@@ -98,7 +128,7 @@ Viewport 390×844:
 - A exportação usa `MediaRecorder` em tempo real. Um corte de 60 s leva aproximadamente 60 s para renderizar.
 - Não há FFmpeg, controle de keyframe, CRF, `faststart`, perfil H.264 ou normalização de volume. O resultado depende dos codecs do navegador.
 - O MP4 só é gerado quando o navegador oferece `video/mp4` com H.264/AAC; caso contrário, o app usa WebM.
-- O Whisper é o modelo `tiny` quantizado (`q8`). Os tempos por palavra são distribuídos proporcionalmente dentro dos trechos de fala, não são timestamps exatos. Em fala rápida, a legenda pode adiantar ou atrasar; revisar antes de publicar.
+- O Whisper usa `onnx-community/whisper-small_timestamped` quantizado (`q8`) e devolve timestamps reais por palavra quando o modelo os suporta. Se o navegador/modelo não devolver chunks, o app cai para distribuição proporcional e registra isso no log. A primeira transcrição ainda exige internet para baixar o modelo.
 - O primeiro download do Whisper é grande e exige internet. Nenhum áudio é enviado a servidor.
 - A análise visual amostra de 12 a 48 quadros e sugere cortes; não é uma edição semântica do conteúdo.
 - MOV/MKV dependem do suporte do navegador. Para máxima compatibilidade, usar MP4 H.264.

@@ -8,10 +8,10 @@
   <title>ApolloCut — a arte de durar sessenta segundos</title>
   <meta name="description" content="Ateliê local de cortes: transforme longas-metragens em clipes verticais com legendas reais, capas e exportação MP4. Sem upload, sem créditos." />
   <link rel="icon" href="assets/brand/favicon.svg" type="image/svg+xml" />
-  <link rel="preload" href="assets/fonts/cormorant-garamond-latin.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="preload" href="assets/fonts/cormorant-garamond-italic-latin.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="preload" href="assets/fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="preload" href="assets/fonts/cinzel-500-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="assets/fonts/cormorant-garamond-latin.woff2" as="font" type="font/woff2" />
+  <link rel="preload" href="assets/fonts/cormorant-garamond-italic-latin.woff2" as="font" type="font/woff2" />
+  <link rel="preload" href="assets/fonts/manrope-latin.woff2" as="font" type="font/woff2" />
+  <link rel="preload" href="assets/fonts/cinzel-500-latin.woff2" as="font" type="font/woff2" />
   <script>
     (function () {
       try {
@@ -21,6 +21,8 @@
         var dark = pref === "dark" || (pref === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
         document.documentElement.dataset.theme = dark ? "dark" : "light";
         document.documentElement.dataset.themePref = pref;
+        var themeMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeMeta) themeMeta.setAttribute("content", dark ? "#0c1420" : "#f6efe3");
       } catch (_) {
         document.documentElement.dataset.theme = "light";
         document.documentElement.dataset.themePref = "auto";
@@ -75,7 +77,7 @@
   <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
 </svg>
 
-  <div class="opening" id="opening" aria-hidden="true">
+  <div class="opening" id="opening" role="dialog" aria-label="Boas-vindas ao ApolloCut" aria-hidden="false">
     <div class="opening-aurora" aria-hidden="true"></div>
     <div class="opening-inner">
       <span class="opening-symbol" aria-hidden="true">

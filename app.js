@@ -81,7 +81,7 @@
     export: { running: false, cancel: false, url: null, recorder: null, actx: null },
     cover: { frame: null, time: 0, token: 0 },
     kit: null,
-    ui: { tab: "scene" },
+    ui: { tab: "scene", lastFocus: null },
     settings: { ...DEFAULT_SETTINGS },
     captionView: { group: -1, clipId: null, ref: null },
     playerRaf: 0,
@@ -140,10 +140,21 @@
     input.style.setProperty("--p", `${clamp(pct, 0, 100)}%`);
   }
 
+  function focusableIn(el) {
+    if (!el) return [];
+    return [...el.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')]
+      .filter((node) => node.getClientRects().length > 0);
+  }
+
   function openOverlay(el) {
     if (!el) return;
+    state.ui.lastFocus = document.activeElement;
     el.hidden = false;
     document.body.classList.add("modal-open");
+    requestAnimationFrame(() => {
+      const first = focusableIn(el)[0];
+      if (first) first.focus({ preventScroll: true });
+    });
   }
 
   function closeOverlay(el) {
@@ -151,6 +162,11 @@
     el.hidden = true;
     if (!document.querySelector(".overlay:not([hidden])")) {
       document.body.classList.remove("modal-open");
+    }
+    const target = state.ui.lastFocus;
+    state.ui.lastFocus = null;
+    if (target && target.isConnected && typeof target.focus === "function") {
+      target.focus({ preventScroll: true });
     }
   }
 
@@ -302,7 +318,9 @@
     els.opening.classList.add("is-leaving");
     els.opening.setAttribute("aria-hidden", "true");
     setTimeout(() => {
+      const hadFocus = els.opening.contains(document.activeElement);
       els.opening.hidden = true;
+      if (hadFocus && els.openStudioBtn) els.openStudioBtn.focus({ preventScroll: true });
     }, 640);
   }
 
@@ -1619,7 +1637,7 @@
     state.whisper.loading = (async () => {
       logWhisper("Importando o motor de transcrição local…");
       const mod = await import(WHISPER_CDN);
-      logWhisper("Baixando o modelo Whisper (só na primeira vez)…");
+      logWhisper("Baixando o modelo Whisper de alta precisão (só na primeira vez)…");
       const pipe = await mod.pipeline("automatic-speech-recognition", WHISPER_MODEL, {
         dtype: "q8",
         progress_callback: (progress) => {
@@ -1672,9 +1690,6 @@
     logWhisper("Preparando a captura do áudio…");
     setWhisperStage("capture", 0, "Ouvindo o corte em tempo real…");
 
-    const modelPromise = getTranscriber();
-    modelPromise.catch(() => {});
-
     try {
       const capture = await captureClipAudio(clip, runId);
       const audio = capture.samples;
@@ -1691,7 +1706,7 @@
       } else {
         setWhisperStage("model", 100, "Modelo local em cache.");
       }
-      const pipe = await modelPromise;
+      const pipe = await getTranscriber();
       throwIfCancelled(runId);
       setWhisperStage("write", 0, "Transcrevendo o corte.");
       const language = state.settings.lang && state.settings.lang !== "auto"
@@ -2487,7 +2502,7 @@
         }
       }
       if (line.length) lines.push(line);
-      if (lines.length <= 3) break;
+      if (lines.length <= 2) break;
       fontSize *= 0.9;
     }
     if (!lines.length) return;
@@ -3132,6 +3147,23 @@
     els.sampleExport.addEventListener("change", updateExportTag);
 
     function onKeydown(event) {
+      const activeOverlay = document.querySelector(".overlay:not([hidden])")
+        || (els.opening && !els.opening.hidden && !els.opening.classList.contains("is-leaving") ? els.opening : null);
+      if (event.key === "Tab" && activeOverlay) {
+        const focusables = focusableIn(activeOverlay);
+        if (!focusables.length) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+        return;
+      }
+
       if (event.key === "Escape") {
         if (!els.analysisOverlay.hidden) {
           if (state.analysis.running) cancelAnalysis(); else closeOverlay(els.analysisOverlay);

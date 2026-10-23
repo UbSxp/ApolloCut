@@ -1,0 +1,60 @@
+# Pendências para o usuário
+
+## 1. Distribuição offline do Whisper
+
+O app ainda importa `@huggingface/transformers` do CDN da jsDelivr e baixa o modelo `onnx-community/whisper-small_timestamped` na primeira transcrição. Isso conflita com a regra de não depender de CDN.
+
+Opções:
+
+- Embarcar runtime e modelo no projeto (cerca de 240 MB de modelo, mais o runtime e os arquivos WASM).
+- Manter o download sob demanda e documentar que a primeira transcrição exige internet.
+- Remover o Whisper do produto e trabalhar apenas com SRT/VTT importado.
+
+Enquanto não houver decisão, o app funciona, mas não é 100% offline na primeira transcrição.
+
+## 2. Exportação sem FFmpeg
+
+Não há FFmpeg no PATH e o app é 100% navegador. A exportação usa `MediaRecorder`, então não é possível garantir em todos os navegadores:
+
+- H.264 High e `yuv420p`;
+- AAC 48 kHz;
+- `faststart`;
+- sincronia de 40 ms em arquivos longos;
+- ausência de quadros pretos/congelados nas bordas;
+- bitrate/CRF controlados.
+
+O MP4 gerado no Edge foi validado apenas por assinatura de container (`ftyp`, `moov`, `avc1`, `mp4a`), não por `ffprobe` nem por reprodução em iPhone/Android.
+
+Decisão necessária: aceitar a limitação do navegador ou autorizar uma etapa futura com backend local FFmpeg.
+
+## 3. Testes com vídeos reais
+
+Ainda faltam testes com:
+
+- gravações longas de celular e OBS (30–60 min);
+- frame rate variável;
+- metadado de rotação;
+- HDR e 10 bits;
+- múltiplas faixas de áudio;
+- arquivos corrompidos ou com codecs incomuns;
+- caminhos com espaço, acento e apóstrofo.
+
+Os fixtures atuais são curtos e sintéticos (`sample.mp4`, `long.webm`, `ptbr-fala.webm`).
+
+## 4. Acessibilidade e foco em modais
+
+Há foco visível em boa parte dos controles, mas ainda falta auditar:
+
+- foco preso dentro dos modais;
+- retorno de foco ao fechar;
+- anúncio de progresso em `aria-live`;
+- navegação completa por teclado no editor de legendas;
+- contraste de todos os estados (hover, foco, desabilitado) nos dois temas.
+
+## 5. Limpeza de arquivos temporários
+
+Os scripts de automação de fluxo ainda estão em `C:\Users\DUARDIN\AppData\Local\Temp\opencode\corta-test`. Eles não fazem parte do repositório. Se quiser, podem ser movidos para `tests/e2e` em uma próxima rodada.
+
+## 6. Nome e identidade
+
+O app continua com o nome `ApolloCut`. Nenhuma troca de nome foi feita. A sugestão de três nomes alternativos ainda não foi produzida.

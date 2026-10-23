@@ -75,6 +75,9 @@ async function dismissOpening(page) {
     await page.evaluate(() => document.querySelector('[data-theme-choice="auto"]').classList.contains("active")),
     true
   );
+  await page.emulateMediaFeatures([{ name: "prefers-color-scheme", value: "light" }]);
+  await new Promise((resolve) => setTimeout(resolve, 150));
+  assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), "light");
 
   await page.select("#settingsLang", "en");
   assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem("apollocut.settings.v2")).lang), "en");
