@@ -12,6 +12,21 @@
   <link rel="preload" href="assets/fonts/cormorant-garamond-italic-latin.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="assets/fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="assets/fonts/cinzel-500-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <script>
+    (function () {
+      try {
+        var saved = JSON.parse(localStorage.getItem("apollocut.settings.v2") || "{}");
+        var pref = saved && saved.theme;
+        if (pref !== "light" && pref !== "dark" && pref !== "auto") pref = "auto";
+        var dark = pref === "dark" || (pref === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+        document.documentElement.dataset.themePref = pref;
+      } catch (_) {
+        document.documentElement.dataset.theme = "light";
+        document.documentElement.dataset.themePref = "auto";
+      }
+    })();
+  </script>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -944,6 +959,7 @@
     <div class="noscript">O ateliê precisa de JavaScript para ler e cortar o seu filme.</div>
   </noscript>
 
+  <script src="lib/captions.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

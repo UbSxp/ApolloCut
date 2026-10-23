@@ -7,6 +7,16 @@
   "use strict";
 
   const $id = (id) => document.getElementById(id);
+  const Captions = window.ApolloCaptions;
+  if (!Captions) throw new Error("ApolloCaptions não carregado.");
+  const {
+    parseTimecode,
+    parseSubtitles,
+    buildGroupsFromCues,
+    wordsToGroups,
+    groupsFromWhisperChunks,
+    sanitizeTranscript,
+  } = Captions;
   const ids = `opening openingSkip landing studioScreen studioBack studioBrand newFilmBtn openStudioBtn fileInput srtInput
     dropzone fileName fileMeta studioKind studioStateLabel analysisBadge studioSteps
     frame previewVideo captions frameCaptionNote frameWatermark frameEmpty previewLabel previewFormat
@@ -22,7 +32,8 @@
     brandWatermarkToggle brandWatermarkLabel exportProgress exportBar exportStatus exportPct exportResult
     exportDone exportFileInfo downloadLink exportStart exportCancel exportClose
     kitOverlay kitTitle kitDescription kitHashtags kitClose kitDownloadCover kitDownloadTxt kitExport
-    toasts samplerVideo`;
+    settingsOverlay settingsClose settingsDone settingsReset themeChoice settingsLang
+    ambientToggle reducedMotionToggle soundToggle toasts samplerVideo`;
   const els = {};
   ids.split(/\s+/).filter(Boolean).forEach((id) => { els[id] = $id(id); });
 
@@ -31,7 +42,23 @@
   const RATIO_DIMS = { "9:16": [1080, 1920], "1:1": [1080, 1080], "16:9": [1920, 1080] };
   const WHISPER_LANGS = { pt: "portuguese", en: "english", es: "spanish" };
   const WHISPER_CDN = "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.5";
+  const WHISPER_MODEL = "onnx-community/whisper-small_timestamped";
   const SETTINGS_KEY = "apollocut.settings.v2";
+  const THEME_META = { light: "#f6efe3", dark: "#0c1420" };
+  const THEME_MEDIA = window.matchMedia("(prefers-color-scheme: dark)");
+  const DEFAULT_SETTINGS = Object.freeze({
+    length: 60,
+    count: 4,
+    ratio: "9:16",
+    style: "ode",
+    focus: 50,
+    lang: "pt",
+    brand: "",
+    theme: "auto",
+    ambient: true,
+    reducedMotion: false,
+    sound: false,
+  });
 
   const state = {
     file: null,
@@ -49,30 +76,16 @@
     cueSource: null,
     analysis: { running: false, cancel: false, samples: [], total: 0, done: 0 },
     audio: { ctx: null, source: null, monitor: null, dest: null },
-    capture: { running: false, cancel: false, finish: null, recorder: null, modelPct: 0 },
+    capture: { running: false, cancel: false, finish: null, modelPct: 0 },
     whisper: { pipe: null, loading: null, lastProgress: -1 },
     export: { running: false, cancel: false, url: null, recorder: null, actx: null },
     cover: { frame: null, time: 0, token: 0 },
     kit: null,
     ui: { tab: "scene" },
-    settings: {
-      length: 60,
-      count: 4,
-      ratio: "9:16",
-      style: "ode",
-      focus: 50,
-      lang: "pt",
-      brand: "",
-    },
+    settings: { ...DEFAULT_SETTINGS },
     captionView: { group: -1, clipId: null, ref: null },
     playerRaf: 0,
   };
-
-  const decoderEl = document.createElement("textarea");
-  function decodeEntities(text) {
-    decoderEl.innerHTML = String(text);
-    return decoderEl.value;
-  }
 
   /* ---------- utilidades ---------- */
 
@@ -161,6 +174,10 @@
       if (Number.isFinite(focus) && focus >= 0 && focus <= 100) state.settings.focus = focus;
       if (["pt", "en", "es", "auto"].includes(saved.lang)) state.settings.lang = saved.lang;
       if (typeof saved.brand === "string") state.settings.brand = saved.brand.slice(0, 32);
+      if (["light", "dark", "auto"].includes(saved.theme)) state.settings.theme = saved.theme;
+      if (typeof saved.ambient === "boolean") state.settings.ambient = saved.ambient;
+      if (typeof saved.reducedMotion === "boolean") state.settings.reducedMotion = saved.reducedMotion;
+      if (typeof saved.sound === "boolean") state.settings.sound = saved.sound;
     } catch (_) { /* configuração corrompida, segue o padrão */ }
   }
 
@@ -208,6 +225,76 @@
 
   function updateHeaderCta() {
     els.openStudioBtn.textContent = state.ready ? "Voltar ao ateliê" : "Abrir o ateliê";
+  }
+
+  function resolvedTheme(pref) {
+    return pref === "dark" || (pref === "auto" && THEME_MEDIA.matches) ? "dark" : "light";
+  }
+
+  function applyMotionSettings() {
+    const root = document.documentElement;
+    const reduced = Boolean(state.settings.reducedMotion);
+    root.dataset.reducedMotion = reduced ? "true" : "false";
+    root.dataset.ambient = state.settings.ambient ? "on" : "off";
+    if (els.ambientToggle) els.ambientToggle.checked = state.settings.ambient;
+    if (els.reducedMotionToggle) els.reducedMotionToggle.checked = reduced;
+    if (els.soundToggle) els.soundToggle.checked = Boolean(state.settings.sound);
+  }
+
+  function applyTheme(pref, animate = false) {
+    const choice = ["light", "dark", "auto"].includes(pref) ? pref : "auto";
+    state.settings.theme = choice;
+    const theme = resolvedTheme(choice);
+    const dark = theme === "dark";
+    const root = document.documentElement;
+    root.dataset.theme = theme;
+    root.dataset.themePref = choice;
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", THEME_META[theme]);
+    document.querySelectorAll(".js-theme").forEach((button) => {
+      button.setAttribute("aria-pressed", String(dark));
+      button.setAttribute("aria-label", dark ? "Mudar para o dia" : "Mudar para a noite");
+      button.setAttribute("title", dark ? "Mudar para o dia" : "Mudar para a noite");
+      const use = button.querySelector("use");
+      if (use) use.setAttribute("href", dark ? "#i-sun" : "#i-moon");
+    });
+    document.querySelectorAll("#themeChoice [data-theme-choice]").forEach((button) => {
+      const active = button.dataset.themeChoice === choice;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-pressed", String(active));
+    });
+    if (animate && !state.settings.reducedMotion) {
+      root.classList.add("theme-transition");
+      window.clearTimeout(applyTheme.timer);
+      applyTheme.timer = window.setTimeout(() => root.classList.remove("theme-transition"), 620);
+    }
+  }
+
+  function toggleTheme() {
+    const next = resolvedTheme(state.settings.theme) === "dark" ? "light" : "dark";
+    applyTheme(next, true);
+    saveSettings();
+  }
+
+  function playChime() {
+    if (!state.settings.sound) return;
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const now = ctx.currentTime;
+      [523.25, 659.25, 783.99].forEach((frequency, index) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = frequency;
+        gain.gain.setValueAtTime(0.0001, now + index * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.045, now + index * 0.08 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + index * 0.08 + 0.45);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(now + index * 0.08);
+        osc.stop(now + index * 0.08 + 0.5);
+      });
+      window.setTimeout(() => ctx.close().catch(() => {}), 900);
+    } catch (_) { /* som é opcional */ }
   }
 
   function dismissOpening() {
@@ -1069,104 +1156,6 @@
      LEGENDAS: SRT / VTT
      ============================================================ */
 
-  function parseTimecode(value) {
-    const input = String(value || "").trim();
-    const match = input.match(/(?:(\d{1,3}):)?(\d{1,2}):(\d{1,2})(?:[.,](\d{1,3}))?/);
-    if (!match) return NaN;
-    const h = match[1] ? Number(match[1]) : 0;
-    const m = Number(match[2]);
-    const s = Number(match[3]);
-    const ms = match[4] ? Number(match[4].padEnd(3, "0")) : 0;
-    if (![h, m, s, ms].every(Number.isFinite)) return NaN;
-    return h * 3600 + m * 60 + s + ms / 1000;
-  }
-
-  function parseSubtitles(raw) {
-    const text = String(raw || "").replace(/^\uFEFF/, "").replace(/\r/g, "");
-    const blocks = text.split(/\n{2,}/);
-    const cues = [];
-    const seen = new Set();
-    for (const block of blocks) {
-      const lines = block.split("\n");
-      const timeIndex = lines.findIndex((line) => line.includes("-->"));
-      if (timeIndex < 0) continue;
-      const timeLine = lines[timeIndex];
-      const parts = timeLine.split("-->");
-      if (parts.length < 2) continue;
-      const start = parseTimecode(parts[0]);
-      const end = parseTimecode(parts[1]);
-      if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) continue;
-      const content = lines
-        .slice(timeIndex + 1)
-        .join(" ")
-        .replace(/<[^>]*>/g, "")
-        .replace(/\{[^}]*\}/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
-      const clean = decodeEntities(content).trim();
-      if (!clean) continue;
-      const key = `${start.toFixed(2)}|${end.toFixed(2)}|${clean}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      cues.push({ start, end, text: clean });
-    }
-    cues.sort((a, b) => a.start - b.start || a.end - b.end);
-    return cues;
-  }
-
-  function buildGroupsFromCues(cues, clipStart, clipEnd) {
-    const groups = [];
-    for (const cue of cues) {
-      if (cue.end <= clipStart + 0.01 || cue.start >= clipEnd - 0.01) continue;
-      const cs = Math.max(cue.start, clipStart) - clipStart;
-      const ce = Math.min(cue.end, clipEnd) - clipStart;
-      if (ce - cs < 0.08) continue;
-      const rawWords = cue.text.split(/\s+/).filter(Boolean);
-      if (!rawWords.length) continue;
-      const weights = rawWords.map((word) => Math.max(2, word.replace(/[^\p{L}\p{N}]/gu, "").length || 1));
-      const totalWeight = weights.reduce((sum, value) => sum + value, 0);
-      let acc = 0;
-      const words = rawWords.map((text, index) => {
-        const weight = weights[index];
-        const start = cs + (acc / totalWeight) * (ce - cs);
-        acc += weight;
-        const end = cs + (acc / totalWeight) * (ce - cs);
-        return { text, start, end };
-      });
-      let current = [];
-      let chars = 0;
-      const flush = () => {
-        if (!current.length) return;
-        groups.push({
-          start: current[0].start,
-          end: current[current.length - 1].end,
-          words: current.map((word) => ({ ...word })),
-        });
-        current = [];
-        chars = 0;
-      };
-      for (const word of words) {
-        const clean = word.text;
-        if (!current.length) {
-          current.push(word);
-          chars = clean.length;
-          continue;
-        }
-        if (current.length >= 4 || chars + 1 + clean.length > 30) {
-          flush();
-          current.push(word);
-          chars = clean.length;
-        } else {
-          current.push(word);
-          chars += 1 + clean.length;
-        }
-      }
-      flush();
-    }
-    groups.sort((a, b) => a.start - b.start || a.end - b.end);
-    return groups;
-  }
-
   function deriveTitleFromGroups(groups) {
     for (const group of groups) {
       const raw = group.words.map((word) => word.text).join(" ").replace(/\s+/g, " ").trim();
@@ -1408,12 +1397,6 @@
     return state.audio;
   }
 
-  function chooseAudioMime() {
-    if (!window.MediaRecorder) return "";
-    const types = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"];
-    return types.find((type) => MediaRecorder.isTypeSupported(type)) || "";
-  }
-
   function throwIfCancelled(runId) {
     if (state.capture.cancel || runId !== state.capture.runId) {
       throw new Error("cancelled");
@@ -1428,31 +1411,35 @@
     seekPreview(clip.start + 0.02);
     await new Promise((resolve) => setTimeout(resolve, 160));
     throwIfCancelled(runId);
-    if (!window.MediaRecorder) {
-      throw new Error("MediaRecorder indisponível");
-    }
-    const mime = chooseAudioMime();
-    const rec = new MediaRecorder(
-      audio.dest.stream,
-      mime ? { mimeType: mime, audioBitsPerSecond: 128000 } : { audioBitsPerSecond: 128000 }
-    );
-    state.capture.recorder = rec;
-    const chunks = [];
-    rec.addEventListener("dataavailable", (event) => {
-      if (event.data && event.data.size) chunks.push(event.data);
-    });
-    const dataPromise = new Promise((resolve) => {
-      rec.addEventListener("stop", () => {
-        resolve(new Blob(chunks, { type: rec.mimeType || mime || "audio/webm" }));
-      }, { once: true });
-    });
+    if (!audio.ctx.createScriptProcessor) throw new Error("captura de áudio indisponível");
 
-    rec.start(250);
+    const processor = audio.ctx.createScriptProcessor(4096, 2, 1);
+    const mute = audio.ctx.createGain();
+    mute.gain.value = 0;
+    const chunks = [];
+    let capturing = true;
+    processor.onaudioprocess = (event) => {
+      if (!capturing) return;
+      const input = event.inputBuffer;
+      const left = input.getChannelData(0);
+      const right = input.numberOfChannels > 1 ? input.getChannelData(1) : left;
+      const mono = new Float32Array(left.length);
+      for (let i = 0; i < left.length; i += 1) mono[i] = (left[i] + right[i]) * 0.5;
+      chunks.push(mono);
+    };
+    audio.source.connect(processor);
+    processor.connect(mute);
+    mute.connect(audio.ctx.destination);
+
+    const startedAt = performance.now();
+    let playStartedAt = 0;
     try {
       await els.previewVideo.play();
+      playStartedAt = performance.now();
     } catch (_) {
-      // Mesmo sem áudio audível, o MediaRecorder pode capturar a faixa.
+      // Mesmo sem áudio audível, a captura pode continuar.
     }
+
     const target = Math.max(0.5, clip.length);
     state.capture.phase = "capture";
     await new Promise((resolve) => {
@@ -1460,10 +1447,12 @@
       const stop = () => {
         if (settled) return;
         settled = true;
+        capturing = false;
         try { els.previewVideo.pause(); } catch (_) {}
-        if (rec.state !== "inactive") {
-          try { rec.stop(); } catch (_) {}
-        }
+        try { audio.source.disconnect(processor); } catch (_) {}
+        try { processor.disconnect(); } catch (_) {}
+        try { mute.disconnect(); } catch (_) {}
+        processor.onaudioprocess = null;
         resolve();
       };
       state.capture.finish = stop;
@@ -1495,23 +1484,33 @@
     });
 
     state.capture.finish = null;
-    const blob = await dataPromise;
     throwIfCancelled(runId);
-    if (!blob.size) throw new Error("audio-empty");
+    if (!chunks.length) throw new Error("audio-empty");
+    let total = 0;
+    for (const chunk of chunks) total += chunk.length;
+    if (!total) throw new Error("audio-empty");
+    const raw = new Float32Array(total);
+    let offset = 0;
+    for (const chunk of chunks) {
+      raw.set(chunk, offset);
+      offset += chunk.length;
+    }
 
-    const arrayBuffer = await blob.arrayBuffer();
-    const buffer = await audio.ctx.decodeAudioData(arrayBuffer.slice(0));
-    if (!buffer.duration) throw new Error("audio-empty");
     const rate = 16000;
-    const offline = new OfflineAudioContext(1, Math.max(1, Math.ceil(buffer.duration * rate)), rate);
+    const sourceBuffer = audio.ctx.createBuffer(1, raw.length, audio.ctx.sampleRate);
+    sourceBuffer.copyToChannel(raw, 0);
+    const offline = new OfflineAudioContext(1, Math.max(1, Math.ceil(sourceBuffer.duration * rate)), rate);
     const source = offline.createBufferSource();
-    source.buffer = buffer;
+    source.buffer = sourceBuffer;
     source.connect(offline.destination);
     source.start(0);
     const rendered = await offline.startRendering();
     throwIfCancelled(runId);
     setWhisperStage("prepare", 100, "Áudio preparado. Procurando os trechos de fala…");
-    return rendered.getChannelData(0).slice();
+    return {
+      samples: rendered.getChannelData(0).slice(),
+      lead: playStartedAt > 0 ? Math.max(0, (playStartedAt - startedAt) / 1000) : 0,
+    };
   }
 
   function drawWaveform(samples) {
@@ -1613,50 +1612,6 @@
     return segments;
   }
 
-  function wordsToGroups(text, start, end) {
-    const rawWords = String(text).replace(/\s+/g, " ").trim().split(" ").filter(Boolean);
-    if (!rawWords.length) return [];
-    const weights = rawWords.map((word) => Math.max(2, word.replace(/[^\p{L}\p{N}]/gu, "").length || 1));
-    const total = weights.reduce((sum, value) => sum + value, 0);
-    const duration = Math.max(0.1, end - start);
-    let acc = 0;
-    const words = rawWords.map((word, index) => {
-      const begin = start + (acc / total) * duration;
-      acc += weights[index];
-      const finish = start + (acc / total) * duration;
-      return { text: word, start: begin, end: finish };
-    });
-    const groups = [];
-    let current = [];
-    let chars = 0;
-    const flush = () => {
-      if (!current.length) return;
-      groups.push({
-        start: current[0].start,
-        end: current[current.length - 1].end,
-        words: current.map((word) => ({ ...word })),
-      });
-      current = [];
-      chars = 0;
-    };
-    for (const word of words) {
-      if (!current.length) {
-        current.push(word);
-        chars = word.text.length;
-        continue;
-      }
-      if (current.length >= 4 || chars + 1 + word.text.length > 28) {
-        flush();
-        current.push(word);
-        chars = word.text.length;
-      } else {
-        current.push(word);
-        chars += 1 + word.text.length;
-      }
-    }
-    flush();
-    return groups;
-  }
 
   async function getTranscriber() {
     if (state.whisper.pipe) return state.whisper.pipe;
@@ -1665,7 +1620,7 @@
       logWhisper("Importando o motor de transcrição local…");
       const mod = await import(WHISPER_CDN);
       logWhisper("Baixando o modelo Whisper (só na primeira vez)…");
-      const pipe = await mod.pipeline("automatic-speech-recognition", "onnx-community/whisper-tiny", {
+      const pipe = await mod.pipeline("automatic-speech-recognition", WHISPER_MODEL, {
         dtype: "q8",
         progress_callback: (progress) => {
           if (progress && progress.status === "progress" && progress.progress != null) {
@@ -1721,9 +1676,14 @@
     modelPromise.catch(() => {});
 
     try {
-      const audio = await captureClipAudio(clip, runId);
+      const capture = await captureClipAudio(clip, runId);
+      const audio = capture.samples;
+      const timelineOffset = 0.02 - capture.lead;
       throwIfCancelled(runId);
       drawWaveform(audio);
+      if (capture.lead > 0.05) {
+        logWhisper(`Compensando ${Math.round(capture.lead * 1000)} ms de latência da captura.`);
+      }
       await new Promise((resolve) => requestAnimationFrame(resolve));
       state.capture.phase = "model";
       if (state.capture.modelPct < 100) {
@@ -1733,44 +1693,60 @@
       }
       const pipe = await modelPromise;
       throwIfCancelled(runId);
-      setWhisperStage("write", 0, "Procurando os trechos de fala…");
-      const segments = detectSpeechSegments(audio, 16000);
-      if (!segments.length) {
-        throw new Error("no-speech");
-      }
-      logWhisper(`${segments.length} trechos de fala encontrados.`);
+      setWhisperStage("write", 0, "Transcrevendo o corte.");
       const language = state.settings.lang && state.settings.lang !== "auto"
         ? WHISPER_LANGS[state.settings.lang]
         : undefined;
-
-      const allGroups = [];
-      for (let i = 0; i < segments.length; i++) {
-        throwIfCancelled(runId);
-        const segment = segments[i];
-        const startSample = Math.max(0, Math.floor((segment.start - 0.08) * 16000));
-        const endSample = Math.min(audio.length, Math.ceil((segment.end + 0.08) * 16000));
-        if (endSample - startSample < 1600) continue;
-        setWhisperStage(
-          "write",
-          (i / segments.length) * 100,
-          `Transcrevendo trecho ${i + 1} de ${segments.length}…`
+      const options = {
+        task: "transcribe",
+        return_timestamps: "word",
+        chunk_length_s: 30,
+        stride_length_s: 5,
+      };
+      if (language) options.language = language;
+      let out = null;
+      try {
+        out = await pipe(audio, options);
+      } catch (error) {
+        logWhisper("Tempos por palavra indisponíveis; usando transcrição contínua.");
+        out = await pipe(audio, {
+          task: "transcribe",
+          chunk_length_s: 30,
+          stride_length_s: 5,
+          ...(language ? { language } : {}),
+        });
+      }
+      throwIfCancelled(runId);
+      setWhisperStage("write", 90, "Montando os blocos de legenda.");
+      const rawText = out && out.text
+        ? String(out.text)
+        : (Array.isArray(out && out.chunks) ? out.chunks.map((chunk) => chunk.text || "").join(" ") : "");
+      const cleanText = sanitizeTranscript(rawText);
+      if (!cleanText) throw new Error("no-speech");
+      const preview = cleanText.length > 72 ? `${cleanText.slice(0, 72)}...` : cleanText;
+      logWhisper(`Transcrição: "${preview}"`);
+      const allGroups = groupsFromWhisperChunks(out && out.chunks, {
+        timelineOffset,
+        clipLength: clip.length,
+        fallbackStart: 0,
+        fallbackEnd: audio.length / 16000,
+        maxWords: 4,
+        maxChars: 28,
+      });
+      if (Array.isArray(out.chunks) && out.chunks.some((chunk) => Array.isArray(chunk.timestamp))) {
+        logWhisper(`Tempos de palavra do modelo: ${out.chunks.length}.`);
+      }
+      if (!allGroups.length) {
+        const segments = detectSpeechSegments(audio, 16000);
+        const fallbackEnd = Math.min(clip.length, audio.length / 16000);
+        const fallback = wordsToGroups(
+          cleanText,
+          Math.max(0, timelineOffset),
+          fallbackEnd + timelineOffset,
+          { maxWords: 4, maxChars: 28 }
         );
-        let out = null;
-        try {
-          const options = { task: "transcribe" };
-          if (language) options.language = language;
-          out = await pipe(audio.slice(startSample, endSample), options);
-        } catch (error) {
-          logWhisper(`Trecho ${i + 1} não pôde ser transcrito.`);
-          continue;
-        }
-        throwIfCancelled(runId);
-        const text = out && out.text ? String(out.text).replace(/\s+/g, " ").trim() : "";
-        if (!text) continue;
-        const preview = text.length > 56 ? `${text.slice(0, 56)}…` : text;
-        logWhisper(`Trecho ${i + 1}: “${preview}”`);
-        const groups = wordsToGroups(text, segment.start, segment.end);
-        allGroups.push(...groups);
+        allGroups.push(...fallback.filter((group) => group.start < clip.length && group.end > 0));
+        logWhisper(`${segments.length} trechos de fala usados como referência.`);
       }
       throwIfCancelled(runId);
       if (!allGroups.length) throw new Error("empty");
@@ -1818,7 +1794,6 @@
       if (runId === state.capture.runId) {
         state.capture.running = false;
         if (state.audio.monitor) state.audio.monitor.gain.value = 1;
-        state.capture.recorder = null;
         state.capture.finish = null;
         els.whisperBtn.disabled = !currentClip();
         if (els.whisperStart.textContent === "Transcrevendo…") {
@@ -2636,6 +2611,7 @@
     link.click();
     link.remove();
     toast(`Corte exportado: ${ext.toUpperCase()} · ${fmtBytes(blob.size)}.`);
+    playChime();
   }
 
   function cleanupExport() {
@@ -2841,7 +2817,10 @@
     els.lenLabel.textContent = `${s.length} s`;
     els.countLabel.textContent = `${s.count} cortes`;
     els.langSelect.value = s.lang;
+    if (els.settingsLang) els.settingsLang.value = s.lang;
     els.brandInput.value = s.brand;
+    applyMotionSettings();
+    applyTheme(s.theme, false);
     setRangeFill(els.lenRange);
     setRangeFill(els.countRange);
     setRangeFill(els.focusRange);
@@ -2860,6 +2839,40 @@
 
   function bindEvents() {
     if (els.openingSkip) els.openingSkip.addEventListener("click", dismissOpening);
+
+    document.querySelectorAll(".js-theme").forEach((button) => {
+      button.addEventListener("click", toggleTheme);
+    });
+    document.querySelectorAll(".js-settings").forEach((button) => {
+      button.addEventListener("click", () => openOverlay(els.settingsOverlay));
+    });
+    if (els.settingsClose) els.settingsClose.addEventListener("click", () => closeOverlay(els.settingsOverlay));
+    if (els.settingsDone) els.settingsDone.addEventListener("click", () => closeOverlay(els.settingsOverlay));
+    if (els.settingsOverlay) {
+      els.settingsOverlay.addEventListener("click", (event) => {
+        if (event.target === els.settingsOverlay) closeOverlay(els.settingsOverlay);
+      });
+    }
+    if (els.themeChoice) {
+      els.themeChoice.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-theme-choice]");
+        if (!button) return;
+        applyTheme(button.dataset.themeChoice, true);
+        saveSettings();
+      });
+    }
+    if (els.settingsReset) {
+      els.settingsReset.addEventListener("click", () => {
+        state.settings = { ...DEFAULT_SETTINGS };
+        saveSettings();
+        applySettingsUI();
+        updateCaptionStatus();
+        updatePublishPanel();
+        updateSteps();
+        updateHeaderCta();
+        toast("Ajustes restaurados.");
+      });
+    }
 
     document.querySelectorAll(".js-pick").forEach((btn) => {
       btn.addEventListener("click", (event) => {
@@ -2997,10 +3010,36 @@
       setStyle(button.dataset.style);
     });
 
-    els.langSelect.addEventListener("change", () => {
-      state.settings.lang = els.langSelect.value;
+    const setLanguage = (value) => {
+      if (!["pt", "en", "es", "auto"].includes(value)) return;
+      state.settings.lang = value;
+      els.langSelect.value = value;
+      if (els.settingsLang) els.settingsLang.value = value;
       saveSettings();
-    });
+    };
+    els.langSelect.addEventListener("change", () => setLanguage(els.langSelect.value));
+    if (els.settingsLang) els.settingsLang.addEventListener("change", () => setLanguage(els.settingsLang.value));
+
+    if (els.ambientToggle) {
+      els.ambientToggle.addEventListener("change", () => {
+        state.settings.ambient = els.ambientToggle.checked;
+        applyMotionSettings();
+        saveSettings();
+      });
+    }
+    if (els.reducedMotionToggle) {
+      els.reducedMotionToggle.addEventListener("change", () => {
+        state.settings.reducedMotion = els.reducedMotionToggle.checked;
+        applyMotionSettings();
+        saveSettings();
+      });
+    }
+    if (els.soundToggle) {
+      els.soundToggle.addEventListener("change", () => {
+        state.settings.sound = els.soundToggle.checked;
+        saveSettings();
+      });
+    }
 
     els.brandInput.addEventListener("input", () => {
       state.settings.brand = els.brandInput.value.slice(0, 32);
@@ -3112,6 +3151,10 @@
         }
         if (!els.kitOverlay.hidden) {
           closeOverlay(els.kitOverlay);
+          return;
+        }
+        if (!els.settingsOverlay.hidden) {
+          closeOverlay(els.settingsOverlay);
         }
         return;
       }
@@ -3134,6 +3177,10 @@
     }
     document.addEventListener("keydown", onKeydown);
 
+    THEME_MEDIA.addEventListener("change", () => {
+      if (state.settings.theme === "auto") applyTheme("auto", false);
+    });
+
     window.addEventListener("beforeunload", () => {
       pausePreview();
       if (state.export.url) {
@@ -3150,7 +3197,7 @@
     els.samplerVideo.muted = true;
     setTab("scene");
     if (els.opening) {
-      const delay = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 350 : 1800;
+      const delay = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 350 : 1500;
       setTimeout(dismissOpening, delay);
     }
   }
