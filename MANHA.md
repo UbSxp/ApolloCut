@@ -124,6 +124,8 @@ git status --short
 - Correções de legendas: tag `checkpoint-01-legendas`.
 - Correções de tema: tag `checkpoint-02-tema`.
 - Acessibilidade e captura: tag `checkpoint-03-acessibilidade`.
+- Foco e retorno de foco: tag `checkpoint-04-foco`.
+- Exportação automatizada e fixture vertical: tag `checkpoint-05-exportacao`.
 - Branch da noite: `noite/aprimoramento`.
 
 Exemplo para voltar ao estado recebido:
