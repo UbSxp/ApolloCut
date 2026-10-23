@@ -42,7 +42,7 @@ Os dois bugs críticos da Fase 1 foram corrigidos e verificados:
 - Testes antigos de fluxo (fora do repositório, em `AppData\Local\Temp`): upload, análise, SRT, capa, ficha, exportação 9:16/1:1/16:9, cancelamentos e mobile.
 - `sample.mp4`: 10 s, 1280×720.
 - `long.webm`: 60 s, com áudio de fala.
-- `ptbr-fala.webm` (novo fixture): 16 s, 1280×720, fala sintética em pt-BR com texto de referência.
+- `ptbr-fala.webm` (novo fixture): 16 s, 1280×720, fala sintética em pt-BR com texto de referência.\n- `vertical-ptbr.webm` (novo fixture): 16 s, 1080×1920, mesma fala; regressão vertical.
 - Não há FFmpeg instalado no PATH; não foi possível gerar fixtures com FFmpeg nem validar `ffprobe`/`faststart` por linha de comando.
 
 ## Fase 1 — bugs críticos
@@ -122,7 +122,7 @@ npm run test:all
 
 - `npm run check`: sintaxe de `app.js` e `lib/captions.js`.
 - `npm test`: testes puros de legenda.
-- `npm run test:ui`: tema e persistência no Edge headless.
+- `npm run test:ui`: tema e persistência no Edge headless.\n- `npm run test:export`: importa SRT e exporta uma amostra 9:16 com legenda queimada; verifica o MP4 gerado.\n- Regressão manual com `vertical-ptbr.webm`: 1080×1920, análise e exportação 9:16 concluídas; MP4 com `ftyp`, `moov`, `avc1` e `mp4a`.
 - Testes de fumaça com vídeo real ficam em `tests/fixtures`; os scripts de automação de fluxo ainda estão fora do repositório, em `AppData\Local\Temp\opencode\corta-test`.
 
 ## Backlog por prioridade

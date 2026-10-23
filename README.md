@@ -45,12 +45,14 @@ npm run test:all
 - `npm run check`: verifica a sintaxe de `app.js` e `lib/captions.js`.
 - `npm test`: testes puros de parser SRT/VTT, rebase, recorte, agrupamento e alucinações.
 - `npm run test:ui`: testa tema claro/escuro/automático, persistência, modal de ajustes e idioma.
+- `npm run test:export`: importa SRT e exporta uma amostra 9:16 com legenda queimada, verificando o MP4 gerado.
 
 Os fixtures ficam em `tests/fixtures`:
 
 - `sample.mp4`: vídeo curto sem fala.
 - `long.webm`: 60 s com áudio.
 - `ptbr-fala.webm`: 16 s com fala sintética em português do Brasil.
+- `vertical-ptbr.webm`: 16 s, 1080×1920, com a mesma fala; usado na regressão vertical.
 - `teste.srt`: legenda de referência.
 
 ## Limitações conhecidas

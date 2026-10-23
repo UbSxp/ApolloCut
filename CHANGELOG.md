@@ -24,7 +24,8 @@
 
 - Testes puros de legenda.
 - Teste de interface para tema, persistência e idioma.
-- Fixtures com fala em português do Brasil.
+- Teste automatizado de exportação com SRT e legenda queimada.
+- Fixtures com fala em português do Brasil, incluindo versão vertical 1080×1920.
 - README, PROGRESSO, DECISOES, PENDENCIAS e relatório de auditoria atualizados.
 
 ### Ainda pendente

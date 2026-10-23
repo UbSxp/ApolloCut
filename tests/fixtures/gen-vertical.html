@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><title>Gerador de fixture vertical</title></head>
+<body style="margin:0;background:#111">
+<canvas id="canvas" width="1080" height="1920"></canvas>
+<audio id="audio" src="ptbr-fala.wav" preload="auto"></audio>
+<script>
+  window.gerarVideo = async function () {
+    const audio = document.getElementById("audio");
+    await new Promise((resolve, reject) => {
+      if (audio.readyState >= 1) return resolve();
+      audio.addEventListener("loadedmetadata", resolve, { once: true });
+      audio.addEventListener("error", reject, { once: true });
+    });
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const draw = () => {
+      const g = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      g.addColorStop(0, "#16283a");
+      g.addColorStop(0.55, "#2e6470");
+      g.addColorStop(1, "#8f652a");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = "rgba(246,239,227,.75)";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(canvas.width / 2, canvas.height / 2, 260, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = "#f6efe3";
+      ctx.font = "600 72px Georgia, serif";
+      ctx.textAlign = "center";
+      ctx.fillText("Formato vertical", canvas.width / 2, canvas.height / 2 - 20);
+      ctx.font = "500 38px sans-serif";
+      ctx.fillText("1080 × 1920 · teste de legenda", canvas.width / 2, canvas.height / 2 + 60);
+    };
+    draw();
+    const ac = new AudioContext();
+    await ac.resume();
+    const source = ac.createMediaElementSource(audio);
+    const dest = ac.createMediaStreamDestination();
+    source.connect(dest);
+    const stream = canvas.captureStream(30);
+    dest.stream.getAudioTracks().forEach((track) => stream.addTrack(track));
+    const types = ["video/webm;codecs=vp8,opus", "video/webm", "video/mp4"];
+    const mime = types.find((type) => MediaRecorder.isTypeSupported(type)) || "";
+    const recorder = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 2500000, audioBitsPerSecond: 128000 } : {});
+    const chunks = [];
+    recorder.addEventListener("dataavailable", (event) => { if (event.data.size) chunks.push(event.data); });
+    const stopped = new Promise((resolve) => recorder.addEventListener("stop", resolve, { once: true }));
+    recorder.start(250);
+    audio.currentTime = 0;
+    await audio.play();
+    const duration = Math.min(20, Math.max(4, audio.duration || 8));
+    await new Promise((resolve) => setTimeout(resolve, duration * 1000));
+    if (recorder.state !== "inactive") recorder.stop();
+    await stopped;
+    audio.pause();
+    const blob = new Blob(chunks, { type: recorder.mimeType || mime || "video/webm" });
+    const buffer = await blob.arrayBuffer();
+    let binary = "";
+    const bytes = new Uint8Array(buffer);
+    const step = 0x8000;
+    for (let i = 0; i < bytes.length; i += step) {
+      binary += String.fromCharCode.apply(null, bytes.subarray(i, i + step));
+    }
+    return { type: blob.type, base64: btoa(binary), duration };
+  };
+</script>
+</body>
+</html>

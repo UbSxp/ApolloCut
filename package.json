@@ -7,7 +7,8 @@
     "check": "node --check app.js && node --check lib/captions.js",
     "test": "node tests/caption-utils.test.js",
     "test:ui": "node tests/ui-theme.test.js",
-    "test:all": "npm run check && npm run test && npm run test:ui"
+    "test:export": "node tests/ui-export.test.js",
+    "test:all": "npm run check && npm run test && npm run test:ui && npm run test:export"
   },
   "devDependencies": {
     "puppeteer-core": "^23.11.1"

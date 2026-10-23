@@ -58,6 +58,8 @@
 | Tema | só claro, botões inertes | claro/escuro/automático persistente |
 | Testes | nenhum no repositório | 9 puros + 1 UI |
 | Exportação de fumaça | MP4 9:16, ~4,2 MB | continua passando |
+| Regressão vertical | não medida | 1080×1920, MP4 9:16 com `ftyp`, `moov`, `avc1`, `mp4a` |
+| Teste automatizado de exportação | não existia | `npm run test:export` passou |
 
 Tempo observado de transcrição no Edge headless (inclui download do modelo na primeira vez): ~58 s para 16 s de vídeo (incluindo o primeiro download); ~102 s para 60 s de vídeo. O download do modelo é de cerca de 240 MB na primeira vez.
 
