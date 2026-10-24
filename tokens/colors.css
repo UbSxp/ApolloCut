@@ -1,0 +1,33 @@
+:root {
+  /* Paleta de materiais (OKLCH L C H) + hex fallback */
+  --stone-pentelic:      0.96 0.006 85;   /* #F2F0EB */
+  --marble-parian:       0.98 0.003 90;   /* #FAFAF8 */
+  --surface-hover:       0.94 0.005 80;   /* #E8E4DC */
+  --border-default:      0.88 0.008 70;   /* #D0C8BD */
+  --border-focus:        0.78 0.12  85;   /* #C9A84C (gold-leaf) */
+  --aegean-deep:         0.38 0.12  240;  /* #1A3A6E */
+  --aurora-blue:         0.55 0.10  210;  /* #4A8FC2 */
+  --gold-leaf:           0.78 0.12  85;   /* #C9A84C */
+  --amphora-terracotta:  0.48 0.14  25;   /* #C04020 */
+  --black-figure:        0.10 0.00  0;    /* #101010 */
+  --laurel-muted:        0.45 0.06  130;  /* #5A7A5A */
+  --error-bg:            0.95 0.03  20;   /* #FDEAE6 */
+  --success-bg:          0.94 0.03  130;  /* #E6F4EA */
+}
+
+/* Helpers de cor para uso direto em componentes */
+:root {
+  --color-bg-primary: var(--stone-pentelic);
+  --color-bg-elevated: var(--marble-parian);
+  --color-bg-hover: var(--surface-hover);
+  --color-border: var(--border-default);
+  --color-border-focus: var(--border-focus);
+  --color-text-primary: var(--aegean-deep);
+  --color-accent-blue: var(--aurora-blue);
+  --color-gold: var(--gold-leaf);
+  --color-error: var(--amphora-terracotta);
+  --color-text-on-light: var(--black-figure);
+  --color-success-muted: var(--laurel-muted);
+  --color-bg-error: var(--error-bg);
+  --color-bg-success: var(--success-bg);
+}

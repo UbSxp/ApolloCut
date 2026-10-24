@@ -1,0 +1,20 @@
+:root {
+  /* Módulo base (M) = 8px */
+  --M: 8px;
+
+  /* Espaçamento semântico – múltiplos limpos de M */
+  --space-inset-xs: calc(0.25 * var(--M));   /* 2px  */
+  --space-inset-sm: calc(0.5  * var(--M));   /* 4px  */
+  --space-inset-md: calc(1    * var(--M));   /* 8px  */
+  --space-inset-lg: calc(2    * var(--M));   /* 16px */
+
+  --space-stack-xs: calc(0.5  * var(--M));
+  --space-stack-sm: calc(1    * var(--M));
+  --space-stack-md: calc(2    * var(--M));
+  --space-stack-lg: calc(3    * var(--M));   /* 24px */
+
+  --space-inline-xs: calc(0.5  * var(--M));
+  --space-inline-sm: calc(1    * var(--M));
+  --space-inline-md: calc(2    * var(--M));   /* 16px */
+  --space-inline-lg: calc(3    * var(--M));   /* 24px */
+}
