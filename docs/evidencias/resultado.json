@@ -17,7 +17,7 @@
   {
     "name": "4. Corte 1s–4s exporta WebM válido (9:16, ~3s)",
     "ok": true,
-    "detail": "720x1280 vp9 90 quadros 3s"
+    "detail": "720x1280 vp9 88 quadros 3s"
   },
   {
     "name": "5. Whisper transcreve a fala e os tempos são válidos",
@@ -37,7 +37,7 @@
   {
     "name": "B1. Vídeo sem áudio falha com mensagem clara",
     "ok": true,
-    "detail": "[18:27:14] Erro: Este vídeo não tem áudio decodificável (sem faixa de áudio ou arquivo dan"
+    "detail": "[18:31:45] Erro: Este vídeo não tem áudio decodificável (sem faixa de áudio ou arquivo dan"
   },
   {
     "name": "B2. Arquivo corrompido é recusado sem travar",
