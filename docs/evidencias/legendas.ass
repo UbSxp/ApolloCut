@@ -10,10 +10,9 @@ Style: Apollo,Cormorant Garamond,64,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-Dialogue: 0,0:00:00.00,0:00:01.79,Apollo,,0,0,0,,Ao no sei-on-tem e
-Dialogue: 0,0:00:01.79,0:00:03.32,Apollo,,0,0,0,,fui ao mercado
-Dialogue: 0,0:00:05.24,0:00:08.08,Apollo,,0,0,0,,comprei pela Libra-Oilate
-Dialogue: 0,0:00:09.92,0:00:11.64,Apollo,,0,0,0,,No caminho de volta
-Dialogue: 0,0:00:11.64,0:00:13.90,Apollo,,0,0,0,,encontrei meu vizinho e
-Dialogue: 0,0:00:13.90,0:00:16.46,Apollo,,0,0,0,,conversamos sobre o filme
-Dialogue: 0,0:00:16.46,0:00:17.24,Apollo,,0,0,0,,de ontem
+Dialogue: 0,0:00:00.02,0:00:01.08,Apollo,,0,0,0,,Ao no sei -on
+Dialogue: 0,0:00:01.08,0:00:02.98,Apollo,,0,0,0,,-tem e fui ao mercado
+Dialogue: 0,0:00:05.34,0:00:06.88,Apollo,,0,0,0,,Comprei pela Libra
+Dialogue: 0,0:00:06.88,0:00:12.84,Apollo,,0,0,0,,-Oilete. No caminho de\NVolta encontrei meu
+Dialogue: 0,0:00:12.84,0:00:16.54,Apollo,,0,0,0,,Vizinho e\NConversamos sobre o filme de
+Dialogue: 0,0:00:16.54,0:00:17.14,Apollo,,0,0,0,,Ontem

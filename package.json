@@ -21,6 +21,7 @@
     "fumaca": "node tests/e2e/abas-e-previa.mjs",
     "auditoria": "node tests/e2e/run-all.mjs && node tests/e2e/abas-e-previa.mjs",
     "medir": "node tests/legendas/medir.mjs",
+    "testes": "node --test tests/legendas/texto.test.mjs tests/legendas/segmentacao.test.mjs",
     "clipes": "powershell -NoProfile -ExecutionPolicy Bypass -File tests/legendas/gerar-clipes.ps1",
     "fixtures": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/gerar-fixtures.ps1",
     "pwa:generate": "workbox generateSW workbox-config.cjs",

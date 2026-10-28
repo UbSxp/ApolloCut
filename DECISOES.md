@@ -165,3 +165,37 @@
 - Contexto: os botões de download vivem dentro de `#tabCaptions`. Fora da aba eles ficam `hidden` e `page.click` espera visibilidade; o teste antigo não abria a aba e o download estourava timeout.
 - Escolha: a suíte clica em `.console-tab[data-tab="captions"]` antes de `#exportSrtBtn`/`#exportAssBtn`.
 - Motivo: reproduz o caminho real do usuário em vez de furar a UI por `evaluate`.
+
+### Legendas: timestamp por palavra do próprio modelo
+
+- Contexto: `distributeWords` espalhava as palavras dentro do bloco do Whisper; o erro de tempo crescia com o tamanho do bloco (até 3,1 s).
+- Opções: alinhamento forçado com um segundo modelo; `return_timestamps: 'word'` dos modelos `*_timestamped`.
+- Escolha: `onnx-community/whisper-{tiny,base,small}_timestamped` com `return_timestamps: 'word'`, um modelo por modo (`fast`/`auto`/`precise`).
+- Motivo: erro médio caiu de 505 ms para 77 ms sem custo extra de inferência. Alinhamento forçado ficou para depois: o viés residual (+50 a +90 ms) já está dentro da meta.
+- Reversão: `git revert` do commit `feat(legendas-tempo)`.
+
+### Tempo: corrigir só erro grosseiro de pausa, sem desconto fixo
+
+- Contexto: o Whisper às vezes coloca a primeira palavra da frase seguinte dentro da pausa, ou na cauda da frase anterior.
+- Opções: redistribuir todas as palavras dentro das regiões de fala (`alignToRegions`); mover só a palavra que caiu em pausa para o início real da fala; somar um desconto fixo de latência.
+- Escolha: `alignWordsToSpeech` — só move quando a palavra está em silêncio ou na cauda (≤ 0,3 s) de uma região seguida de pausa > 0,6 s, só se o deslocamento for ≥ 0,2 s, no máximo 3 s, e **nunca** além do início da palavra seguinte.
+- Motivo: `alignToRegions` foi descartado após 3 tentativas (piorava 01/04/08 em cascata). O desconto fixo de 60 ms foi medido e piorou (77 → 148 ms). O limite na palavra seguinte evita empate de tempo, que invertia a ordem do texto ("certo, Eu né?" em vez de "certo, né? Eu").
+- Reversão: `git revert` do commit `feat(legendas-tempo)`.
+
+### VAD com pausa mínima de 0,4 s
+
+- Contexto: as regiões detectadas no áudio decodificado pelo navegador são mais fragmentadas que no wav do ffmpeg; com `minGap` 0,12 s cada respiração virava fim de frase e o encaixe empurrava frases inteiras.
+- Escolha: `speechRegions(..., { minGap: 0.4 })` dentro do alinhamento.
+- Motivo: pausa de 0,4 s é o mesmo limiar que encerra bloco de legenda, então as duas coisas concordam.
+
+### `monotonic` corta o fim invasor antes de ordenar
+
+- Contexto: ao empurrar uma palavra, o fim antigo dela (longo demais) invadia a próxima e o `monotonic` achatava a frase inteira em passos de 60 ms.
+- Escolha: cortar `end` no `start` da palavra seguinte antes de garantir a ordem; piso de 60 ms por palavra.
+- Motivo: foi o que tirou o erro médio de 148 ms para 77 ms.
+
+### Resumo do `medir.mjs` soma por palavra, não o pior clipe
+
+- Contexto: o p95 do resumo era `max` dos p95 por clipe; um token de número fundido (clipe 04) escondia o resultado real.
+- Escolha: p95 e média sobre todas as palavras comparadas; a coluna por clipe continua mostrando o p95 de cada um.
+- Motivo: a meta é "95% das palavras abaixo de 200 ms", que é uma conta sobre palavras, não sobre clipes.

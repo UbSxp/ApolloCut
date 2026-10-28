@@ -1,41 +1,203 @@
 {
   "cues": [
     {
-      "start": 0,
-      "end": 1.7876923076923075,
-      "text": "Ao no sei-on-tem e"
+      "start": 0.02,
+      "end": 1.08,
+      "text": "Ao no sei -on",
+      "words": [
+        {
+          "text": "Ao",
+          "start": 0.02,
+          "end": 0.34
+        },
+        {
+          "text": "no",
+          "start": 0.34,
+          "end": 0.5
+        },
+        {
+          "text": "sei",
+          "start": 0.5,
+          "end": 0.8
+        },
+        {
+          "text": "-on",
+          "start": 0.8,
+          "end": 1.08
+        }
+      ],
+      "lines": [
+        "Ao no sei -on"
+      ]
     },
     {
-      "start": 1.7876923076923075,
-      "end": 3.32,
-      "text": "fui ao mercado"
+      "start": 1.08,
+      "end": 2.98,
+      "text": "-tem e fui ao mercado",
+      "words": [
+        {
+          "text": "-tem",
+          "start": 1.08,
+          "end": 1.34
+        },
+        {
+          "text": "e",
+          "start": 1.34,
+          "end": 1.6400000000000001
+        },
+        {
+          "text": "fui",
+          "start": 1.6400000000000001,
+          "end": 1.94
+        },
+        {
+          "text": "ao",
+          "start": 1.94,
+          "end": 2.14
+        },
+        {
+          "text": "mercado,",
+          "start": 2.14,
+          "end": 2.98
+        }
+      ],
+      "lines": [
+        "-tem e fui ao mercado,"
+      ]
     },
     {
-      "start": 5.24,
-      "end": 8.08,
-      "text": "comprei pela Libra-Oilate"
+      "start": 5.34,
+      "end": 6.88,
+      "text": "Comprei pela Libra",
+      "words": [
+        {
+          "text": "comprei",
+          "start": 5.34,
+          "end": 5.84
+        },
+        {
+          "text": "pela",
+          "start": 5.84,
+          "end": 6.359999999999999
+        },
+        {
+          "text": "Libra",
+          "start": 6.359999999999999,
+          "end": 6.88
+        }
+      ],
+      "lines": [
+        "comprei pela Libra"
+      ]
     },
     {
-      "start": 9.92,
-      "end": 11.638857142857143,
-      "text": "No caminho de volta"
+      "start": 6.88,
+      "end": 12.84,
+      "text": "-Oilete. No caminho de\nVolta encontrei meu",
+      "words": [
+        {
+          "text": "-Oilete.",
+          "start": 6.88,
+          "end": 7.88
+        },
+        {
+          "text": "No",
+          "start": 10.040000000000001,
+          "end": 10.16
+        },
+        {
+          "text": "caminho",
+          "start": 10.16,
+          "end": 10.6
+        },
+        {
+          "text": "de",
+          "start": 10.6,
+          "end": 11.08
+        },
+        {
+          "text": "volta",
+          "start": 11.08,
+          "end": 11.48
+        },
+        {
+          "text": "encontrei",
+          "start": 11.48,
+          "end": 12.44
+        },
+        {
+          "text": "meu",
+          "start": 12.44,
+          "end": 12.84
+        }
+      ],
+      "lines": [
+        "-Oilete. No caminho de",
+        "volta encontrei meu"
+      ]
     },
     {
-      "start": 11.638857142857143,
-      "end": 13.9025,
-      "text": "encontrei meu vizinho e"
+      "start": 12.84,
+      "end": 16.54,
+      "text": "Vizinho e\nConversamos sobre o filme de",
+      "words": [
+        {
+          "text": "vizinho",
+          "start": 12.84,
+          "end": 13.6
+        },
+        {
+          "text": "e",
+          "start": 13.6,
+          "end": 13.86
+        },
+        {
+          "text": "conversamos",
+          "start": 13.86,
+          "end": 14.84
+        },
+        {
+          "text": "sobre",
+          "start": 14.84,
+          "end": 15.44
+        },
+        {
+          "text": "o",
+          "start": 15.44,
+          "end": 15.62
+        },
+        {
+          "text": "filme",
+          "start": 15.62,
+          "end": 16.24
+        },
+        {
+          "text": "de",
+          "start": 16.24,
+          "end": 16.54
+        }
+      ],
+      "lines": [
+        "vizinho e",
+        "conversamos sobre o filme de"
+      ]
     },
     {
-      "start": 13.9025,
-      "end": 16.46125,
-      "text": "conversamos sobre o filme"
-    },
-    {
-      "start": 16.46125,
-      "end": 17.24,
-      "text": "de ontem"
+      "start": 16.54,
+      "end": 17.14,
+      "text": "Ontem",
+      "words": [
+        {
+          "text": "ontem.",
+          "start": 16.54,
+          "end": 17.14
+        }
+      ],
+      "lines": [
+        "ontem."
+      ]
     }
   ],
-  "log": "[19:46:51] Iniciando transcrição…\n[19:46:51] Áudio pronto: 20.0s, nível 0.063.\n[19:47:04] Modelo onnx-community/whisper-base (wasm) em 13.2s.\n[19:47:04] Pronto: 7 blocos.",
-  "model": "onnx-community/whisper-base"
+  "log": "[20:13:27] Iniciando transcrição…\n[20:13:27] Áudio pronto: 20.0s, nível 0.063.\n[20:13:43] Modelo onnx-community/whisper-base_timestamped (wasm) em 15.4s.\n[20:13:43] Pronto: 6 blocos.",
+  "model": "onnx-community/whisper-base_timestamped"
 }

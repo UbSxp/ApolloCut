@@ -125,6 +125,7 @@ function cacheElements() {
     lenRange lenLabel countRange countLabel ratioGrid analyzeBtn analysisHint analysisNote
     analysisSummary sumSamples sumSelected sumScore sumNote activeClipInfo activeClipTitle activeClipMeta
     captionStatus captionStatusTitle captionStatusText importSrtBtn whisperBtn styleGrid styleHint
+    hardWordsInput qualitySelect
     exportSrtBtn exportAssBtn langSelect brandInput tabScene tabCaptions tabPublish clipsSection clipsMeta clipGrid
     cueEditor cueList cueEmpty addCueBtn captionsHint publishHint publishGoScene
     analysisOverlay analysisBar analysisPct analysisStage analysisSheet analysisCounter analysisCancel analysisCancelBtn analysisSub analysisTitle

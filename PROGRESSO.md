@@ -27,6 +27,26 @@ Suítes: `node tests/e2e/run-all.mjs` **14/14** · `node tests/e2e/abas-e-previa
 ## Pendências conhecidas
 
 - MP4 do `MediaRecorder` é fragmentado (sem `faststart`, `moov` no fim) — ver `PENDENCIAS_PARA_O_USUARIO.md` §2.
-- Timestamps do Whisper são por bloco, não por palavra.
 - WebGPU é detectado, mas a inferência usa wasm/q8.
 - `vendor/` (50 MB) não vai para o git; `INICIAR.bat` e `npm run vendor` regeneram.
+
+## Rodada 08 — qualidade das legendas (branch `feat/qualidade-legendas`)
+
+| # | Meta | Estado | Número |
+|---|---|---|---|
+| 1 | Banco de clipes + medição | Feito | 12 clipes pt-BR, `tests/legendas/medir.mjs`, linha de base |
+| 2 | Erro médio de tempo < 100 ms | **Atingido** | 505 → **77 ms** |
+| 3 | p95 de tempo < 200 ms | **Atingido** | 3100 → **199 ms** |
+| 4 | Alucinações em silêncio = 0 | **Atingido** | 5 → **0** |
+| 5 | WER ≤ 10% | Atingido no global | 4,3% (pior clipe: 14,3% em 07-gírias) |
+| 6 | Estilos, motor único de render, edição, SRT/VTT/ASS | Pendente | passos 5–7 do plano |
+
+Detalhe em [`docs/legendas/resultados.md`](docs/legendas/resultados.md).
+
+### Diário (rodada 08)
+
+1. **Banco + harness.** 12 clipes TTS pt-BR com referência por palavra, `medir.mjs` rodando o app real no Chromium, linha de base em `docs/legendas/baseline.md` (commit `58b7879`).
+2. **Timestamp por palavra.** Modelos `*_timestamped`, `trimSilence`, `alignWordsToSpeech`, `monotonic` com corte de fim invasor, anti-alucinação, segmentação e pós-processamento pt-BR.
+3. **Ajuste medido do alinhamento.** `alignToRegions` descartado (3 tentativas piores); desconto fixo de latência descartado; `minGap` 0,4 s; `minShift` 0,2 s; limite na palavra seguinte (impede inversão de ordem).
+4. **Resumo do `medir.mjs`.** p95 e média passaram a somar por palavra (antes era o pior clipe).
+5. **Testes.** `npm run testes` — 21/21 (`tests/legendas/texto.test.mjs`, `segmentacao.test.mjs`).

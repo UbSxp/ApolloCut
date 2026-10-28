@@ -122,6 +122,10 @@ export function stripAccents(value) {
 
 function preprocessNumbers(text) {
   return String(text ?? '')
+    // "R $ 345 , 20" (o modelo às vezes separa símbolo e vírgula)
+    .replace(/R\s*\$\s*/gi, 'R$ ')
+    .replace(/(\d)\s*,\s*(\d)/g, '$1,$2')
+    .replace(/(\d)\s*\.\s*(\d{3})\b/g, '$1.$2')
     // R$ 1.299,90 → "mil duzentos e noventa e nove reais e noventa centavos"
     .replace(/R\$\s*(\d{1,3}(?:\.\d{3})+|\d+)(?:,(\d{1,2}))?/gi, (_, int, cents) => {
       const n = Number(String(int).replace(/\./g, ''));
@@ -171,7 +175,10 @@ export function normalizeForCer(text) {
 /** Formata valores para leitura humana (R$, datas, porcentagem). */
 export function formatNumbersPt(text) {
   const NUM = `(?:${[...NUM_WORDS].join('|')})(?:\\s+e\\s+(?:${[...NUM_WORDS].join('|')}))*`;
-  let out = String(text ?? '');
+  let out = String(text ?? '')
+    .replace(/R\s*\$\s*/gi, 'R$ ')
+    .replace(/(\d)\s*,\s*(\d)/g, '$1,$2')
+    .replace(/(\d)\s*\.\s*(\d{3})\b/g, '$1.$2');
 
   out = out.replace(
     new RegExp(`\\b(${NUM})\\s+reais(?:\\s+e\\s+(${NUM})\\s+centavos)?`, 'gi'),
@@ -201,12 +208,15 @@ export function formatNumbersPt(text) {
     },
   );
 
+  // "R$ 1299" → "R$ 1.299" (símbolo já em dígitos)
+  out = out.replace(/R\$\s*(\d{4,})(?![\d.,])/g, (m, digits) => `R$ ${Number(digits).toLocaleString('pt-BR')}`);
+
   return out;
 }
 
 /** Pós-processamento de exibição: pontuação, maiúsculas, acentos, abreviações. */
 export function postProcessPt(text, options = {}) {
-  const { numbers = true } = options;
+  const { numbers = true, finalPunctuation = true } = options;
   let out = String(text ?? '').replace(/\s+/g, ' ').trim();
   if (!out) return '';
 
@@ -233,7 +243,7 @@ export function postProcessPt(text, options = {}) {
   // Maiúscula no início e depois de . ? !
   out = out.replace(/(^|[.!?]\s+)([a-zà-ÿ])/g, (m, pre, ch) => pre + ch.toUpperCase());
 
-  if (!/[.!?…]$/.test(out)) out += '.';
+  if (finalPunctuation && !/[.!?…]$/.test(out)) out += '.';
   return out;
 }
 

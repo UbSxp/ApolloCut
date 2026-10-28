@@ -24,9 +24,9 @@ const CLIPES = path.join(HERE, 'clipes');
 const BASE = 'http://127.0.0.1:4173';
 
 const MODELS = {
-  tiny: 'onnx-community/whisper-tiny',
-  base: 'onnx-community/whisper-base',
-  small: 'onnx-community/whisper-small',
+  tiny: 'onnx-community/whisper-tiny_timestamped',
+  base: 'onnx-community/whisper-base_timestamped',
+  small: 'onnx-community/whisper-small_timestamped',
 };
 
 function arg(name, fallback = null) {
@@ -99,13 +99,16 @@ function metricas(ref, hypWords, procMs) {
   const hypKeys = wordKeys(hypWords);
   const timing = align(refKeys, hypKeys);
   const errors = [];
+  const pares = [];
   for (const op of timing.ops) {
     if (op.type !== 'match') continue;
     const refWord = ref.words[op.r];
     const hypWord = hypWords[op.h];
     if (!refWord || !hypWord) continue;
     if (!Number.isFinite(hypWord.start)) continue;
-    errors.push(Math.abs(hypWord.start * 1000 - refWord.startMs));
+    const err = Math.abs(hypWord.start * 1000 - refWord.startMs);
+    errors.push(err);
+    pares.push({ text: hypWord.text, ref: refWord.startMs, hyp: Math.round(hypWord.start * 1000), err: Math.round(err) });
   }
   errors.sort((a, b) => a - b);
   const mean = errors.length ? errors.reduce((a, b) => a + b, 0) / errors.length : null;
@@ -128,6 +131,7 @@ function metricas(ref, hypWords, procMs) {
     tempoMedioMs: mean,
     tempoP95Ms: p95,
     palavrasComparadas: errors.length,
+    pares,
     refTokens: refTokens.length,
     refChars: refChars.length,
     distChars: chars.dist,
@@ -233,6 +237,7 @@ async function transcrever(page, timeoutMs) {
           end: Number(w.end),
           confidence: w.confidence ?? null,
         })),
+        debug: m.result.debug || null,
       };
     }
     return { ok: false, erro: document.querySelector('#whisperLog')?.textContent?.slice(-400) || 'falhou' };
@@ -256,11 +261,17 @@ function resumo(linhas) {
   const totalDist = linhas.reduce((a, l) => a + (l.distTokens || 0), 0);
   const totalChars = linhas.reduce((a, l) => a + (l.refChars || 0), 0);
   const comTempo = linhas.filter((l) => l.tempoMedioMs != null);
+  // Erro de tempo agregado sobre todas as palavras — não a média das médias
+  // nem o pior clipe (um token de número fundido distorce o p95 de um clipe).
+  const erros = comTempo
+    .flatMap((l) => (l.pares || []).map((p) => p.err))
+    .filter((v) => Number.isFinite(v))
+    .sort((a, b) => a - b);
   return {
     wer: totalRef ? (totalDist / totalRef) * 100 : 0,
     cer: totalChars ? (linhas.reduce((a, l) => a + (l.distChars || 0), 0) / totalChars) * 100 : 0,
-    tempoMedioMs: comTempo.length ? comTempo.reduce((a, l) => a + l.tempoMedioMs, 0) / comTempo.length : null,
-    tempoP95Ms: comTempo.length ? Math.max(...comTempo.map((l) => l.tempoP95Ms || 0)) : null,
+    tempoMedioMs: erros.length ? erros.reduce((a, b) => a + b, 0) / erros.length : null,
+    tempoP95Ms: erros.length ? erros[Math.min(erros.length - 1, Math.floor(erros.length * 0.95))] : null,
     alucinacoes: linhas.reduce((a, l) => a + l.alucinacoes, 0),
     perdidas: linhas.reduce((a, l) => a + l.perdidas, 0),
     msPorMinuto: linhas.reduce((a, l) => a + (l.msPorMinuto || 0), 0) / Math.max(1, linhas.length),
@@ -306,8 +317,20 @@ async function main() {
       m.id = ref.id;
       m.modelo = t.model;
       linhas.push(m);
+      if (t.debug) m.debug = t.debug;
+      if (arg('dump') && t.debug) {
+        console.log('   regiões:', t.debug.regioes.map((r) => `${r.start.toFixed(2)}-${r.end.toFixed(2)}`).join(' '));
+        console.log('   bruto :', t.debug.brutas.map((w) => `${w.text}@${w.start.toFixed(2)}`).join(' '));
+        console.log('   final :', t.words.map((w) => `${w.text}@${w.start.toFixed(2)}`).join(' '));
+      }
       console.log(`WER ${m.wer.toFixed(1)}% · tempo ${fmt(m.tempoMedioMs, 'ms')} · aluc ${m.alucinacoes} · ${Math.round(m.msPorMinuto)} ms/min`);
       if (process.env.MEDIR_VERBOSE) console.log('   hyp:', m.texto);
+      if (arg('dump')) {
+        const piores = [...m.pares].sort((a, b) => b.err - a.err).slice(0, 6);
+        for (const p of piores) {
+          console.log(`   ${String(p.text).slice(0, 16).padEnd(17)} ref ${p.ref}ms · hyp ${p.hyp}ms · erro ${p.err}ms`);
+        }
+      }
     }
   } finally {
     await ctx.close();

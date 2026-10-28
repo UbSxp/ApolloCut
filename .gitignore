@@ -11,3 +11,5 @@ blob-cache/
 dist/
 build/
 vendor/
+
+tests/legendas/resultados/

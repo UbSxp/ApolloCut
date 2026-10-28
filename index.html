@@ -686,6 +686,21 @@
               </div>
 
               <div class="field">
+                <div class="field-top"><label for="hardWordsInput">Palavras difíceis</label><span class="field-hint">opcional</span></div>
+                <input class="text-input" type="text" id="hardWordsInput" maxlength="240" placeholder="Nubank, PIX, Instagram, seu nome" autocomplete="off" />
+                <p class="fine-print">Nomes, marcas e termos do vídeo. A transcrição usa a lista para corrigir o que o modelo ouviu errado.</p>
+              </div>
+
+              <div class="field">
+                <div class="field-top"><label for="qualitySelect">Modelo</label></div>
+                <select id="qualitySelect">
+                  <option value="auto">Automático (recomendado)</option>
+                  <option value="fast">Mais rápido</option>
+                  <option value="precise">Mais preciso</option>
+                </select>
+              </div>
+
+              <div class="field">
                 <div class="field-top"><label for="brandInput">Assinatura / marca</label><span class="field-hint">opcional</span></div>
                 <input class="text-input" type="text" id="brandInput" maxlength="32" placeholder="@seu_atelie" autocomplete="off" />
               </div>

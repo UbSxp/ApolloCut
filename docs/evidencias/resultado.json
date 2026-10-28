@@ -17,17 +17,17 @@
   {
     "name": "4. Corte 1s–4s exporta MP4 H.264 válido (9:16, ~3s)",
     "ok": true,
-    "detail": "720x1280 h264 88 quadros 3s"
+    "detail": "720x1280 h264 90 quadros 3s"
   },
   {
     "name": "5. Whisper transcreve a fala e os tempos são válidos",
     "ok": true,
-    "detail": "3/5 palavras-chave, 7 blocos, modelo onnx-community/whisper-base"
+    "detail": "3/5 palavras-chave, 6 blocos, modelo onnx-community/whisper-base_timestamped"
   },
   {
     "name": "6. Legendas exportam em SRT e ASS válidos",
     "ok": true,
-    "detail": "srt=369B ass=1034B"
+    "detail": "srt=340B ass=991B"
   },
   {
     "name": "7. Painel de diagnóstico abre e mostra o ambiente",
@@ -37,7 +37,7 @@
   {
     "name": "B1. Vídeo sem áudio falha com mensagem clara",
     "ok": true,
-    "detail": "[19:47:09] Erro: Este vídeo não tem áudio decodificável (sem faixa de áudio ou arquivo dan"
+    "detail": "[20:13:48] Erro: Este vídeo não tem áudio decodificável (sem faixa de áudio ou arquivo dan"
   },
   {
     "name": "B2. Arquivo corrompido é recusado sem travar",

@@ -4,10 +4,10 @@
    Web Worker e entrega blocos com tempos para as legendas.
    ============================================================ */
 
-import { sanitizeTranscript, distributeWords, groupWords } from '../captions/index.js';
+import { segmentWords, groupText, SEGMENT_PRESETS } from '../captions/segment.js';
+import { monotonic } from '../captions/words.js';
+import { MODELS, DEFAULT_MODEL, pickModel } from '../captions/models.js';
 
-const MODEL = 'onnx-community/whisper-base';
-const FALLBACK_MODEL = 'onnx-community/whisper-tiny';
 const RATE = 16000;
 
 function rms(data) {
@@ -206,7 +206,8 @@ export class WhisperController {
           this.state.whisper.model = msg.model;
           this.state.whisper.lastMs = msg.ms;
           this.log(`Modelo ${msg.model} (${msg.device}) em ${(msg.ms / 1000).toFixed(1)}s.`);
-          resolve(this.toGroups(msg.chunks, clip));
+          this.lastDebug = msg.debug || null;
+          resolve(this.toGroups(msg.words || [], clip));
           return;
         }
         if (msg.type === 'error') {
@@ -221,45 +222,37 @@ export class WhisperController {
       });
 
       const language = this.els.langSelect?.value || 'pt';
-      const model = this.state.whisper?.requestedModel || MODEL;
+      const model = this.chooseModel();
+      const vocabulary = String(this.els.hardWordsInput?.value || '')
+        .split(/[,;\n]/)
+        .map((term) => term.trim())
+        .filter(Boolean);
       worker.postMessage({
         type: 'start',
         audio,
         language,
         model,
+        vocabulary,
         preferWebgpu: false,
       }, [audio.buffer]);
     });
   }
 
-  toGroups(chunks, clip) {
-    const words = [];
-    for (const chunk of chunks || []) {
-      const text = sanitizeTranscript(chunk?.text);
-      if (!text) continue;
-      const ts = Array.isArray(chunk.timestamp) ? chunk.timestamp : null;
-      let start = ts && Number.isFinite(Number(ts[0])) ? Math.max(0, Number(ts[0])) : 0;
-      let end = ts && Number.isFinite(Number(ts[1])) ? Number(ts[1]) : start + Math.max(0.5, text.length * 0.06);
-      if (!(end > start)) end = start + Math.max(0.5, text.length * 0.06);
-      words.push(...distributeWords(text, start, end));
-    }
+  chooseModel() {
+    if (this.state.whisper?.requestedModel) return this.state.whisper.requestedModel;
+    const nav = typeof navigator === 'undefined' ? {} : navigator;
+    return pickModel(this.els.qualitySelect?.value || 'auto', {
+      webgpu: !!nav.gpu,
+      memory: Number(nav.deviceMemory) || 8,
+      cores: Number(nav.hardwareConcurrency) || 8,
+    });
+  }
 
-    // Ordena e remove sobreposições (o modelo pode repetir bordas de bloco).
-    words.sort((a, b) => a.start - b.start || a.end - b.end);
-    let lastEnd = 0;
-    for (const word of words) {
-      if (word.start < lastEnd) word.start = lastEnd;
-      if (word.end <= word.start) word.end = word.start + 0.12;
-      lastEnd = word.end;
-    }
-
+  toGroups(words, clip) {
     const length = Math.max(0.2, clip.end - clip.start);
-    const clipped = words
-      .filter((word) => word.start < length)
-      .map((word) => ({ ...word, start: Math.min(word.start, length), end: Math.min(word.end, length) }))
-      .filter((word) => word.end > word.start);
-
-    return groupWords(clipped, { maxWords: 4, maxChars: 28, maxGap: 0.9 });
+    const usable = monotonic(words || [], length).filter((word) => word.start < length);
+    const preset = this.state.settings?.captionPreset || 'curto';
+    return segmentWords(usable, { ...(SEGMENT_PRESETS[preset] || SEGMENT_PRESETS.curto) });
   }
 
   finish(groups, clip) {
@@ -269,16 +262,32 @@ export class WhisperController {
       return;
     }
 
-    const text = groups.map((g) => g.words.map((w) => w.text).join(' ')).join(' ');
+    const preset = this.state.settings?.captionPreset || 'curto';
+    const opts = SEGMENT_PRESETS[preset] || SEGMENT_PRESETS.curto;
+    const text = groups.map((g) => groupText(g, opts)).join(' ');
+
+    this.state.whisper.words = groups.flatMap((group) => group.words.map((word) => ({
+      text: word.text,
+      start: clip.start + word.start,
+      end: clip.start + word.end,
+      confidence: word.confidence ?? null,
+    })));
+
     this.state.cues = groups.map((group) => ({
       start: clip.start + group.start,
       end: clip.start + group.end,
-      text: group.words.map((word) => word.text).join(' '),
+      text: groupText(group, opts),
+      words: group.words.map((word) => ({
+        text: word.text,
+        start: clip.start + word.start,
+        end: clip.start + word.end,
+      })),
+      lines: (group.lines || []).map((line) => line.map((w) => w.text).join(' ')),
     }));
     this.state.cueSource = 'whisper';
 
     window.dispatchEvent(new CustomEvent('whisper:result', {
-      detail: { groups, clip, text, cues: this.state.cues },
+      detail: { groups, clip, text, cues: this.state.cues, debug: this.lastDebug || null },
     }));
 
     this.log(`Pronto: ${groups.length} blocos.`);
