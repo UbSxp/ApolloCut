@@ -25,6 +25,43 @@ Método: leitura do código, execução real dos fluxos e inspeção do DOM/arqu
 | LEG-08 | P2 | Legendas | Arquivo SRT gigante podia travar a interface. | Limite de 8 MB com mensagem clara. | `importSrtFile`. |
 | VID-02 | P2 | Importação | Duas importações concorrentes podiam aplicar metadados do arquivo errado. | Token de carga e revogação de URL obsoleta. | Revisão de `loadFile`; fluxo de upload passou. |
 
+### Rodada noturna — 27/10/2026 (commit atual)
+
+### Resolvidos nesta rodada
+
+| ID | Severidade | Área | Problema | Correção | Evidência |
+|---|---|---|---|---|---|
+| BTN-01 | P1 | Botões | 5 botões `.js-pick` na página, mas apenas 1 tinha listener para abrir seletor de arquivo. | Delegação em `setupGlobalListeners` para todos `document.querySelectorAll('.js-pick')`. | Todos 5 botões abrem o seletor; testes de integração passam. |
+| RDM-01 | P1 | Redução de movimento | CSS usava `html[data-reduced-motion="true"]` mas JS só definia CSS custom properties. | `SettingsController.applyReducedMotion` agora define `document.documentElement.dataset.reducedMotion`. | Reduced motion desativa animações via atributo + CSS custom properties. |
+| OPN-01 | P1 | Abertura | Tela de abertura usava `transition: opacity, visibility` — `visibility` não anima e impede transição suave. | Removido `visibility` da transição; usa apenas `opacity` + `[hidden]` para display none. | Abertura fecha com fade de 620ms; sem flash ao reabrir. |
+| HVR-01 | P2 | Touch | Estados `:hover` em botões, cards, links ativavam em touch, criando "estados grudados". | Todos `:hover` envolvidos em `@media (hover: hover) and (pointer: fine)`. | Mobile: sem hover travado; Desktop: hover funciona. |
+| ACT-01 | P2 | Feedback | Botões usavam `translateY(1px)` no `:active` — não dá sensação de "press". | Alterado para `transform: scale(0.97)` em `.btn:active`, `.icon-btn:active`, `.play:active`. | Press sente-se como botão nativo. |
+| CSP-01 | P1 | Segurança | Build de produção injetava `<script>` inline com `initUI()` sem hash no CSP. | Hash `sha256-V93rW2LbLnnQ9sDL+spdRbmSKa1V/Kz+CFj6urLRtfs=` adicionado ao CSP. | 7 hashes no CSP; build produz HTML válido. |
+| ANM-01 | P2 | Animação | Vários `:hover` usavam `ease-in` / `ease-out` inconsistentes; `toastOut` usava `ease-in` (correto para saída). | Padronizado: entradas `ease-out`, saídas `ease-in`; `box-shadow` removido de transições (apenas composite). | `will-change: transform` em `.frame`; sem layout thrash. |
+
+### Rodada noturna — 28/10/2026 (dev mode fix)
+
+### Resolvidos nesta rodada
+
+| ID | Severidade | Área | Problema | Correção | Evidência |
+|---|---|---|---|---|---|
+| INIT-01 | P0 | Inicialização | Modo dev não chamava `initUI()` — app ficava inerte. | Adicionado `<script type="module">import {initUI} from './src/main.js'; initUI();</script>` no `index.html`. | Dev server carrega e inicializa app corretamente. |
+| CSP-02 | P1 | Segurança | 2 scripts inline (initUI + SW register) sem hashes no CSP no modo dev. | Adicionados hashes `sha256-AWqd+L4OvWOyncG5lpA4QsKk79ioKbECH4TWKmnrO4Y=` e `sha256-9cYO21QUDUcOB0dG9XfEMSLe3Unv6sjl/HmrIVLGxRw=` ao CSP. | 9 hashes no CSP; zero erros de CSP no console. |
+| DEV-01 | P1 | Dev Server | `lib/captions.js` e `sw.js` não existiam na raiz — dev server fazia fallback para `index.html` (HTML servido como JS). | Copiado `sw.js` para raiz; `lib/captions.js` já existia. Ajustado fallback SPA para não interceptar `/lib/*` e `/sw.js`. | Arquivos servidos com MIME correto; SW registra sem erro. |
+| OPN-02 | P1 | Abertura | Botão "Continuar" não recebia clique (elemento `.opening-aurora` com `pointer-events: none` faltando; `is-leaving` sem `pointer-events: none`). | Adicionado `pointer-events: none` em `.opening-aurora`, `.opening.is-leaving`, `.opening[hidden]`. | Botão recebe clique; transição para landing funciona; estúdio abre. |
+| TXT-01 | P2 | UX | Texto da tela de abertura era selecionável. | Adicionado `user-select: none` em `.opening`. | Texto não selecionável. |
+
+### Rodada de correção — 28/10/2026 (vídeo, scroll, estética)
+
+| ID | Severidade | Área | Problema | Correção | Evidência |
+|---|---|---|---|---|---|
+| VID-03 | P0 | Importação | Vídeo nunca carregava: `handleFileSelect` aguardava `loadeddata` com `preload="metadata"` (que só chega a `readyState 1`), então a Promise nunca resolvia. Além disso o vídeo era carregado com `#studioScreen` em `display:none`. | Removida a espera por `loadeddata`; estúdio é exibido antes de carregar; `loadVideo` resolve em `loadedmetadata` e rejeita com timeout de 15 s. | `previewVideo.readyState = 4`, `duration = 10`, `1280×720`, badge "Pronto para analisar"; play avança `currentTime` para 1,21 s. |
+| SCR-01 | P1 | Navegação | Ao clicar "Continuar" a página piscava no rodapé e subia para o topo: `html { scroll-behavior: smooth }` somado ao crescimento tardio do layout e ao `focus()` automático. | Removido o foco automático; `scrollTo(0,0)` instantâneo (`scrollBehavior: auto` temporário) ao revelar landing, ao abrir o estúdio e ao resetar. | `window.scrollY = 0` antes, durante e depois da transição; idem ao abrir o estúdio via clique e via drag-drop. |
+| VID-04 | P1 | Importação | "Novo filme" voltava à landing sem limpar o vídeo, sem devolver `frameEmpty` e mantendo `body.studio-open` (header/footer ocultos). | Reset limpa `src` do vídeo, restaura `frameEmpty`, remove `studio-open` e reseta o scroll. | `bodyClass=""`, `videoSrc=null`, `frameEmpty` visível, `headerHeight=73`. |
+| CSP-03 | P3 | Segurança | `frame-ancestors` em `<meta>` é ignorado pelo navegador e gerava erro no console. | Removido do meta CSP (deve ser enviado por header HTTP). | Console sem erros. |
+| PERF-02 | P3 | Carregamento | Preloads de fonte sem `crossorigin` geravam avisos e não eram reaproveitados. | Adicionado `crossorigin` aos 4 `<link rel="preload" as="font">`. | Console sem avisos de preload. |
+| ANM-02 | P2 | Estética | Curvas de easing inconsistentes, `will-change` permanente em vários cards e hovers com transform sem guarda de toque. | Tokens `--ease-spring`/`--ease-spring-sharp`; `will-change` só no `.opening-aurora`; hovers com transform (`modal-close`, `clip-card`, `clip-play`, `publish-arrow`) dentro de `@media (hover: hover) and (pointer: fine)`; press `scale(0.97)` no `modal-close`. | `npm run a11y` sem violações; inspeção visual landing/estúdio em tema claro e escuro. |
+
 ### Ainda abertos
 
 - `OFF-01`: runtime e modelo do Whisper vêm de CDN/Hugging Face.

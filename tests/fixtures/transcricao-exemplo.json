@@ -1,0 +1,22 @@
+{
+  "_comentario": "Fixture: transcrição com tempos plausíveis para teste de sincronia",
+  "frase_exemplo": "almocei ontem e fui ao mercado",
+  "palavras": [
+    {"text": "Almocei", "start": 1.05, "end": 1.35},
+    {"text": "ontem", "start": 1.35, "end": 1.65},
+    {"text": "e", "start": 1.65, "end": 1.75},
+    {"text": "fui", "start": 1.75, "end": 1.95},
+    {"text": "ao", "start": 1.95, "end": 2.10},
+    {"text": "mercado", "start": 2.10, "end": 2.70}
+  ],
+  "frases_teste": [
+    "Hoje eu acordei cedo e fiz o café da manhã antes de sair para o trabalho.",
+    "O número de pessoas que compareceram foi trecentas e cinquenta e duas.",
+    "Você viu aquele vídeo engraçado que postou ontem à noite?",
+    "Recebi dez reais do cliente e devolvi cinco reais dele de volta.",
+    "A gente vai ao cinema hoje à tarde, certo? Sim, às sete da noite.",
+    "Meu celular custa oitocentos e noventa e nove reais, bateria dura doze horas.",
+    "Não vai fazer isso não, entende? Porque pode dar ruim.",
+    "Fui ao supermercado comprar pão, leite e ovos, depois fui ao banco."
+  ]
+}
