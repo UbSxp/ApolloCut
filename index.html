@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#F6EFE3" />
   <meta name="color-scheme" content="light dark" />
   <meta name="referrer" content="no-referrer" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-H+qz8XKIUOQRdZFVHCgOEXiVWb+lFYxggx/w2Vlq7zs=' 'sha256-J8hSsXNZIZWL/u070W+AhC652b5EHg8HIdvaF/qz21o=' 'sha256-cvMoocS+PQEwkTp0qyJwOcNPEsqIk07k4q76xctO0vY=' 'sha256-eC8bHACSHEULh4TVDm5ze8m3U+ONMvCDG7fyKN4u1O8=' 'sha256-l76y7b5RsHWvQQszSlqOzSgfnSebYT+hftvhmNQU4oU=' 'sha256-imnBqg53FCYb8pgO9rXm4/qwmtApD1gPCoHfRcl6yZA=' 'sha256-V93rW2LbLnnQ9sDL+spdRbmSKa1V/Kz+CFj6urLRtfs=' 'sha256-AWqd+L4OvWOyncG5lpA4QsKk79ioKbECH4TWKmnrO4Y=' 'sha256-9cYO21QUDUcOB0dG9XfEMSLe3Unv6sjl/HmrIVLGxRw=' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https://cdn.jsdelivr.net; worker-src 'self' blob:; base-uri 'self'; form-action 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-H+qz8XKIUOQRdZFVHCgOEXiVWb+lFYxggx/w2Vlq7zs=' 'sha256-J8hSsXNZIZWL/u070W+AhC652b5EHg8HIdvaF/qz21o=' 'sha256-cvMoocS+PQEwkTp0qyJwOcNPEsqIk07k4q76xctO0vY=' 'sha256-eC8bHACSHEULh4TVDm5ze8m3U+ONMvCDG7fyKN4u1O8=' 'sha256-l76y7b5RsHWvQQszSlqOzSgfnSebYT+hftvhmNQU4oU=' 'sha256-imnBqg53FCYb8pgO9rXm4/qwmtApD1gPCoHfRcl6yZA=' 'sha256-V93rW2LbLnnQ9sDL+spdRbmSKa1V/Kz+CFj6urLRtfs=' 'sha256-AWqd+L4OvWOyncG5lpA4QsKk79ioKbECH4TWKmnrO4Y=' 'sha256-9cYO21QUDUcOB0dG9XfEMSLe3Unv6sjl/HmrIVLGxRw=' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: data: https://cdn.jsdelivr.net https://huggingface.co https://*.huggingface.co https://*.hf.co; worker-src 'self' blob:; base-uri 'self'; form-action 'self';">
   <title>ApolloCut — a arte de durar sessenta segundos</title>
   <meta name="description" content="Ateliê local de cortes: transforme longas-metragens em clipes verticais com legendas reais, capas e exportação MP4. Sem upload, sem créditos." />
   <link rel="icon" href="assets/brand/favicon.svg" type="image/svg+xml" />
@@ -549,6 +549,17 @@
               <button class="chip-btn" id="quickCaptionsBtn" type="button"><svg class="icon" aria-hidden="true"><use href="#i-caption"></use></svg>Legendar</button>
               <button class="chip-btn" id="quickCoverBtn" type="button"><svg class="icon" aria-hidden="true"><use href="#i-sun"></use></svg>Criar capa</button>
             </div>
+          </div>
+
+          <div class="edit-tools" id="editTools" role="toolbar" aria-label="Edição de cortes">
+            <span class="edit-tools-label" id="markLabel">Marca: —</span>
+            <button class="chip-btn" id="markInBtn" type="button"><svg class="icon" aria-hidden="true"><use href="#i-cut"></use></svg>Início</button>
+            <button class="chip-btn" id="markOutBtn" type="button"><svg class="icon" aria-hidden="true"><use href="#i-cut"></use></svg>Fim</button>
+            <button class="chip-btn chip-btn-gold" id="addClipBtn" type="button"><svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>Cortar</button>
+            <button class="chip-btn" id="splitClipBtn" type="button"><svg class="icon" aria-hidden="true"><use href="#i-split"></use></svg>Dividir</button>
+            <button class="chip-btn" id="deleteClipBtn" type="button"><svg class="icon" aria-hidden="true"><use href="#i-trash"></use></svg>Apagar</button>
+            <button class="chip-btn" id="undoBtn" type="button" title="Desfazer (Ctrl+Z)"><svg class="icon" aria-hidden="true"><use href="#i-undo"></use></svg>Desfazer</button>
+            <button class="chip-btn" id="redoBtn" type="button" title="Refazer (Ctrl+Shift+Z)"><svg class="icon" aria-hidden="true"><use href="#i-redo"></use></svg>Refazer</button>
           </div>
         </section>
 

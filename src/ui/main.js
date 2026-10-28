@@ -16,6 +16,7 @@ import { SettingsController } from './settings.js';
 import { CaptionController } from './captions.js';
 import { ClipController } from './clips.js';
 import { ThemeController } from './theme.js';
+import { EditorController } from './editor.js';
 import { loadSettings } from '../utils/settings.js';
 
 /**
@@ -44,8 +45,9 @@ export async function initUI(initialSettings) {
   const kit = new KitController(state, els, toast, overlays);
   const settings = new SettingsController(state, els, toast, overlays);
   const captions = new CaptionController(state, els, toast);
-  const clips = new ClipController(state, els, toast);
+  const clips = new ClipController(state, els, toast, player);
   const theme = new ThemeController(state, toast);
+  const editor = new EditorController(state, els, toast, player, clips);
   
   // Setup global event listeners
   setupGlobalListeners({
@@ -85,6 +87,7 @@ export async function initUI(initialSettings) {
     settings,
     captions,
     clips,
+    editor,
   };
 }
 
@@ -96,6 +99,7 @@ function cacheElements() {
     dropzone fileName fileMeta studioKind studioStateLabel analysisBadge studioSteps
     frame previewVideo captions frameCaptionNote frameWatermark frameEmpty previewLabel previewFormat
     playBtn seekRange seekMarks timeLabel focusRange focusVal quickCaptionsBtn quickCoverBtn coverBtn kitBtn exportBtn
+    markInBtn markOutBtn addClipBtn splitClipBtn deleteClipBtn undoBtn redoBtn markLabel editTools
     lenRange lenLabel countRange countLabel ratioGrid analyzeBtn analysisHint analysisNote
     analysisSummary sumSamples sumSelected sumScore sumNote activeClipInfo activeClipTitle activeClipMeta
     captionStatus captionStatusTitle captionStatusText importSrtBtn whisperBtn styleGrid styleHint

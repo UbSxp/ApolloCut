@@ -239,29 +239,71 @@ export class AnalysisController {
   
   generateClipsFromAnalysis() {
     const samples = this.state.analysis.samples;
-    const count = this.state.settings.count;
-    
-    // Select top scoring segments
-    const selected = samples.slice(0, count);
-    
+    const count = Math.max(1, Number(this.state.settings.count) || 4);
+    const targetLength = Math.max(2, Number(this.state.settings.length) || 60);
+    const duration = this.state.duration || 0;
+
     this.state.clearClips();
-    selected.forEach((seg, index) => {
-      this.state.addClip({
-        id: `clip-${Date.now()}-${index}`,
-        start: seg.start,
-        end: seg.end,
-        duration: seg.duration,
-        score: seg.score,
-        words: [], // Will be filled by caption analysis
+    if (!duration) return;
+
+    const clips = [];
+    const used = [];
+
+    const overlaps = (a, b) => a.start < b.end - 0.05 && b.start < a.end - 0.05;
+
+    // Filme mais curto que o corte pedido: divide em fatias iguais,
+    // senão o "corte" seria o filme inteiro repetido N vezes.
+    if (duration <= targetLength) {
+      const parts = Math.max(1, Math.min(count, Math.floor(duration / 2) || 1));
+      const size = duration / parts;
+      for (let i = 0; i < parts; i++) {
+        clips.push({ start: i * size, end: (i + 1) * size, duration: size, score: 1 });
+      }
+    } else {
+      // Ordena por energia e abre uma janela do tamanho pedido em volta
+      // de cada pico de fala, sem sobrepor.
+      const ranked = [...samples].sort((a, b) => (b.avgEnergy || 0) - (a.avgEnergy || 0));
+      for (const seg of ranked) {
+        if (clips.length >= count) break;
+        const middle = (seg.start + seg.end) / 2;
+        let start = Math.max(0, middle - targetLength / 2);
+        let end = Math.min(duration, start + targetLength);
+        start = Math.max(0, end - targetLength);
+        const candidate = { start, end, duration: end - start, score: seg.score || 1 };
+        if (used.some((u) => overlaps(candidate, u))) continue;
+        used.push(candidate);
+        clips.push(candidate);
+      }
+      // Sem fala detectada (vídeo mudo): fatias iguais.
+      if (!clips.length) {
+        const parts = Math.max(1, Math.min(count, Math.floor(duration / 2) || 1));
+        const size = duration / parts;
+        for (let i = 0; i < parts; i++) {
+          clips.push({ start: i * size, end: (i + 1) * size, duration: size, score: 1 });
+        }
+      }
+    }
+
+    clips
+      .sort((a, b) => a.start - b.start)
+      .forEach((clip, index) => {
+        this.state.addClip({
+          id: `clip-${Date.now()}-${index}`,
+          start: clip.start,
+          end: clip.end,
+          duration: clip.duration,
+          score: clip.score,
+          words: [],
+        });
       });
-    });
-    
-    // Set first as active
+
     if (this.state.clips.length) {
       this.state.setActiveClip(this.state.clips[0].id);
     }
-    
+
     this.updateAnalysisUI();
+    // A grade de cortes só existia no estado: nenhum controller a desenhava.
+    window.dispatchEvent(new CustomEvent('clips:changed'));
   }
   
   updateStage(text, percent) {

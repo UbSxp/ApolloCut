@@ -162,6 +162,11 @@ async function handleFileSelect(event, state, els, player, toast) {
     }
     if (els.frameEmpty) els.frameEmpty.hidden = true;
 
+    // Sem isto os botões de leitura e transcrição ficavam desabilitados
+    // para sempre (nasciam disabled no HTML e ninguém os reabilitava).
+    if (els.analyzeBtn) els.analyzeBtn.disabled = false;
+    if (els.whisperBtn) els.whisperBtn.disabled = false;
+
     toast.show('Vídeo carregado com sucesso');
     if (els.fileInput) els.fileInput.value = '';
   } catch (err) {
@@ -262,6 +267,8 @@ function resetToLanding(state, els) {
   if (els.srtInput) els.srtInput.value = '';
   if (els.fileName) els.fileName.textContent = '';
   if (els.fileMeta) els.fileMeta.textContent = '';
+  if (els.analyzeBtn) els.analyzeBtn.disabled = true;
+  if (els.whisperBtn) els.whisperBtn.disabled = true;
 
   const root = document.documentElement;
   const prevBehavior = root.style.scrollBehavior;

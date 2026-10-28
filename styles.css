@@ -1015,6 +1015,13 @@ html[data-reduced-motion="true"] .faq-list details > div { transition: none !imp
 .chip-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--r-pill); color: var(--ink-2); font-size: 10.5px; font-weight: 700; transition: border-color var(--t-micro), color var(--t-micro), background var(--t-micro); }
 .chip-btn .icon { width: 15px; height: 15px; }
 .chip-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-soft); }
+.chip-btn-gold { border-color: var(--gold); background: var(--gold); color: #17130f; }
+.chip-btn-gold:hover { background: var(--gold-bright); color: #17130f; }
+.chip-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.edit-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; padding-top: 12px; margin-top: 12px; border-top: 1px solid var(--line); }
+.edit-tools-label { margin-right: auto; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.clip-thumb-loading { position: absolute; inset: 0; background: linear-gradient(100deg, var(--stage-2) 30%, var(--surface) 50%, var(--stage-2) 70%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 
 .console { overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-xl); box-shadow: var(--shadow-md); }
 .console-tabs { display: flex; gap: 2px; padding: 6px; background: var(--bg-elevated); border-bottom: 1px solid var(--line); }

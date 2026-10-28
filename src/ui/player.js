@@ -31,6 +31,9 @@ export class PlayerController {
       seekRange.addEventListener('input', (e) => this.onSeekInput(e));
       seekRange.addEventListener('change', (e) => this.onSeekChange(e));
     }
+
+    // Marcadores dos cortes na timeline nascem dos eventos de edição.
+    window.addEventListener('clips:changed', () => this.createSeekMarks());
   }
   
   async loadVideo(url) {
@@ -75,7 +78,17 @@ export class PlayerController {
   
   onTimeUpdate() {
     const { previewVideo, seekRange, timeLabel, seekMarks } = this.els;
-    if (!previewVideo || previewVideo.paused) return;
+    if (!previewVideo) return;
+
+    // Pré-visualização de um corte: para no fim do trecho.
+    const range = this.state.playRange;
+    if (range && previewVideo.currentTime >= range.end) {
+      previewVideo.pause();
+      previewVideo.currentTime = range.end;
+      this.setPlayButton(false);
+    }
+
+    if (previewVideo.paused) return;
     
     if (seekRange) {
       seekRange.value = previewVideo.currentTime;
@@ -84,13 +97,27 @@ export class PlayerController {
     this.updateTimeLabel(previewVideo.currentTime, previewVideo.duration);
     this.updateSeekMarks(previewVideo.currentTime);
   }
+
+  setPlayButton(playing) {
+    const { playBtn } = this.els;
+    if (!playBtn) return;
+    playBtn.classList.toggle('playing', playing);
+    playBtn.setAttribute('aria-label', playing ? 'Pausar' : 'Reproduzir');
+  }
+
+  /** Reproduz apenas um trecho (pré-visualização do corte). */
+  playRange(start, end) {
+    const { previewVideo } = this.els;
+    if (!previewVideo) return;
+    this.state.playRange = { start, end };
+    previewVideo.currentTime = start;
+    previewVideo.play().catch(() => {});
+    this.setPlayButton(true);
+  }
   
   onEnded() {
-    const { playBtn } = this.els;
-    if (playBtn) {
-      playBtn.textContent = '⏵'; // play icon
-      playBtn.setAttribute('aria-label', 'Reproduzir');
-    }
+    this.state.playRange = null;
+    this.setPlayButton(false);
   }
   
   onError(event) {
@@ -100,9 +127,12 @@ export class PlayerController {
   
   onSeekInput(event) {
     const { previewVideo, seekRange } = this.els;
+    // Arrastar a timeline sai do modo "pré-visualizar corte".
+    this.state.playRange = null;
     if (previewVideo && seekRange) {
       previewVideo.currentTime = Number(seekRange.value);
       this.updateTimeLabel(previewVideo.currentTime, previewVideo.duration);
+      this.updateSeekFill(seekRange);
     }
   }
   
@@ -115,21 +145,19 @@ export class PlayerController {
   }
   
   togglePlay() {
-    const { previewVideo, playBtn } = this.els;
+    const { previewVideo } = this.els;
     if (!previewVideo) return;
-    
+
     if (previewVideo.paused) {
-      previewVideo.play().catch(() => {});
-      if (playBtn) {
-        playBtn.textContent = '⏸'; // pause icon
-        playBtn.setAttribute('aria-label', 'Pausar');
+      const range = this.state.playRange;
+      if (range && previewVideo.currentTime >= range.end - 0.05) {
+        previewVideo.currentTime = range.start;
       }
+      previewVideo.play().catch(() => {});
+      this.setPlayButton(true);
     } else {
       previewVideo.pause();
-      if (playBtn) {
-        playBtn.textContent = '⏵'; // play icon
-        playBtn.setAttribute('aria-label', 'Reproduzir');
-      }
+      this.setPlayButton(false);
     }
   }
   

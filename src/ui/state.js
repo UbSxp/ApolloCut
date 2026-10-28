@@ -61,6 +61,35 @@ export class StateManager {
   }
   
   /**
+   * Histórico de cortes (desfazer / refazer)
+   */
+  snapshot() {
+    this._undo = this._undo || [];
+    this._redo = this._redo || [];
+    this._undo.push(JSON.stringify(this.clips));
+    if (this._undo.length > 60) this._undo.shift();
+    this._redo.length = 0;
+  }
+
+  undo() {
+    if (!this._undo || !this._undo.length) return false;
+    this._redo = this._redo || [];
+    this._redo.push(JSON.stringify(this.clips));
+    this.clips = JSON.parse(this._undo.pop());
+    this.activeId = this.clips[0]?.id || null;
+    return true;
+  }
+
+  redo() {
+    if (!this._redo || !this._redo.length) return false;
+    this._undo = this._undo || [];
+    this._undo.push(JSON.stringify(this.clips));
+    this.clips = JSON.parse(this._redo.pop());
+    this.activeId = this.clips[0]?.id || null;
+    return true;
+  }
+
+  /**
    * Get current clip
    */
   getActiveClip() {
