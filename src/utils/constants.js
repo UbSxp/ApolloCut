@@ -45,6 +45,8 @@ export const DEFAULT_SETTINGS = Object.freeze({
   ambient: true,
   reducedMotion: false,
   sound: false,
+  captionScale: 1,
+  captionPos: null,
 });
 
 export const CFG = Object.freeze({

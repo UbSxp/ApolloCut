@@ -969,6 +969,9 @@ html[data-reduced-motion="true"] .faq-list details > div { transition: none !imp
 .frame.r169 { aspect-ratio: 16 / 9; max-width: 100%; }
 .frame video { width: 100%; height: 100%; object-fit: cover; object-position: var(--focus, 50%) 50%; }
 .frame-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0, 0, 0, 0.04) 40%, rgba(0, 0, 0, 0.42)); pointer-events: none; }
+/* A legenda visível é desenhada no canvas pelo motor único (render.js). */
+.frame-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .frame-captions { position: absolute; left: 6%; right: 6%; bottom: 10%; display: grid; justify-items: center; gap: 4px; z-index: 3; pointer-events: none; }
 .cap-line { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.18em 0.34em; max-width: 100%; animation: capIn 220ms var(--ease-out) both; }
 .cap-word { display: inline-block; padding: 0.02em 0.12em; border-radius: 0.14em; color: var(--stage-text); text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7); line-height: 1.16; }
@@ -1067,6 +1070,7 @@ html[data-reduced-motion="true"] .faq-list details > div { transition: none !imp
 .style-estrofe { font-family: var(--font-display); background: #f4eee2; color: #17130f; }
 .style-marmore { font-family: var(--font-ui); font-weight: 800; background: #fff; color: #17130f; }
 .style-ditirambo { font-family: var(--font-ui); font-weight: 800; background: #a95434; color: #fff4e3; }
+.style-helio { font-family: var(--font-ui); font-weight: 800; background: linear-gradient(160deg, #ffd970, #c8892a); color: #2a1a05; }
 .style-option b { display: block; font-size: 11.5px; }
 .style-option small { display: block; margin-top: 1px; color: var(--muted); font-size: 9px; }
 

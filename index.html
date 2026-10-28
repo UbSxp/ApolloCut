@@ -525,7 +525,8 @@
             <div class="frame" id="frame" data-cap="ode">
               <video id="previewVideo" playsinline preload="metadata" aria-label="Prévia do corte selecionado"></video>
               <div class="frame-shade"></div>
-              <div class="frame-captions" id="captions"></div>
+              <canvas class="frame-canvas" id="captionCanvas" aria-hidden="true"></canvas>
+              <div class="frame-captions sr-only" id="captions" role="status" aria-live="polite"></div>
               <div class="frame-note" id="frameCaptionNote" hidden>sem legendas</div>
               <div class="frame-watermark" id="frameWatermark" hidden></div>
               <div class="safe-area" aria-hidden="true"></div>
@@ -654,23 +655,27 @@
               <p class="fine-print">O SRT é a via mais rápida e exata. O Whisper roda no seu navegador: baixa o modelo na primeira vez e captura o áudio do corte em tempo real.</p>
 
               <div class="field">
-                <div class="field-top"><label>Estilo</label><span class="field-hint" id="styleHint">Ode</span></div>
+                <div class="field-top"><label>Estilo</label><span class="field-hint" id="styleHint">Clássico</span></div>
                 <div class="style-grid" id="styleGrid">
                   <button class="style-option active" data-style="ode" type="button" aria-pressed="true">
                     <span class="style-aa style-ode">Aa</span>
-                    <span><b>Ode</b><small>capitular, ouro</small></span>
-                  </button>
-                  <button class="style-option" data-style="estrofe" type="button" aria-pressed="false">
-                    <span class="style-aa style-estrofe">Aa</span>
-                    <span><b>Estrofe</b><small>serifa, mármore</small></span>
-                  </button>
-                  <button class="style-option" data-style="marmore" type="button" aria-pressed="false">
-                    <span class="style-aa style-marmore">Aa</span>
-                    <span><b>Mármore</b><small>limpo, contido</small></span>
+                    <span><b>Clássico</b><small>capitular, ouro</small></span>
                   </button>
                   <button class="style-option" data-style="ditirambo" type="button" aria-pressed="false">
                     <span class="style-aa style-ditirambo">Aa</span>
-                    <span><b>Ditirambo</b><small>terracota, festa</small></span>
+                    <span><b>Impacto</b><small>terracota, bloco</small></span>
+                  </button>
+                  <button class="style-option" data-style="estrofe" type="button" aria-pressed="false">
+                    <span class="style-aa style-estrofe">Aa</span>
+                    <span><b>Karaokê</b><small>serifa, palavra acesa</small></span>
+                  </button>
+                  <button class="style-option" data-style="marmore" type="button" aria-pressed="false">
+                    <span class="style-aa style-marmore">Aa</span>
+                    <span><b>Mínimo</b><small>limpo, contido</small></span>
+                  </button>
+                  <button class="style-option" data-style="helio" type="button" aria-pressed="false">
+                    <span class="style-aa style-helio">Aa</span>
+                    <span><b>Hélio</b><small>sol, brilho quente</small></span>
                   </button>
                 </div>
               </div>
