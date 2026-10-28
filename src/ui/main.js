@@ -17,6 +17,7 @@ import { CaptionController } from './captions.js';
 import { ClipController } from './clips.js';
 import { ThemeController } from './theme.js';
 import { EditorController } from './editor.js';
+import { DiagnosticsController } from './diagnostics.js';
 import { loadSettings } from '../utils/settings.js';
 
 /**
@@ -48,6 +49,21 @@ export async function initUI(initialSettings) {
   const clips = new ClipController(state, els, toast, player);
   const theme = new ThemeController(state, toast);
   const editor = new EditorController(state, els, toast, player, clips);
+  const diagnostics = new DiagnosticsController(state, els, overlays, toast);
+
+  // Checagem de saúde: avisa cedo, em linguagem simples.
+  const health = window.__APOLLO_HEALTH__?.();
+  if (health) {
+    if (!health.crossOriginIsolated) {
+      console.warn('Sem isolamento de origem: Whisper roda em 1 thread. Use tools/servir.mjs.');
+    }
+    if (!health.offlineAudio) {
+      toast.show('Este navegador não decodifica áudio; a transcrição não vai funcionar.', 'error');
+    }
+    if (!health.canvasCapture) {
+      toast.show('Este navegador não grava canvas; a exportação não vai funcionar.', 'error');
+    }
+  }
   
   // Setup global event listeners
   setupGlobalListeners({
@@ -88,6 +104,8 @@ export async function initUI(initialSettings) {
     captions,
     clips,
     editor,
+    diagnostics,
+    theme,
   };
 }
 
@@ -103,7 +121,7 @@ function cacheElements() {
     lenRange lenLabel countRange countLabel ratioGrid analyzeBtn analysisHint analysisNote
     analysisSummary sumSamples sumSelected sumScore sumNote activeClipInfo activeClipTitle activeClipMeta
     captionStatus captionStatusTitle captionStatusText importSrtBtn whisperBtn styleGrid styleHint
-    langSelect brandInput tabScene tabCaptions tabPublish clipsSection clipsMeta clipGrid
+    exportSrtBtn exportAssBtn langSelect brandInput tabScene tabCaptions tabPublish clipsSection clipsMeta clipGrid
     analysisOverlay analysisBar analysisPct analysisStage analysisSheet analysisCounter analysisCancel analysisCancelBtn analysisSub analysisTitle
     whisperOverlay whisperBar whisperPct whisperStage whisperLog whisperWave whisperClip whisperStart whisperCancel whisperClose
     coverOverlay coverCanvas coverTitle coverSub coverPreset coverRandomBtn coverDownload coverClose coverLoading
@@ -112,6 +130,7 @@ function cacheElements() {
     exportDone exportFileInfo downloadLink exportStart exportCancel exportClose
     kitOverlay kitTitle kitDescription kitHashtags kitClose kitDownloadCover kitDownloadTxt kitExport
     settingsOverlay settingsClose settingsDone settingsReset themeChoice settingsLang
+    diagnosticsOverlay diagnosticsOut
     ambientToggle reducedMotionToggle soundToggle toasts samplerVideo`;
 
   const els = {};

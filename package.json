@@ -15,6 +15,10 @@
     "test:all": "npm run check && npm run test && npm run test:integration",
     "build": "node scripts/build.js",
     "dev": "node scripts/dev-server.js",
+    "servir": "node tools/servir.mjs 4173",
+    "vendor": "node scripts/vendor-transformers.mjs",
+    "teste": "node tests/e2e/run-all.mjs",
+    "fixtures": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/gerar-fixtures.ps1",
     "pwa:generate": "workbox generateSW workbox-config.cjs",
     "ci": "npm run test:all && npm run build",
     "a11y": "node scripts/a11y-check.js"

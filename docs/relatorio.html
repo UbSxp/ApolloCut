@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ApolloCut — relatório dos quatro defeitos críticos</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #151b24;
+    --surface-2: #1c2430;
+    --line: #2b3542;
+    --ink: #f2ead9;
+    --ink-2: #b9b1a2;
+    --muted: #8a8378;
+    --gold: #c9a227;
+    --gold-soft: #2a2416;
+    --ok: #4ea672;
+    --font: "Segoe UI", system-ui, sans-serif;
+    --serif: "Georgia", "Times New Roman", serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: clamp(20px, 5vw, 64px); background: var(--bg); color: var(--ink); font: 15px/1.65 var(--font); }
+  main { max-width: 1040px; margin: 0 auto; }
+  header { border-bottom: 1px solid var(--line); padding-bottom: 24px; margin-bottom: 36px; }
+  .eyebrow { display: block; color: var(--gold); font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; margin-bottom: 10px; }
+  h1 { margin: 0 0 8px; font: 400 clamp(30px, 5vw, 46px)/1.1 var(--serif); }
+  h2 { margin: 44px 0 14px; font: 400 24px/1.2 var(--serif); }
+  h3 { margin: 26px 0 8px; font-size: 15px; }
+  p, li { color: var(--ink-2); }
+  code { font: 12px/1.5 ui-monospace, Consolas, monospace; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; color: var(--ink); }
+  .verdict { display: inline-flex; align-items: center; gap: 10px; margin-top: 16px; padding: 8px 16px; border: 1px solid var(--ok); border-radius: 999px; color: var(--ok); font-weight: 700; font-size: 13px; letter-spacing: .04em; }
+  .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+  .card b { display: block; color: var(--gold); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px; }
+  .card span { color: var(--ink-2); font-size: 13px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; }
+  td.ok { color: var(--ok); font-weight: 700; white-space: nowrap; }
+  figure { margin: 18px 0; }
+  figure img { width: 100%; border: 1px solid var(--line); border-radius: 12px; display: block; }
+  figcaption { margin-top: 8px; color: var(--muted); font-size: 12px; }
+  .shots { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .note { border-left: 2px solid var(--gold); background: var(--gold-soft); padding: 12px 16px; border-radius: 0 10px 10px 0; }
+  footer { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <span class="eyebrow">ApolloCut · correção dos quatro defeitos críticos</span>
+    <h1>Relatório de funcionamento</h1>
+    <p>Branch <code>fix/quatro-bugs-criticos</code>, baseline na tag <code>checkpoint-antes-dos-bugs</code>. Evidência coletada com Chromium real via Playwright em <code>http://127.0.0.1:4173</code>.</p>
+    <div class="verdict">14/14 verificações aprovadas</div>
+  </header>
+
+  <h2>Os quatro defeitos</h2>
+  <div class="grid">
+    <div class="card"><b>1 · Tema</b><span>Botões Dia/Noite/Automático e o alternador do cabeçalho não tinham handler. Agora aplicam, persistem e anunciam o estado.</span></div>
+    <div class="card"><b>2 · Processamento</b><span>Botões presos em <code>disabled</code>, CSP bloqueando <code>blob:</code> e <code>file://</code> matando módulos. Agora o vídeo carrega, a análise chega a 100% e gera cortes.</span></div>
+    <div class="card"><b>3 · Edição e exportação</b><span>O export era <code>setTimeout</code> com "Download (simulado)". Agora há corte, divisão, undo/redo e WebM real via canvas + MediaRecorder.</span></div>
+    <div class="card"><b>4 · Transcrição</b><span><code>@huggingface/transformers</code> não resolvia no navegador. Agora o Whisper roda local em Web Worker, com áudio mono 16 kHz e legendas sincronizadas.</span></div>
+  </div>
+
+  <h2>Verificações obrigatórias</h2>
+  <table>
+    <thead><tr><th>Verificação</th><th>Resultado</th><th>Detalhe</th></tr></thead>
+    <tbody>
+      <tr><td>1. Servidor com COOP/COEP e crossOriginIsolated</td><td class="ok">APROVADO</td><td>coi=true · sab=function · coop=same-origin</td></tr>
+      <tr><td>2. Tema alterna e persiste após recarregar</td><td class="ok">APROVADO</td><td>light → dark → dark</td></tr>
+      <tr><td>3. Vídeo carrega, análise chega a 100% e gera cortes</td><td class="ok">APROVADO</td><td>4 cortes, 4 miniaturas reais</td></tr>
+      <tr><td>4. Corte 1s–4s exporta WebM válido (9:16, ~3s)</td><td class="ok">APROVADO</td><td>720×1280 · vp9 · 90 quadros · 3s</td></tr>
+      <tr><td>5. Whisper transcreve a fala e os tempos são válidos</td><td class="ok">APROVADO</td><td>7 blocos · 3/5 palavras-chave · whisper-base</td></tr>
+      <tr><td>6. Legendas exportam em SRT e ASS válidos</td><td class="ok">APROVADO</td><td>srt 369 B · ass 1034 B</td></tr>
+      <tr><td>7. Painel de diagnóstico abre e mostra o ambiente</td><td class="ok">APROVADO</td><td>crossOriginIsolated, codecs, memória, erros</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Cenários de borda</h2>
+  <table>
+    <thead><tr><th>Cenário</th><th>Resultado</th><th>Detalhe</th></tr></thead>
+    <tbody>
+      <tr><td>B1. Vídeo sem áudio</td><td class="ok">APROVADO</td><td>“Este vídeo não tem áudio decodificável…”</td></tr>
+      <tr><td>B2. Arquivo corrompido</td><td class="ok">APROVADO</td><td>recusado com toast, sem travar</td></tr>
+      <tr><td>B3. Cancelar no meio da análise</td><td class="ok">APROVADO</td><td>destrava e permite reanalisar (4 cortes)</td></tr>
+      <tr><td>B4. Trocar o tema durante o processamento</td><td class="ok">APROVADO</td><td>dark → light, análise conclui</td></tr>
+      <tr><td>B5. Recarregar no meio de uma operação</td><td class="ok">APROVADO</td><td>app volta são</td></tr>
+      <tr><td>B6. Vídeo de 5 minutos</td><td class="ok">APROVADO</td><td>300 s carregados e analisados</td></tr>
+      <tr><td>S. Erros de página durante a suíte</td><td class="ok">APROVADO</td><td>nenhum</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Capturas</h2>
+  <div class="shots">
+    <figure><img src="evidencias/01-isolamento.png" alt="App aberto com isolamento de origem ativo" /><figcaption>1 · Servidor com COOP/COEP: <code>crossOriginIsolated = true</code>.</figcaption></figure>
+    <figure><img src="evidencias/02-tema-2.png" alt="Tema escuro aplicado" /><figcaption>2 · Tema escuro depois do reload.</figcaption></figure>
+    <figure><img src="evidencias/03-processamento.png" alt="Análise concluída com cortes e miniaturas" /><figcaption>3 · Análise em 100% com 4 cortes e miniaturas reais.</figcaption></figure>
+    <figure><img src="evidencias/04-exportacao.png" alt="Resultado da exportação com link de download" /><figcaption>4 · Exportação concluída: WebM 720×1280, 3 s.</figcaption></figure>
+    <figure><img src="evidencias/05-transcricao.png" alt="Legendas geradas pelo Whisper" /><figcaption>5 · Whisper local: 7 blocos de legenda com tempos válidos.</figcaption></figure>
+    <figure><img src="evidencias/07-diagnostico.png" alt="Painel de diagnóstico" /><figcaption>7 · Painel de Diagnóstico (<code>Ctrl+Shift+D</code>).</figcaption></figure>
+  </div>
+
+  <h2>Arquivos gerados</h2>
+  <ul>
+    <li><code>evidencias/corte-exportado.webm</code> — corte real de 3 s, VP9 720×1280, áudio Opus.</li>
+    <li><code>evidencias/legendas.srt</code> e <code>evidencias/legendas.ass</code> — legendas exportadas pelo app.</li>
+    <li><code>evidencias/transcricao.json</code> — cues com tempos e modelo usado.</li>
+    <li><code>evidencias/diagnostico.json</code> — relatório do ambiente copiado do painel.</li>
+    <li><code>evidencias/e2e-run.log</code> e <code>evidencias/resultado.json</code> — saída bruta da suíte.</li>
+  </ul>
+
+  <h2>Limitações assumidas</h2>
+  <div class="note">
+    <p>Tempos por palavra são aproximados: o modelo q8 não traz atenções cruzadas, então o app usa tempos de bloco e distribui as palavras por peso. A transcrição roda em wasm/q8 (não WebGPU). A exportação gera WebM — o <code>MediaRecorder</code> do Chromium não grava H.264/MP4.</p>
+  </div>
+
+  <footer>
+    Reproduza com <code>TESTAR.bat</code> ou <code>npm run teste</code>. Diagnóstico detalhado em <code>DIAGNOSTICO.md</code>; funcionamento interno em <code>docs/COMO_FUNCIONA_O_PROCESSAMENTO.md</code>.
+  </footer>
+</main>
+</body>
+</html>

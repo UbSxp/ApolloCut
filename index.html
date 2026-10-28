@@ -34,6 +34,12 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <div class="file-warning" id="fileWarning" role="alert" hidden>
+    <div>
+      <b>Abra pelo INICIAR.bat para o processamento funcionar.</b>
+      <p>Você abriu o ApolloCut como arquivo (<code>file://</code>). Nesse modo o navegador bloqueia módulos, workers e a decodificação de áudio. Dê dois cliques em <code>INICIAR.bat</code> na pasta do projeto: o app abre em <code>http://localhost:4173</code> com tudo ligado.</p>
+    </div>
+  </div>
   <a class="skip-link" href="#landing">Pular para o conteúdo</a>
   <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
   <symbol id="i-import" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11m0 0 4-4m-4 4-4-4"/><path d="M4 15v3a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-3"/></symbol>
@@ -633,6 +639,10 @@
                 <button class="btn btn-line" id="importSrtBtn" type="button"><svg class="icon" aria-hidden="true"><use href="#i-import"></use></svg>Importar .srt/.vtt</button>
                 <button class="btn btn-gold" id="whisperBtn" type="button" disabled><svg class="icon" aria-hidden="true"><use href="#i-lyre"></use></svg>Transcrever com Whisper</button>
               </div>
+              <div class="caption-buttons">
+                <button class="btn btn-line" id="exportSrtBtn" type="button"><svg class="icon" aria-hidden="true"><use href="#i-download"></use></svg>Baixar .srt</button>
+                <button class="btn btn-line" id="exportAssBtn" type="button"><svg class="icon" aria-hidden="true"><use href="#i-download"></use></svg>Baixar .ass</button>
+              </div>
               <p class="fine-print">O SRT é a via mais rápida e exata. O Whisper roda no seu navegador: baixa o modelo na primeira vez e captura o áudio do corte em tempo real.</p>
 
               <div class="field">
@@ -719,7 +729,7 @@
         <div class="clip-grid" id="clipGrid"></div>
       </section>
 
-      <p class="studio-foot">ApolloCut · o filme fica no seu computador. O ateliê só lê o que você oferece.</p>
+      <p class="studio-foot">ApolloCut · o filme fica no seu computador. O ateliê só lê o que você oferece. <button class="link-btn" id="diagnosticsBtn" type="button">Diagnóstico</button></p>
     </div>
   </section>
 
@@ -981,24 +991,35 @@
   <input type="file" id="fileInput" accept="video/mp4,video/quicktime,video/webm,video/x-matroska,video/*,.mp4,.mov,.webm,.m4v,.mkv" hidden />
   <input type="file" id="srtInput" accept=".srt,.vtt,text/vtt,application/x-subrip" hidden />
   <video id="samplerVideo" muted playsinline preload="metadata" aria-hidden="true" class="sampler"></video>
+  <div class="overlay" id="diagnosticsOverlay" hidden>
+    <div class="atelier-modal diagnostics-modal" role="dialog" aria-modal="true" aria-labelledby="diagnosticsTitle">
+      <div class="modal-head">
+        <div>
+          <span class="eyebrow">SAÚDE DO ATELIÊ</span>
+          <h2 id="diagnosticsTitle">Diagnóstico.</h2>
+          <p>Copie este relatório se algo falhar.</p>
+        </div>
+        <button class="modal-close" id="diagnosticsClose" type="button" aria-label="Fechar"><svg class="icon" aria-hidden="true"><use href="#i-close"></use></svg></button>
+      </div>
+      <pre class="diagnostics-out" id="diagnosticsOut">Coletando…</pre>
+      <div class="modal-actions">
+        <button class="btn btn-line" id="diagnosticsCopy" type="button"><svg class="icon" aria-hidden="true"><use href="#i-copy"></use></svg>Copiar relatório</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
 
   <noscript>
     <div class="noscript">O ateliê precisa de JavaScript para ler e cortar o seu filme.</div>
   </noscript>
 
+  <script src="src/ui/boot.js"></script>
   <script src="lib/captions.js"></script>
   <script type="module" src="src/main.js"></script>
   <script type="module">
     import { initUI } from './src/main.js';
     initUI();
-  </script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').catch(() => {});
-      });
-    }
   </script>
 </body>
 </html>

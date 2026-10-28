@@ -1,0 +1,72 @@
+[
+  {
+    "name": "1. Servidor com COOP/COEP e crossOriginIsolated",
+    "ok": true,
+    "detail": "coi=true sab=function coop=same-origin"
+  },
+  {
+    "name": "2. Tema alterna e persiste após recarregar",
+    "ok": true,
+    "detail": "light → dark → dark"
+  },
+  {
+    "name": "3. Vídeo carrega, análise chega a 100% e gera cortes",
+    "ok": true,
+    "detail": "4 cortes, 4 miniaturas"
+  },
+  {
+    "name": "4. Corte 1s–4s exporta WebM válido (9:16, ~3s)",
+    "ok": true,
+    "detail": "720x1280 vp9 90 quadros 3s"
+  },
+  {
+    "name": "5. Whisper transcreve a fala e os tempos são válidos",
+    "ok": true,
+    "detail": "3/5 palavras-chave, 7 blocos, modelo onnx-community/whisper-base"
+  },
+  {
+    "name": "6. Legendas exportam em SRT e ASS válidos",
+    "ok": true,
+    "detail": "srt=369B ass=1034B"
+  },
+  {
+    "name": "7. Painel de diagnóstico abre e mostra o ambiente",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "B1. Vídeo sem áudio falha com mensagem clara",
+    "ok": true,
+    "detail": "[18:27:14] Erro: Este vídeo não tem áudio decodificável (sem faixa de áudio ou arquivo dan"
+  },
+  {
+    "name": "B2. Arquivo corrompido é recusado sem travar",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "B3. Cancelar no meio da análise não trava e permite reanalisar",
+    "ok": true,
+    "detail": "running=false overlayFechado=true cortes=4"
+  },
+  {
+    "name": "B4. Trocar o tema durante o processamento funciona",
+    "ok": true,
+    "detail": "dark → light, 4 cortes"
+  },
+  {
+    "name": "B5. Recarregar no meio de uma operação volta são",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "B6. Vídeo de 5 minutos carrega e analisa",
+    "ok": true,
+    "detail": "300s"
+  },
+  {
+    "name": "S. Nenhum erro de página durante a suíte",
+    "ok": true,
+    "detail": ""
+  }
+]

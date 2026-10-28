@@ -5,9 +5,9 @@ $out = Join-Path $root 'tests\fixtures'
 New-Item -ItemType Directory -Force -Path $out | Out-Null
 $ffmpeg = Join-Path $root 'node_modules\ffmpeg-static\ffmpeg.exe'
 
-$frase1 = 'Almocei ontem e fui ao mercado, comprei pão e leite.'
-$frase2 = 'No caminho de volta encontrei meu vizinho e conversamos sobre o filme de ontem.'
-$texto = "$frase1 $frase2"
+$frase1 = 'Almocei ontem e fui ao mercado.'
+$frase2 = 'Comprei pão e leite.'
+$frase3 = 'No caminho de volta encontrei meu vizinho e conversamos sobre o filme de ontem.'
 
 $wav = Join-Path $env:TEMP 'apollocut-voz.wav'
 Add-Type -AssemblyName System.Speech
@@ -15,10 +15,11 @@ $synth = New-Object System.Speech.Synthesis.SpeechSynthesizer
 $voz = $synth.GetInstalledVoices() | Where-Object { $_.VoiceInfo.Culture.Name -eq 'pt-BR' } | Select-Object -First 1
 if (-not $voz) { throw 'Nenhuma voz pt-BR instalada no Windows.' }
 $synth.SelectVoice($voz.VoiceInfo.Name)
-$synth.Rate = -1
-$fmt = New-Object System.Speech.AudioFormat.SpeechAudioFormatInfo(44100, [System.Speech.AudioFormat.AudioBitsPerSample]::Sixteen, [System.Speech.AudioFormat.AudioChannel]::Mono)
+$synth.Rate = -2
+$fmt = New-Object System.Speech.AudioFormat.SpeechAudioFormatInfo(16000, [System.Speech.AudioFormat.AudioBitsPerSample]::Sixteen, [System.Speech.AudioFormat.AudioChannel]::Mono)
 $synth.SetOutputToWaveFile($wav, $fmt)
-$synth.Speak($texto)
+$ssml = "<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='pt-BR'>$frase1<break time='700ms'/>$frase2<break time='700ms'/>$frase3</speak>"
+$synth.SpeakSsml($ssml)
 $synth.Dispose()
 Write-Host "voz gerada: $wav"
 
@@ -42,3 +43,9 @@ Render 'mudo.mp4' '640x360' 8 @('-c:v','libx264','-pix_fmt','yuv420p','-preset',
 $bad = Join-Path $out 'corrompido.mp4'
 [System.IO.File]::WriteAllBytes($bad, [byte[]](0..255))
 Write-Host 'ok: corrompido.mp4'
+
+# cenário de 5 minutos (leve de propósito: 640x360, 10 fps)
+$longo = Join-Path $out 'longo-5min.mp4'
+& $ffmpeg -y -loglevel error -f lavfi -i "testsrc2=s=640x360:d=300:r=10" -f lavfi -i "anullsrc=r=44100:cl=mono" -t 300 -c:v libx264 -pix_fmt yuv420p -preset veryfast -crf 36 -c:a aac -b:a 48k -movflags +faststart $longo
+if ($LASTEXITCODE -ne 0) { throw 'ffmpeg falhou em longo-5min.mp4' }
+Write-Host 'ok: longo-5min.mp4'
