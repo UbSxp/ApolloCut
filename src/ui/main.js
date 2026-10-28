@@ -18,6 +18,7 @@ import { ClipController } from './clips.js';
 import { ThemeController } from './theme.js';
 import { EditorController } from './editor.js';
 import { DiagnosticsController } from './diagnostics.js';
+import { setupFaq } from './faq.js';
 import { loadSettings } from '../utils/settings.js';
 
 /**
@@ -84,6 +85,9 @@ export async function initUI(initialSettings) {
   
   // Apply initial reduced motion (o tema é aplicado pelo ThemeController)
   applyReducedMotion(state.settings.reducedMotion);
+
+  // FAQ da landing (busca, categorias, expandir/recolher)
+  setupFaq();
   
   // Show opening screen
   showOpening(state, els);
