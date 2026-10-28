@@ -50,3 +50,4 @@ Detalhe em [`docs/legendas/resultados.md`](docs/legendas/resultados.md).
 3. **Ajuste medido do alinhamento.** `alignToRegions` descartado (3 tentativas piores); desconto fixo de latência descartado; `minGap` 0,4 s; `minShift` 0,2 s; limite na palavra seguinte (impede inversão de ordem).
 4. **Resumo do `medir.mjs`.** p95 e média passaram a somar por palavra (antes era o pior clipe).
 5. **Testes.** `npm run testes` — 21/21 (`tests/legendas/texto.test.mjs`, `segmentacao.test.mjs`).
+6. **"Palavras difíceis" medido.** Siglas 6,3% → **0,0%**, gírias 14,3% → **7,1%**, marcas 13,8% → **10,3%**. Duas armadilhas corrigidas no caminho (juntar token engolia a palavra anterior; sigla curta trocava palavra comum). `medir.mjs` ganhou `--vocab`. Testes: 22/22.

@@ -135,7 +135,9 @@ function termMatches(candidate, term) {
   if (Math.abs(c.length - t.length) > 2) return false;
   const ratio = c.length / t.length;
   if (ratio < 0.6 || ratio > 1.7) return false;
-  return distance(c, t) <= (t.length <= 4 ? 1 : 2);
+  // Termo curto (sigla) não admite troca de letra: "para" (pr) não é "PIX" (px).
+  const tolerancia = t.length <= 2 ? 0 : t.length <= 4 ? 1 : 2;
+  return distance(c, t) <= tolerancia;
 }
 
 function termMatchesStrict(candidate, term) {
@@ -169,7 +171,9 @@ export function applyVocabulary(words, terms) {
 
     if (!matched && next) {
       const junto = `${w.text} ${next.text}`;
-      matched = lista.find((t) => parts(t).length === 1 && termMatches(junto, t));
+      // Juntar dois tokens só quando o segundo sozinho não serve: senão
+      // "no Instagram" viraria "Instagram" e o "no" sumiria do texto.
+      matched = lista.find((t) => parts(t).length === 1 && !termMatches(next.text, t) && termMatches(junto, t));
       if (!matched) {
         matched = lista.find((t) => {
           const p = parts(t);

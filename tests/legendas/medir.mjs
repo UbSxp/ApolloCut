@@ -300,6 +300,13 @@ async function main() {
     await page.evaluate((m) => { window.__APOLLO_DEBUG__.state.whisper.requestedModel = m; }, MODELS[modelArg] || modelArg);
   }
   const modeloUsado = await page.evaluate(() => window.__APOLLO_DEBUG__.state.whisper.requestedModel || null);
+  const vocab = arg('vocab');
+  if (vocab && vocab !== true) {
+    await page.evaluate((v) => {
+      const el = document.querySelector('#hardWordsInput');
+      if (el) el.value = v;
+    }, vocab);
+  }
 
   const linhas = [];
   try {

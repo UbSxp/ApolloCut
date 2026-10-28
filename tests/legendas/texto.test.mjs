@@ -76,6 +76,19 @@ test('vocabulário corrige nome próprio e termo composto', () => {
   assert.equal(intacto.map((w) => w.text).join(' '), 'nada a ver aqui');
 });
 
+test('vocabulário não engole palavra vizinha nem troca palavra comum', () => {
+  const palavras = (texto) => texto.split(' ').map((text, i) => ({ text, start: i * 0.5, end: i * 0.5 + 0.4 }));
+  // "no Instagram": o "no" fica, o nome já está certo.
+  const comPreposicao = applyVocabulary(palavras('postei no Instagram'), ['Instagram']);
+  assert.equal(comPreposicao.map((w) => w.text).join(' '), 'postei no Instagram');
+
+  // "para" e "PIX" têm esqueleto parecido (pr/px), mas não são o mesmo termo.
+  const sigla = applyVocabulary(palavras('para emitir a nota'), ['PIX']);
+  assert.equal(sigla.map((w) => w.text).join(' '), 'para emitir a nota');
+  const corrigida = applyVocabulary(palavras('foi por PXI'), ['PIX']);
+  assert.equal(corrigida.map((w) => w.text).join(' '), 'foi por PIX');
+});
+
 test('esqueleto consonantal aproxima grafias parecidas', () => {
   assert.equal(skeleton('Nubank'), skeleton('no banquia').slice(0, 1) + skeleton('nubank').slice(1));
   assert.equal(skeleton('PIX'), 'px');

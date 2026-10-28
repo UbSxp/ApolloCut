@@ -70,3 +70,29 @@ em vez de tirar média das médias; os CER **por clipe** não mudaram.
 - **Alinhamento forçado** (etapa 3 do plano) não entrou: o erro residual é
   viés de +50 a +90 ms do próprio modelo, dentro da meta de 100 ms. Um
   desconto fixo de latência foi medido e **piorou** (77 → 148 ms).
+
+## Rodada 2 — "Palavras difíceis" (2026-10-28)
+
+O campo de vocabulário corrige o texto depois da transcrição comparando o
+**esqueleto consonantal** das palavras (`Nubank` → `nbnk`), porque o
+`transformers.js` 3.7.5 não aceita `prompt_ids`.
+
+| clipe | vocabulário | WER antes | WER depois |
+|---|---|---:|---:|
+| 05-siglas | CPF, CNPJ, PIX, IPVA, IRPF | 6,3% | **0,0%** |
+| 06-nomes-marcas | Instagram, WhatsApp, Nubank, Petrobras, YouTube | 13,8% | **10,3%** |
+| 07-girias | mó role | 14,3% | **7,1%** |
+
+Duas armadilhas encontradas e corrigidas:
+
+1. **Juntar dois tokens engolia a palavra anterior**: "no Instagram" virava
+   "Instagram". Agora só junta quando a palavra seguinte sozinha **não** é o
+   termo (necessário para "no banquia" → "Nubank", onde "banquia" sozinho não
+   casa).
+2. **Sigla curta trocava palavra comum**: "para" (`pr`) casava com `PIX`
+   (`px`) por tolerância de 1 letra. Termo com esqueleto de até 2 letras agora
+   exige igualdade exata.
+
+O que o vocabulário **não** resolve: erro semântico distante. `história` por
+`story` (`hstr` × `stry`) e as duas palavras que o modelo simplesmente não
+fala ("A Nubank **e a** Petrobras") continuam no WER de 06.
