@@ -195,20 +195,19 @@ async function run() {
   const downloadPromise = page.waitForEvent('download', { timeout: 60000 });
   await page.click('#downloadLink');
   const download = await downloadPromise;
-  const outFile = join(EVID, 'corte-exportado.webm');
+  const outFile = join(EVID, 'corte-exportado.mp4');
   await download.saveAs(outFile);
   await page.waitForTimeout(500);
   await shot('04-exportacao');
 
   const info = await probe(outFile);
   const videoStream = info?.streams?.find((s) => s.codec_type === 'video');
-  const isWebm = /webm|matroska/.test(info?.format?.format_name || '');
-  // MediaRecorder grava WebM sem duração no cabeçalho: medimos pelos quadros.
+  const isMp4 = /mp4/.test(info?.format?.format_name || '');
   const frames = Number(videoStream?.nb_read_packets || 0);
   const appDuration = await page.evaluate(() => Number(document.getElementById('downloadLink').getAttribute('data-duration')));
   check(
-    '4. Corte 1s–4s exporta WebM válido (9:16, ~3s)',
-    !!videoStream && isWebm && videoStream.width === 720 && videoStream.height === 1280 && frames >= 60 && Math.abs(appDuration - 3) <= 0.6,
+    '4. Corte 1s–4s exporta MP4 H.264 válido (9:16, ~3s)',
+    !!videoStream && isMp4 && videoStream.codec_name === 'h264' && videoStream.width === 720 && videoStream.height === 1280 && frames >= 60 && Math.abs(appDuration - 3) <= 0.6,
     `${videoStream?.width}x${videoStream?.height} ${videoStream?.codec_name} ${frames} quadros ${appDuration}s`
   );
 
@@ -246,6 +245,8 @@ async function run() {
   await shot('05-transcricao');
 
   // ---------- 6. Legendas SRT/ASS ----------
+  await page.click('.console-tab[data-tab="captions"]');
+  await page.waitForTimeout(200);
   const srtPromise = page.waitForEvent('download', { timeout: 20000 });
   await page.click('#exportSrtBtn');
   const srtDl = await srtPromise;
