@@ -20,6 +20,11 @@ export class SettingsController {
     if (settingsClose) {
       settingsClose.addEventListener('click', () => this.close());
     }
+
+    // Botão de engrenagem do cabeçalho (estava sem listener).
+    document.querySelectorAll('.js-settings').forEach((btn) => {
+      btn.addEventListener('click', () => this.open());
+    });
     
     if (settingsDone) {
       settingsDone.addEventListener('click', () => this.saveAndClose());
@@ -30,7 +35,8 @@ export class SettingsController {
     }
     
     if (themeChoice) {
-      themeChoice.addEventListener('change', (e) => this.updateSetting('theme', e.target.value));
+      // #themeChoice é um grupo de botões (div), não um <select>.
+      // O clique é tratado pelo ThemeController.
     }
     
     if (settingsLang) {
@@ -97,6 +103,11 @@ export class SettingsController {
   
   init() {
     this.loadSettingsToUI();
+  }
+
+  open() {
+    this.loadSettingsToUI();
+    this.overlays.open(this.els.settingsOverlay);
   }
   
   loadSettingsToUI() {

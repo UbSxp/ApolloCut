@@ -15,12 +15,18 @@ import { KitController } from './kit.js';
 import { SettingsController } from './settings.js';
 import { CaptionController } from './captions.js';
 import { ClipController } from './clips.js';
+import { ThemeController } from './theme.js';
+import { loadSettings } from '../utils/settings.js';
 
 /**
  * Main UI initialization
  * @param {Object} initialSettings - Settings loaded from localStorage
  */
-export async function initUI(initialSettings = {}) {
+export async function initUI(initialSettings) {
+  // Sem argumentos (index.html/build): lê o que ficou salvo no navegador.
+  if (!initialSettings) {
+    initialSettings = await loadSettings();
+  }
   // Initialize core managers
   const state = new StateManager(initialSettings);
   const toast = new ToastManager();
@@ -39,6 +45,7 @@ export async function initUI(initialSettings = {}) {
   const settings = new SettingsController(state, els, toast, overlays);
   const captions = new CaptionController(state, els, toast);
   const clips = new ClipController(state, els, toast);
+  const theme = new ThemeController(state, toast);
   
   // Setup global event listeners
   setupGlobalListeners({
@@ -57,8 +64,7 @@ export async function initUI(initialSettings = {}) {
     clips,
   });
   
-  // Apply initial theme
-  applyTheme(state.settings.theme);
+  // Apply initial reduced motion (o tema é aplicado pelo ThemeController)
   applyReducedMotion(state.settings.reducedMotion);
   
   // Show opening screen
@@ -109,19 +115,6 @@ function cacheElements() {
     els[id] = $id(id);
   });
   return els;
-}
-
-/**
- * Apply theme to document
- */
-function applyTheme(theme) {
-  const root = document.documentElement;
-  if (theme === 'auto') {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    root.dataset.theme = prefersDark ? 'dark' : 'light';
-  } else {
-    root.dataset.theme = theme;
-  }
 }
 
 /**

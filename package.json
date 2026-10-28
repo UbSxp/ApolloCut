@@ -24,6 +24,8 @@
     "@huggingface/transformers": "^3.7.5",
     "@vitest/ui": "^2.0.0",
     "esbuild": "^0.23.0",
+    "ffmpeg-static": "^5.3.0",
+    "ffprobe-static": "^3.1.0",
     "jsdom": "^24.0.0",
     "playwright": "^1.64.1",
     "puppeteer-core": "^25.16.0",
