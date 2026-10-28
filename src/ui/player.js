@@ -106,6 +106,15 @@ export class PlayerController {
   }
 
   /** Reproduz apenas um trecho (pré-visualização do corte). */
+  /** Mostra o inicio do corte no teatro, sem tocar. */
+  previewClip(clip, index) {
+    const { previewLabel } = this.els;
+    if (!clip) return;
+    this.state.playRange = { start: clip.start, end: clip.end };
+    this.seekTo(clip.start);
+    if (previewLabel) previewLabel.textContent = `Corte ${index || 1}`;
+  }
+
   playRange(start, end) {
     const { previewVideo } = this.els;
     if (!previewVideo) return;

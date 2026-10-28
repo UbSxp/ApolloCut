@@ -83,13 +83,20 @@ export class ClipController {
       });
     }
 
-    window.addEventListener('clips:changed', () => this.renderClipGrid());
+    window.addEventListener('clips:changed', () => {
+      this.renderClipGrid();
+      this.updateActiveClipUI();
+      const clip = this.state.getActiveClip();
+      if (clip) this.player?.previewClip(clip, this.state.clips.indexOf(clip) + 1);
+    });
   }
 
   selectClip(clipId) {
     this.state.setActiveClip(clipId);
     this.renderClipGrid();
     this.updateActiveClipUI();
+    const clip = this.state.clips.find((c) => c.id === clipId);
+    if (clip) this.player?.previewClip(clip, this.state.clips.indexOf(clip) + 1);
     window.dispatchEvent(new CustomEvent('clip:active'));
   }
 
@@ -179,7 +186,14 @@ export class ClipController {
         this.thumbs.set(clip.id, dataUrl);
         if (token !== this.thumbsToken) return;
         const thumbEl = this.els.clipGrid?.querySelector(`[data-clip-id="${clip.id}"] .clip-thumb`);
-        if (thumbEl) thumbEl.insertAdjacentHTML('afterbegin', `<img alt="" src="${dataUrl}">`);
+        if (thumbEl) {
+          const img = new Image();
+          img.alt = '';
+          img.src = dataUrl;
+          const placeholder = thumbEl.querySelector('.clip-thumb-loading');
+          if (placeholder) placeholder.replaceWith(img);
+          else thumbEl.prepend(img);
+        }
       } catch (_) {
         // Miniatura é cosmética: falhar aqui não pode quebrar a lista.
       }
@@ -198,13 +212,16 @@ export class ClipController {
     const clip = this.state.getActiveClip();
 
     if (activeClipInfo) activeClipInfo.hidden = !clip;
+    const { previewLabel } = this.els;
     if (clip) {
       const index = this.state.clips.findIndex((c) => c.id === clip.id) + 1;
       if (activeClipTitle) activeClipTitle.textContent = `Corte ${index}`;
+      if (previewLabel) previewLabel.textContent = `Corte ${index}`;
       if (activeClipMeta) activeClipMeta.textContent = `${fmtTime(clip.start)}–${fmtTime(clip.end)} (${clip.duration.toFixed(1)}s)`;
     } else {
       if (activeClipTitle) activeClipTitle.textContent = 'Nenhum corte ainda';
       if (activeClipMeta) activeClipMeta.textContent = 'O filme inteiro está em tela.';
+      if (previewLabel) previewLabel.textContent = 'O filme inteiro';
     }
   }
 
