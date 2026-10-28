@@ -1,0 +1,205 @@
+{
+    "id":  "04-numeros",
+    "audio":  "clipes/04-numeros.mp4",
+    "durationMs":  22249,
+    "rate":  0,
+    "noise":  null,
+    "sentences":  [
+                      "O total deu trezentos e quarenta e cinco reais e vinte centavos.",
+                      "A reunião ficou marcada para o dia 15 de março às 14 horas.",
+                      "Foram mil duzentos e noventa e nove reais em três parcelas de quatrocentos e trinta e três reais."
+                  ],
+    "display":  "O total deu trezentos e quarenta e cinco reais e vinte centavos. A reunião ficou marcada para o dia 15 de março às 14 horas. Foram mil duzentos e noventa e nove reais em três parcelas de quatrocentos e trinta e três reais.",
+    "words":  [
+                  {
+                      "text":  "O",
+                      "startMs":  398
+                  },
+                  {
+                      "text":  "total",
+                      "startMs":  500
+                  },
+                  {
+                      "text":  "deu",
+                      "startMs":  1010
+                  },
+                  {
+                      "text":  "trezentos",
+                      "startMs":  1271
+                  },
+                  {
+                      "text":  "e",
+                      "startMs":  2084
+                  },
+                  {
+                      "text":  "quarenta",
+                      "startMs":  2167
+                  },
+                  {
+                      "text":  "e",
+                      "startMs":  2740
+                  },
+                  {
+                      "text":  "cinco",
+                      "startMs":  2802
+                  },
+                  {
+                      "text":  "reais",
+                      "startMs":  3327
+                  },
+                  {
+                      "text":  "e",
+                      "startMs":  3840
+                  },
+                  {
+                      "text":  "vinte",
+                      "startMs":  3929
+                  },
+                  {
+                      "text":  "centavos",
+                      "startMs":  4402
+                  },
+                  {
+                      "text":  "A",
+                      "startMs":  6867
+                  },
+                  {
+                      "text":  "reunião",
+                      "startMs":  6930
+                  },
+                  {
+                      "text":  "ficou",
+                      "startMs":  7536
+                  },
+                  {
+                      "text":  "marcada",
+                      "startMs":  7978
+                  },
+                  {
+                      "text":  "para",
+                      "startMs":  8670
+                  },
+                  {
+                      "text":  "o",
+                      "startMs":  8941
+                  },
+                  {
+                      "text":  "dia",
+                      "startMs":  9024
+                  },
+                  {
+                      "text":  "15 de",
+                      "startMs":  9385
+                  },
+                  {
+                      "text":  "15 de",
+                      "startMs":  9851
+                  },
+                  {
+                      "text":  "março",
+                      "startMs":  10013
+                  },
+                  {
+                      "text":  "às",
+                      "startMs":  10560
+                  },
+                  {
+                      "text":  "14 horas",
+                      "startMs":  10770
+                  },
+                  {
+                      "text":  "14 horas",
+                      "startMs":  11574
+                  },
+                  {
+                      "text":  "Foram",
+                      "startMs":  13631
+                  },
+                  {
+                      "text":  "mil",
+                      "startMs":  14027
+                  },
+                  {
+                      "text":  "duzentos",
+                      "startMs":  14279
+                  },
+                  {
+                      "text":  "e",
+                      "startMs":  14981
+                  },
+                  {
+                      "text":  "noventa",
+                      "startMs":  15038
+                  },
+                  {
+                      "text":  "e",
+                      "startMs":  15606
+                  },
+                  {
+                      "text":  "nove",
+                      "startMs":  15667
+                  },
+                  {
+                      "text":  "reais",
+                      "startMs":  16048
+                  },
+                  {
+                      "text":  "em",
+                      "startMs":  16556
+                  },
+                  {
+                      "text":  "três",
+                      "startMs":  16733
+                  },
+                  {
+                      "text":  "parcelas",
+                      "startMs":  17118
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  17902
+                  },
+                  {
+                      "text":  "quatrocentos",
+                      "startMs":  18089
+                  },
+                  {
+                      "text":  "e",
+                      "startMs":  19148
+                  },
+                  {
+                      "text":  "trinta",
+                      "startMs":  19229
+                  },
+                  {
+                      "text":  "e",
+                      "startMs":  19719
+                  },
+                  {
+                      "text":  "três",
+                      "startMs":  19802
+                  },
+                  {
+                      "text":  "reais",
+                      "startMs":  20152
+                  }
+              ],
+    "silence":  [
+                    {
+                        "start":  0,
+                        "end":  0.3
+                    },
+                    {
+                        "start":  6.27,
+                        "end":  6.77
+                    },
+                    {
+                        "start":  13.029,
+                        "end":  13.529
+                    },
+                    {
+                        "start":  21.649,
+                        "end":  22.249
+                    }
+                ]
+}

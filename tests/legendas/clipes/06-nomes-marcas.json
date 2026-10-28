@@ -1,0 +1,149 @@
+{
+    "id":  "06-nomes-marcas",
+    "audio":  "clipes/06-nomes-marcas.mp4",
+    "durationMs":  15389,
+    "rate":  0,
+    "noise":  null,
+    "sentences":  [
+                      "O feedback do story no Instagram foi melhor do que no WhatsApp.",
+                      "A Nubank e a Petrobras subiram na bolsa ontem.",
+                      "Vou mandar o link do YouTube no chat."
+                  ],
+    "display":  "O feedback do story no Instagram foi melhor do que no WhatsApp. A Nubank e a Petrobras subiram na bolsa ontem. Vou mandar o link do YouTube no chat.",
+    "words":  [
+                  {
+                      "text":  "O",
+                      "startMs":  394
+                  },
+                  {
+                      "text":  "feedback",
+                      "startMs":  470
+                  },
+                  {
+                      "text":  "do",
+                      "startMs":  1280
+                  },
+                  {
+                      "text":  "story",
+                      "startMs":  1391
+                  },
+                  {
+                      "text":  "no",
+                      "startMs":  1977
+                  },
+                  {
+                      "text":  "Instagram",
+                      "startMs":  2128
+                  },
+                  {
+                      "text":  "foi",
+                      "startMs":  2930
+                  },
+                  {
+                      "text":  "melhor",
+                      "startMs":  3202
+                  },
+                  {
+                      "text":  "do",
+                      "startMs":  3670
+                  },
+                  {
+                      "text":  "que",
+                      "startMs":  3808
+                  },
+                  {
+                      "text":  "no",
+                      "startMs":  3951
+                  },
+                  {
+                      "text":  "WhatsApp",
+                      "startMs":  4083
+                  },
+                  {
+                      "text":  "A",
+                      "startMs":  6371
+                  },
+                  {
+                      "text":  "Nubank",
+                      "startMs":  6464
+                  },
+                  {
+                      "text":  "e",
+                      "startMs":  6844
+                  },
+                  {
+                      "text":  "a",
+                      "startMs":  6950
+                  },
+                  {
+                      "text":  "Petrobras",
+                      "startMs":  7034
+                  },
+                  {
+                      "text":  "subiram",
+                      "startMs":  7954
+                  },
+                  {
+                      "text":  "na",
+                      "startMs":  8493
+                  },
+                  {
+                      "text":  "bolsa",
+                      "startMs":  8674
+                  },
+                  {
+                      "text":  "ontem",
+                      "startMs":  9205
+                  },
+                  {
+                      "text":  "Vou",
+                      "startMs":  11140
+                  },
+                  {
+                      "text":  "mandar",
+                      "startMs":  11366
+                  },
+                  {
+                      "text":  "o",
+                      "startMs":  11794
+                  },
+                  {
+                      "text":  "link",
+                      "startMs":  11879
+                  },
+                  {
+                      "text":  "do",
+                      "startMs":  12317
+                  },
+                  {
+                      "text":  "YouTube",
+                      "startMs":  12461
+                  },
+                  {
+                      "text":  "no",
+                      "startMs":  13103
+                  },
+                  {
+                      "text":  "chat",
+                      "startMs":  13242
+                  }
+              ],
+    "silence":  [
+                    {
+                        "start":  0,
+                        "end":  0.3
+                    },
+                    {
+                        "start":  5.774,
+                        "end":  6.274
+                    },
+                    {
+                        "start":  10.546,
+                        "end":  11.046
+                    },
+                    {
+                        "start":  14.789,
+                        "end":  15.389
+                    }
+                ]
+}

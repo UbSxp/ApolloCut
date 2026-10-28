@@ -1,0 +1,146 @@
+[
+  {
+    "id": "01-limpo-normal",
+    "rate": 0,
+    "leadingMs": 300,
+    "trailingMs": 600,
+    "breakMs": 500,
+    "sentences": [
+      "Almocei ontem e fui ao mercado.",
+      "Comprei pão e leite para o café da manhã.",
+      "No caminho de volta encontrei meu vizinho e conversamos sobre o filme de ontem."
+    ]
+  },
+  {
+    "id": "02-limpo-lento",
+    "rate": -2,
+    "leadingMs": 1200,
+    "trailingMs": 1500,
+    "breakMs": 900,
+    "sentences": [
+      "Hoje eu acordei cedo e fui correr na praia.",
+      "Depois tomei banho e preparei um café bem forte."
+    ]
+  },
+  {
+    "id": "03-rapido",
+    "rate": 5,
+    "leadingMs": 200,
+    "trailingMs": 400,
+    "breakMs": 300,
+    "sentences": [
+      "Olha só que interessante esse resultado que a gente acabou de encontrar aqui.",
+      "Eu não esperava que fosse funcionar tão rápido assim na primeira tentativa.",
+      "Agora me diz o que você achou disso tudo no final das contas."
+    ]
+  },
+  {
+    "id": "04-numeros",
+    "rate": 0,
+    "leadingMs": 300,
+    "trailingMs": 600,
+    "breakMs": 500,
+    "sentences": [
+      "O total deu trezentos e quarenta e cinco reais e vinte centavos.",
+      "A reunião ficou marcada para o dia 15 de março às 14 horas.",
+      "Foram mil duzentos e noventa e nove reais em três parcelas de quatrocentos e trinta e três reais."
+    ]
+  },
+  {
+    "id": "05-siglas",
+    "rate": 0,
+    "leadingMs": 300,
+    "trailingMs": 600,
+    "breakMs": 500,
+    "sentences": [
+      "Preciso do seu CPF e do CNPJ da empresa para emitir a nota.",
+      "O pagamento foi feito por PIX e o IPVA já está quitado.",
+      "A Receita Federal liberou o IRPF hoje."
+    ]
+  },
+  {
+    "id": "06-nomes-marcas",
+    "rate": 0,
+    "leadingMs": 300,
+    "trailingMs": 600,
+    "breakMs": 500,
+    "sentences": [
+      "O feedback do story no Instagram foi melhor do que no WhatsApp.",
+      "A Nubank e a Petrobras subiram na bolsa ontem.",
+      "Vou mandar o link do YouTube no chat."
+    ]
+  },
+  {
+    "id": "07-girias",
+    "rate": 0,
+    "leadingMs": 300,
+    "trailingMs": 600,
+    "breakMs": 400,
+    "sentences": [
+      "Tá tudo certo, né? Eu tô indo pra lá agora.",
+      "Cê viu o mó role que foi ontem? Foi demais.",
+      "A gente vai fazer isso amanhã, tá ligado?"
+    ]
+  },
+  {
+    "id": "08-pausas",
+    "rate": 0,
+    "leadingMs": 300,
+    "trailingMs": 800,
+    "breakMs": 1500,
+    "sentences": [
+      "Eu estava pensando.",
+      "Sobre o que você falou.",
+      "E acho que faz sentido."
+    ]
+  },
+  {
+    "id": "09-ruido",
+    "rate": 0,
+    "leadingMs": 300,
+    "trailingMs": 600,
+    "breakMs": 500,
+    "noise": { "kind": "white", "dbBelowSpeech": 15 },
+    "sentences": [
+      "Esse áudio tem ruído de fundo mas a fala continua clara.",
+      "A gente precisa testar como o modelo se comporta nessa situação."
+    ]
+  },
+  {
+    "id": "10-musica",
+    "rate": 0,
+    "leadingMs": 300,
+    "trailingMs": 600,
+    "breakMs": 500,
+    "noise": { "kind": "music", "dbBelowSpeech": 15 },
+    "sentences": [
+      "Coloquei uma música baixinha de fundo para ver se atrapalha.",
+      "O importante é que a transcrição continue correta mesmo assim."
+    ]
+  },
+  {
+    "id": "11-silencio",
+    "rate": 0,
+    "leadingMs": 3000,
+    "trailingMs": 4000,
+    "breakMs": 500,
+    "sentences": [
+      "Isso é um teste de silêncio."
+    ]
+  },
+  {
+    "id": "12-longo",
+    "rate": 0,
+    "leadingMs": 300,
+    "trailingMs": 800,
+    "breakMs": 450,
+    "sentences": [
+      "Quando eu cheguei na festa, todo mundo já estava dançando.",
+      "Fiquei um tempo na porta observando a cena antes de entrar.",
+      "O anfitrião me viu e veio me cumprimentar com um abraço apertado.",
+      "Conversamos sobre o trabalho, a família e as viagens que ele fez no ano passado.",
+      "Depois de meia hora eu já conhecia metade das pessoas da sala.",
+      "Saí de lá quase meia-noite e voltei para casa caminhando devagar."
+    ]
+  }
+]

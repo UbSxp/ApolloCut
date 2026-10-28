@@ -1,0 +1,312 @@
+{
+    "id":  "12-longo",
+    "audio":  "clipes/12-longo.mp4",
+    "durationMs":  38561,
+    "rate":  0,
+    "noise":  null,
+    "sentences":  [
+                      "Quando eu cheguei na festa, todo mundo já estava dançando.",
+                      "Fiquei um tempo na porta observando a cena antes de entrar.",
+                      "O anfitrião me viu e veio me cumprimentar com um abraço apertado.",
+                      "Conversamos sobre o trabalho, a família e as viagens que ele fez no ano passado.",
+                      "Depois de meia hora eu já conhecia metade das pessoas da sala.",
+                      "Saí de lá quase meia-noite e voltei para casa caminhando devagar."
+                  ],
+    "display":  "Quando eu cheguei na festa, todo mundo já estava dançando. Fiquei um tempo na porta observando a cena antes de entrar. O anfitrião me viu e veio me cumprimentar com um abraço apertado. Conversamos sobre o trabalho, a família e as viagens que ele fez no ano passado. Depois de meia hora eu já conhecia metade das pessoas da sala. Saí de lá quase meia-noite e voltei para casa caminhando devagar.",
+    "words":  [
+                  {
+                      "text":  "Quando",
+                      "startMs":  398
+                  },
+                  {
+                      "text":  "eu",
+                      "startMs":  810
+                  },
+                  {
+                      "text":  "cheguei",
+                      "startMs":  970
+                  },
+                  {
+                      "text":  "na",
+                      "startMs":  1439
+                  },
+                  {
+                      "text":  "festa",
+                      "startMs":  1593
+                  },
+                  {
+                      "text":  "todo",
+                      "startMs":  2547
+                  },
+                  {
+                      "text":  "mundo",
+                      "startMs":  2977
+                  },
+                  {
+                      "text":  "já",
+                      "startMs":  3416
+                  },
+                  {
+                      "text":  "estava",
+                      "startMs":  3620
+                  },
+                  {
+                      "text":  "dançando",
+                      "startMs":  4177
+                  },
+                  {
+                      "text":  "Fiquei",
+                      "startMs":  6396
+                  },
+                  {
+                      "text":  "um",
+                      "startMs":  6858
+                  },
+                  {
+                      "text":  "tempo",
+                      "startMs":  7014
+                  },
+                  {
+                      "text":  "na",
+                      "startMs":  7485
+                  },
+                  {
+                      "text":  "porta",
+                      "startMs":  7660
+                  },
+                  {
+                      "text":  "observando",
+                      "startMs":  8214
+                  },
+                  {
+                      "text":  "a",
+                      "startMs":  9060
+                  },
+                  {
+                      "text":  "cena",
+                      "startMs":  9133
+                  },
+                  {
+                      "text":  "antes",
+                      "startMs":  9595
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  10000
+                  },
+                  {
+                      "text":  "entrar",
+                      "startMs":  10172
+                  },
+                  {
+                      "text":  "O",
+                      "startMs":  12264
+                  },
+                  {
+                      "text":  "anfitrião",
+                      "startMs":  12357
+                  },
+                  {
+                      "text":  "me",
+                      "startMs":  13068
+                  },
+                  {
+                      "text":  "viu",
+                      "startMs":  13207
+                  },
+                  {
+                      "text":  "e",
+                      "startMs":  13466
+                  },
+                  {
+                      "text":  "veio",
+                      "startMs":  13566
+                  },
+                  {
+                      "text":  "me",
+                      "startMs":  13928
+                  },
+                  {
+                      "text":  "cumprimentar",
+                      "startMs":  14078
+                  },
+                  {
+                      "text":  "com",
+                      "startMs":  14967
+                  },
+                  {
+                      "text":  "um",
+                      "startMs":  15216
+                  },
+                  {
+                      "text":  "abraço",
+                      "startMs":  15399
+                  },
+                  {
+                      "text":  "apertado",
+                      "startMs":  16034
+                  },
+                  {
+                      "text":  "Conversamos",
+                      "startMs":  18334
+                  },
+                  {
+                      "text":  "sobre",
+                      "startMs":  19294
+                  },
+                  {
+                      "text":  "o",
+                      "startMs":  19678
+                  },
+                  {
+                      "text":  "trabalho",
+                      "startMs":  19745
+                  },
+                  {
+                      "text":  "a",
+                      "startMs":  20684
+                  },
+                  {
+                      "text":  "família",
+                      "startMs":  20784
+                  },
+                  {
+                      "text":  "e",
+                      "startMs":  21464
+                  },
+                  {
+                      "text":  "as",
+                      "startMs":  21565
+                  },
+                  {
+                      "text":  "viagens",
+                      "startMs":  21733
+                  },
+                  {
+                      "text":  "que",
+                      "startMs":  22435
+                  },
+                  {
+                      "text":  "ele",
+                      "startMs":  22634
+                  },
+                  {
+                      "text":  "fez",
+                      "startMs":  22871
+                  },
+                  {
+                      "text":  "no",
+                      "startMs":  23225
+                  },
+                  {
+                      "text":  "ano",
+                      "startMs":  23404
+                  },
+                  {
+                      "text":  "passado",
+                      "startMs":  23672
+                  },
+                  {
+                      "text":  "Depois",
+                      "startMs":  25864
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  26377
+                  },
+                  {
+                      "text":  "meia",
+                      "startMs":  26528
+                  },
+                  {
+                      "text":  "hora",
+                      "startMs":  26901
+                  },
+                  {
+                      "text":  "eu",
+                      "startMs":  27247
+                  },
+                  {
+                      "text":  "já",
+                      "startMs":  27437
+                  },
+                  {
+                      "text":  "conhecia",
+                      "startMs":  27613
+                  },
+                  {
+                      "text":  "metade",
+                      "startMs":  28257
+                  },
+                  {
+                      "text":  "das",
+                      "startMs":  28899
+                  },
+                  {
+                      "text":  "pessoas",
+                      "startMs":  29143
+                  },
+                  {
+                      "text":  "da",
+                      "startMs":  29776
+                  },
+                  {
+                      "text":  "sala",
+                      "startMs":  29943
+                  },
+                  {
+                      "text":  "Saí",
+                      "startMs":  31935
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  32310
+                  },
+                  {
+                      "text":  "lá",
+                      "startMs":  32470
+                  },
+                  {
+                      "text":  "quase",
+                      "startMs":  32673
+                  },
+                  {
+                      "text":  "meia-noite",
+                      "startMs":  33129
+                  },
+                  {
+                      "text":  "e",
+                      "startMs":  34019
+                  },
+                  {
+                      "text":  "voltei",
+                      "startMs":  34123
+                  },
+                  {
+                      "text":  "para",
+                      "startMs":  34619
+                  },
+                  {
+                      "text":  "casa",
+                      "startMs":  34942
+                  },
+                  {
+                      "text":  "caminhando",
+                      "startMs":  35401
+                  },
+                  {
+                      "text":  "devagar",
+                      "startMs":  36111
+                  }
+              ],
+    "silence":  [
+                    {
+                        "start":  0,
+                        "end":  0.3
+                    },
+                    {
+                        "start":  37.761,
+                        "end":  38.561
+                    }
+                ]
+}

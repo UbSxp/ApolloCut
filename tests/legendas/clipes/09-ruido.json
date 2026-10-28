@@ -1,0 +1,119 @@
+{
+    "id":  "09-ruido",
+    "audio":  "clipes/09-ruido.mp4",
+    "durationMs":  12527,
+    "rate":  0,
+    "noise":  {
+                  "kind":  "white",
+                  "dbBelowSpeech":  15
+              },
+    "sentences":  [
+                      "Esse áudio tem ruído de fundo mas a fala continua clara.",
+                      "A gente precisa testar como o modelo se comporta nessa situação."
+                  ],
+    "display":  "Esse áudio tem ruído de fundo mas a fala continua clara. A gente precisa testar como o modelo se comporta nessa situação.",
+    "words":  [
+                  {
+                      "text":  "Esse",
+                      "startMs":  400
+                  },
+                  {
+                      "text":  "áudio",
+                      "startMs":  700
+                  },
+                  {
+                      "text":  "tem",
+                      "startMs":  1150
+                  },
+                  {
+                      "text":  "ruído",
+                      "startMs":  1393
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  1846
+                  },
+                  {
+                      "text":  "fundo",
+                      "startMs":  2000
+                  },
+                  {
+                      "text":  "mas",
+                      "startMs":  2526
+                  },
+                  {
+                      "text":  "a",
+                      "startMs":  2779
+                  },
+                  {
+                      "text":  "fala",
+                      "startMs":  2883
+                  },
+                  {
+                      "text":  "continua",
+                      "startMs":  3378
+                  },
+                  {
+                      "text":  "clara",
+                      "startMs":  4054
+                  },
+                  {
+                      "text":  "A",
+                      "startMs":  6113
+                  },
+                  {
+                      "text":  "gente",
+                      "startMs":  6203
+                  },
+                  {
+                      "text":  "precisa",
+                      "startMs":  6629
+                  },
+                  {
+                      "text":  "testar",
+                      "startMs":  7316
+                  },
+                  {
+                      "text":  "como",
+                      "startMs":  7871
+                  },
+                  {
+                      "text":  "o",
+                      "startMs":  8253
+                  },
+                  {
+                      "text":  "modelo",
+                      "startMs":  8308
+                  },
+                  {
+                      "text":  "se",
+                      "startMs":  8846
+                  },
+                  {
+                      "text":  "comporta",
+                      "startMs":  9046
+                  },
+                  {
+                      "text":  "nessa",
+                      "startMs":  9802
+                  },
+                  {
+                      "text":  "situação",
+                      "startMs":  10203
+                  }
+              ],
+    "silence":  [
+                    {
+                        "start":  0,
+                        "end":  0.3
+                    },
+                    {
+                        "start":  5.513,
+                        "end":  6.013
+                    },
+                    {
+                        "start":  11.927,
+                        "end":  12.527
+                    }
+                ]
+}

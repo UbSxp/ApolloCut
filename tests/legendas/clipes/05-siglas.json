@@ -1,0 +1,161 @@
+{
+    "id":  "05-siglas",
+    "audio":  "clipes/05-siglas.mp4",
+    "durationMs":  18432,
+    "rate":  0,
+    "noise":  null,
+    "sentences":  [
+                      "Preciso do seu CPF e do CNPJ da empresa para emitir a nota.",
+                      "O pagamento foi feito por PIX e o IPVA já está quitado.",
+                      "A Receita Federal liberou o IRPF hoje."
+                  ],
+    "display":  "Preciso do seu CPF e do CNPJ da empresa para emitir a nota. O pagamento foi feito por PIX e o IPVA já está quitado. A Receita Federal liberou o IRPF hoje.",
+    "words":  [
+                  {
+                      "text":  "Preciso",
+                      "startMs":  397
+                  },
+                  {
+                      "text":  "do",
+                      "startMs":  1070
+                  },
+                  {
+                      "text":  "seu",
+                      "startMs":  1203
+                  },
+                  {
+                      "text":  "CPF",
+                      "startMs":  1474
+                  },
+                  {
+                      "text":  "e",
+                      "startMs":  2352
+                  },
+                  {
+                      "text":  "do",
+                      "startMs":  2457
+                  },
+                  {
+                      "text":  "CNPJ",
+                      "startMs":  2577
+                  },
+                  {
+                      "text":  "da",
+                      "startMs":  3772
+                  },
+                  {
+                      "text":  "empresa",
+                      "startMs":  3920
+                  },
+                  {
+                      "text":  "para",
+                      "startMs":  4565
+                  },
+                  {
+                      "text":  "emitir",
+                      "startMs":  4870
+                  },
+                  {
+                      "text":  "a",
+                      "startMs":  5391
+                  },
+                  {
+                      "text":  "nota",
+                      "startMs":  5497
+                  },
+                  {
+                      "text":  "O",
+                      "startMs":  7476
+                  },
+                  {
+                      "text":  "pagamento",
+                      "startMs":  7552
+                  },
+                  {
+                      "text":  "foi",
+                      "startMs":  8342
+                  },
+                  {
+                      "text":  "feito",
+                      "startMs":  8610
+                  },
+                  {
+                      "text":  "por",
+                      "startMs":  9133
+                  },
+                  {
+                      "text":  "PIX",
+                      "startMs":  9373
+                  },
+                  {
+                      "text":  "e",
+                      "startMs":  10118
+                  },
+                  {
+                      "text":  "o",
+                      "startMs":  10218
+                  },
+                  {
+                      "text":  "IPVA",
+                      "startMs":  10284
+                  },
+                  {
+                      "text":  "já",
+                      "startMs":  10853
+                  },
+                  {
+                      "text":  "está",
+                      "startMs":  11044
+                  },
+                  {
+                      "text":  "quitado",
+                      "startMs":  11378
+                  },
+                  {
+                      "text":  "A",
+                      "startMs":  13563
+                  },
+                  {
+                      "text":  "Receita",
+                      "startMs":  13629
+                  },
+                  {
+                      "text":  "Federal",
+                      "startMs":  14313
+                  },
+                  {
+                      "text":  "liberou",
+                      "startMs":  14950
+                  },
+                  {
+                      "text":  "o",
+                      "startMs":  15463
+                  },
+                  {
+                      "text":  "IRPF",
+                      "startMs":  15569
+                  },
+                  {
+                      "text":  "hoje",
+                      "startMs":  16509
+                  }
+              ],
+    "silence":  [
+                    {
+                        "start":  0,
+                        "end":  0.3
+                    },
+                    {
+                        "start":  6.882,
+                        "end":  7.382
+                    },
+                    {
+                        "start":  12.969,
+                        "end":  13.469
+                    },
+                    {
+                        "start":  17.832,
+                        "end":  18.432
+                    }
+                ]
+}

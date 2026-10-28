@@ -1,0 +1,85 @@
+{
+    "id":  "08-pausas",
+    "audio":  "clipes/08-pausas.mp4",
+    "durationMs":  11957,
+    "rate":  0,
+    "noise":  null,
+    "sentences":  [
+                      "Eu estava pensando.",
+                      "Sobre o que você falou.",
+                      "E acho que faz sentido."
+                  ],
+    "display":  "Eu estava pensando. Sobre o que você falou. E acho que faz sentido.",
+    "words":  [
+                  {
+                      "text":  "Eu",
+                      "startMs":  397
+                  },
+                  {
+                      "text":  "estava",
+                      "startMs":  556
+                  },
+                  {
+                      "text":  "pensando",
+                      "startMs":  1108
+                  },
+                  {
+                      "text":  "Sobre",
+                      "startMs":  4431
+                  },
+                  {
+                      "text":  "o",
+                      "startMs":  4849
+                  },
+                  {
+                      "text":  "que",
+                      "startMs":  4923
+                  },
+                  {
+                      "text":  "você",
+                      "startMs":  5080
+                  },
+                  {
+                      "text":  "falou",
+                      "startMs":  5432
+                  },
+                  {
+                      "text":  "E",
+                      "startMs":  8479
+                  },
+                  {
+                      "text":  "acho",
+                      "startMs":  8601
+                  },
+                  {
+                      "text":  "que",
+                      "startMs":  8991
+                  },
+                  {
+                      "text":  "faz",
+                      "startMs":  9146
+                  },
+                  {
+                      "text":  "sentido",
+                      "startMs":  9494
+                  }
+              ],
+    "silence":  [
+                    {
+                        "start":  0,
+                        "end":  0.3
+                    },
+                    {
+                        "start":  2.829,
+                        "end":  4.329
+                    },
+                    {
+                        "start":  6.881,
+                        "end":  8.381
+                    },
+                    {
+                        "start":  11.157,
+                        "end":  11.957
+                    }
+                ]
+}

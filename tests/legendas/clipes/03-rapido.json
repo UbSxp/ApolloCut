@@ -1,0 +1,177 @@
+{
+    "id":  "03-rapido",
+    "audio":  "clipes/03-rapido.mp4",
+    "durationMs":  11878,
+    "rate":  5,
+    "noise":  null,
+    "sentences":  [
+                      "Olha só que interessante esse resultado que a gente acabou de encontrar aqui.",
+                      "Eu não esperava que fosse funcionar tão rápido assim na primeira tentativa.",
+                      "Agora me diz o que você achou disso tudo no final das contas."
+                  ],
+    "display":  "Olha só que interessante esse resultado que a gente acabou de encontrar aqui. Eu não esperava que fosse funcionar tão rápido assim na primeira tentativa. Agora me diz o que você achou disso tudo no final das contas.",
+    "words":  [
+                  {
+                      "text":  "Olha",
+                      "startMs":  260
+                  },
+                  {
+                      "text":  "só",
+                      "startMs":  437
+                  },
+                  {
+                      "text":  "que",
+                      "startMs":  611
+                  },
+                  {
+                      "text":  "interessante",
+                      "startMs":  709
+                  },
+                  {
+                      "text":  "esse",
+                      "startMs":  1263
+                  },
+                  {
+                      "text":  "resultado",
+                      "startMs":  1440
+                  },
+                  {
+                      "text":  "que",
+                      "startMs":  1945
+                  },
+                  {
+                      "text":  "a",
+                      "startMs":  2048
+                  },
+                  {
+                      "text":  "gente",
+                      "startMs":  2102
+                  },
+                  {
+                      "text":  "acabou",
+                      "startMs":  2360
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  2658
+                  },
+                  {
+                      "text":  "encontrar",
+                      "startMs":  2757
+                  },
+                  {
+                      "text":  "aqui",
+                      "startMs":  3130
+                  },
+                  {
+                      "text":  "Eu",
+                      "startMs":  4264
+                  },
+                  {
+                      "text":  "não",
+                      "startMs":  4347
+                  },
+                  {
+                      "text":  "esperava",
+                      "startMs":  4480
+                  },
+                  {
+                      "text":  "que",
+                      "startMs":  4894
+                  },
+                  {
+                      "text":  "fosse",
+                      "startMs":  4988
+                  },
+                  {
+                      "text":  "funcionar",
+                      "startMs":  5267
+                  },
+                  {
+                      "text":  "tão",
+                      "startMs":  5697
+                  },
+                  {
+                      "text":  "rápido",
+                      "startMs":  5861
+                  },
+                  {
+                      "text":  "assim",
+                      "startMs":  6230
+                  },
+                  {
+                      "text":  "na",
+                      "startMs":  6484
+                  },
+                  {
+                      "text":  "primeira",
+                      "startMs":  6577
+                  },
+                  {
+                      "text":  "tentativa",
+                      "startMs":  6907
+                  },
+                  {
+                      "text":  "Agora",
+                      "startMs":  8349
+                  },
+                  {
+                      "text":  "me",
+                      "startMs":  8628
+                  },
+                  {
+                      "text":  "diz",
+                      "startMs":  8713
+                  },
+                  {
+                      "text":  "o",
+                      "startMs":  8910
+                  },
+                  {
+                      "text":  "que",
+                      "startMs":  8959
+                  },
+                  {
+                      "text":  "você",
+                      "startMs":  9050
+                  },
+                  {
+                      "text":  "achou",
+                      "startMs":  9268
+                  },
+                  {
+                      "text":  "disso",
+                      "startMs":  9512
+                  },
+                  {
+                      "text":  "tudo",
+                      "startMs":  9790
+                  },
+                  {
+                      "text":  "no",
+                      "startMs":  10030
+                  },
+                  {
+                      "text":  "final",
+                      "startMs":  10120
+                  },
+                  {
+                      "text":  "das",
+                      "startMs":  10380
+                  },
+                  {
+                      "text":  "contas",
+                      "startMs":  10542
+                  }
+              ],
+    "silence":  [
+                    {
+                        "start":  0,
+                        "end":  0.2
+                    },
+                    {
+                        "start":  11.478,
+                        "end":  11.878
+                    }
+                ]
+}

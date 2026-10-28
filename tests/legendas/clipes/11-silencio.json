@@ -1,0 +1,47 @@
+{
+    "id":  "11-silencio",
+    "audio":  "clipes/11-silencio.mp4",
+    "durationMs":  10050,
+    "rate":  0,
+    "noise":  null,
+    "sentences":  [
+                      "Isso é um teste de silêncio."
+                  ],
+    "display":  "Isso é um teste de silêncio.",
+    "words":  [
+                  {
+                      "text":  "Isso",
+                      "startMs":  3100
+                  },
+                  {
+                      "text":  "é",
+                      "startMs":  3460
+                  },
+                  {
+                      "text":  "um",
+                      "startMs":  3595
+                  },
+                  {
+                      "text":  "teste",
+                      "startMs":  3742
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  4260
+                  },
+                  {
+                      "text":  "silêncio",
+                      "startMs":  4410
+                  }
+              ],
+    "silence":  [
+                    {
+                        "start":  0,
+                        "end":  3
+                    },
+                    {
+                        "start":  6.05,
+                        "end":  10.05
+                    }
+                ]
+}

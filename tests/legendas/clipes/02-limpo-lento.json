@@ -1,0 +1,100 @@
+{
+    "id":  "02-limpo-lento",
+    "audio":  "clipes/02-limpo-lento.mp4",
+    "durationMs":  14845,
+    "rate":  -2,
+    "noise":  null,
+    "sentences":  [
+                      "Hoje eu acordei cedo e fui correr na praia.",
+                      "Depois tomei banho e preparei um café bem forte."
+                  ],
+    "display":  "Hoje eu acordei cedo e fui correr na praia. Depois tomei banho e preparei um café bem forte.",
+    "words":  [
+                  {
+                      "text":  "Hoje",
+                      "startMs":  1327
+                  },
+                  {
+                      "text":  "eu",
+                      "startMs":  1775
+                  },
+                  {
+                      "text":  "acordei",
+                      "startMs":  1989
+                  },
+                  {
+                      "text":  "cedo",
+                      "startMs":  2703
+                  },
+                  {
+                      "text":  "e",
+                      "startMs":  3411
+                  },
+                  {
+                      "text":  "fui",
+                      "startMs":  3536
+                  },
+                  {
+                      "text":  "correr",
+                      "startMs":  3885
+                  },
+                  {
+                      "text":  "na",
+                      "startMs":  4464
+                  },
+                  {
+                      "text":  "praia",
+                      "startMs":  4713
+                  },
+                  {
+                      "text":  "Depois",
+                      "startMs":  7498
+                  },
+                  {
+                      "text":  "tomei",
+                      "startMs":  8259
+                  },
+                  {
+                      "text":  "banho",
+                      "startMs":  8799
+                  },
+                  {
+                      "text":  "e",
+                      "startMs":  9328
+                  },
+                  {
+                      "text":  "preparei",
+                      "startMs":  9452
+                  },
+                  {
+                      "text":  "um",
+                      "startMs":  10225
+                  },
+                  {
+                      "text":  "café",
+                      "startMs":  10421
+                  },
+                  {
+                      "text":  "bem",
+                      "startMs":  11009
+                  },
+                  {
+                      "text":  "forte",
+                      "startMs":  11360
+                  }
+              ],
+    "silence":  [
+                    {
+                        "start":  0,
+                        "end":  1.2
+                    },
+                    {
+                        "start":  6.479,
+                        "end":  7.379
+                    },
+                    {
+                        "start":  13.344,
+                        "end":  14.845
+                    }
+                ]
+}

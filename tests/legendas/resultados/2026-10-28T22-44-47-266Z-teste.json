@@ -1,0 +1,35 @@
+{
+  "label": "teste",
+  "data": "2026-10-28T22:44:47.266Z",
+  "modelo": "onnx-community/whisper-base",
+  "resumo": {
+    "wer": 3.4482758620689653,
+    "cer": 0.2377049180327869,
+    "tempoMedioMs": 382.94033227527507,
+    "tempoP95Ms": 709,
+    "alucinacoes": 0,
+    "perdidas": 0,
+    "msPorMinuto": 59362.473754533305
+  },
+  "clipes": [
+    {
+      "wer": 3.4482758620689653,
+      "cer": 0.819672131147541,
+      "substituicoes": 1,
+      "perdidas": 0,
+      "inventadas": 0,
+      "alucinacoes": 0,
+      "alucinacoesTexto": "",
+      "tempoMedioMs": 382.94033227527507,
+      "tempoP95Ms": 709,
+      "palavrasComparadas": 28,
+      "refTokens": 29,
+      "hypTokens": 29,
+      "msPorMinuto": 59362.473754533305,
+      "procMs": 15550,
+      "texto": "Almecei ontem e fui ao mercado Comprei Pão e Leite para o Café da Manhã No caminho de volta encontrei meu vizinho e conversamos sobre o filme de ontem",
+      "id": "01-limpo-normal",
+      "modelo": "onnx-community/whisper-base"
+    }
+  ]
+}

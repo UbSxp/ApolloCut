@@ -1,0 +1,137 @@
+{
+    "id":  "07-girias",
+    "audio":  "clipes/07-girias.mp4",
+    "durationMs":  16407,
+    "rate":  0,
+    "noise":  null,
+    "sentences":  [
+                      "Tá tudo certo, né? Eu tô indo pra lá agora.",
+                      "Cê viu o mó role que foi ontem? Foi demais.",
+                      "A gente vai fazer isso amanhã, tá ligado?"
+                  ],
+    "display":  "Tá tudo certo, né? Eu tô indo pra lá agora. Cê viu o mó role que foi ontem? Foi demais. A gente vai fazer isso amanhã, tá ligado?",
+    "words":  [
+                  {
+                      "text":  "Tá",
+                      "startMs":  400
+                  },
+                  {
+                      "text":  "tudo",
+                      "startMs":  612
+                  },
+                  {
+                      "text":  "certo",
+                      "startMs":  1002
+                  },
+                  {
+                      "text":  "né",
+                      "startMs":  1965
+                  },
+                  {
+                      "text":  "Eu",
+                      "startMs":  3190
+                  },
+                  {
+                      "text":  "tô",
+                      "startMs":  3363
+                  },
+                  {
+                      "text":  "indo",
+                      "startMs":  3563
+                  },
+                  {
+                      "text":  "pra",
+                      "startMs":  3873
+                  },
+                  {
+                      "text":  "lá",
+                      "startMs":  4143
+                  },
+                  {
+                      "text":  "agora",
+                      "startMs":  4393
+                  },
+                  {
+                      "text":  "Cê",
+                      "startMs":  6357
+                  },
+                  {
+                      "text":  "viu",
+                      "startMs":  6595
+                  },
+                  {
+                      "text":  "o",
+                      "startMs":  6855
+                  },
+                  {
+                      "text":  "mó",
+                      "startMs":  6921
+                  },
+                  {
+                      "text":  "role",
+                      "startMs":  7119
+                  },
+                  {
+                      "text":  "que",
+                      "startMs":  7504
+                  },
+                  {
+                      "text":  "foi",
+                      "startMs":  7661
+                  },
+                  {
+                      "text":  "ontem",
+                      "startMs":  7924
+                  },
+                  {
+                      "text":  "Foi",
+                      "startMs":  9366
+                  },
+                  {
+                      "text":  "demais",
+                      "startMs":  9656
+                  },
+                  {
+                      "text":  "A",
+                      "startMs":  11723
+                  },
+                  {
+                      "text":  "gente",
+                      "startMs":  11825
+                  },
+                  {
+                      "text":  "vai",
+                      "startMs":  12279
+                  },
+                  {
+                      "text":  "fazer",
+                      "startMs":  12535
+                  },
+                  {
+                      "text":  "isso",
+                      "startMs":  12962
+                  },
+                  {
+                      "text":  "amanhã",
+                      "startMs":  13284
+                  },
+                  {
+                      "text":  "tá",
+                      "startMs":  14074
+                  },
+                  {
+                      "text":  "ligado",
+                      "startMs":  14268
+                  }
+              ],
+    "silence":  [
+                    {
+                        "start":  0,
+                        "end":  0.3
+                    },
+                    {
+                        "start":  15.807,
+                        "end":  16.407
+                    }
+                ]
+}

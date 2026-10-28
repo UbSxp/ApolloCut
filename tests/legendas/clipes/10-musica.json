@@ -1,0 +1,111 @@
+{
+    "id":  "10-musica",
+    "audio":  "clipes/10-musica.mp4",
+    "durationMs":  12134,
+    "rate":  0,
+    "noise":  {
+                  "kind":  "music",
+                  "dbBelowSpeech":  15
+              },
+    "sentences":  [
+                      "Coloquei uma música baixinha de fundo para ver se atrapalha.",
+                      "O importante é que a transcrição continue correta mesmo assim."
+                  ],
+    "display":  "Coloquei uma música baixinha de fundo para ver se atrapalha. O importante é que a transcrição continue correta mesmo assim.",
+    "words":  [
+                  {
+                      "text":  "Coloquei",
+                      "startMs":  398
+                  },
+                  {
+                      "text":  "uma",
+                      "startMs":  977
+                  },
+                  {
+                      "text":  "música",
+                      "startMs":  1181
+                  },
+                  {
+                      "text":  "baixinha",
+                      "startMs":  1770
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  2335
+                  },
+                  {
+                      "text":  "fundo",
+                      "startMs":  2484
+                  },
+                  {
+                      "text":  "para",
+                      "startMs":  3019
+                  },
+                  {
+                      "text":  "ver",
+                      "startMs":  3340
+                  },
+                  {
+                      "text":  "se",
+                      "startMs":  3593
+                  },
+                  {
+                      "text":  "atrapalha",
+                      "startMs":  3789
+                  },
+                  {
+                      "text":  "O",
+                      "startMs":  6066
+                  },
+                  {
+                      "text":  "importante",
+                      "startMs":  6159
+                  },
+                  {
+                      "text":  "é",
+                      "startMs":  7024
+                  },
+                  {
+                      "text":  "que",
+                      "startMs":  7157
+                  },
+                  {
+                      "text":  "a",
+                      "startMs":  7336
+                  },
+                  {
+                      "text":  "transcrição",
+                      "startMs":  7408
+                  },
+                  {
+                      "text":  "continue",
+                      "startMs":  8323
+                  },
+                  {
+                      "text":  "correta",
+                      "startMs":  8985
+                  },
+                  {
+                      "text":  "mesmo",
+                      "startMs":  9644
+                  },
+                  {
+                      "text":  "assim.",
+                      "startMs":  10118
+                  }
+              ],
+    "silence":  [
+                    {
+                        "start":  0,
+                        "end":  0.3
+                    },
+                    {
+                        "start":  5.469,
+                        "end":  5.969
+                    },
+                    {
+                        "start":  11.534,
+                        "end":  12.134
+                    }
+                ]
+}

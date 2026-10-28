@@ -36,6 +36,6 @@
       "text": "de ontem"
     }
   ],
-  "log": "[19:18:30] Iniciando transcrição…\n[19:18:30] Áudio pronto: 20.0s, nível 0.063.\n[19:18:43] Modelo onnx-community/whisper-base (wasm) em 13.4s.\n[19:18:43] Pronto: 7 blocos.",
+  "log": "[19:46:51] Iniciando transcrição…\n[19:46:51] Áudio pronto: 20.0s, nível 0.063.\n[19:47:04] Modelo onnx-community/whisper-base (wasm) em 13.2s.\n[19:47:04] Pronto: 7 blocos.",
   "model": "onnx-community/whisper-base"
 }

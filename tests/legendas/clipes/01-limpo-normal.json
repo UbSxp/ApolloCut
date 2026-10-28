@@ -1,0 +1,149 @@
+{
+    "id":  "01-limpo-normal",
+    "audio":  "clipes/01-limpo-normal.mp4",
+    "durationMs":  15717,
+    "rate":  0,
+    "noise":  null,
+    "sentences":  [
+                      "Almocei ontem e fui ao mercado.",
+                      "Comprei pão e leite para o café da manhã.",
+                      "No caminho de volta encontrei meu vizinho e conversamos sobre o filme de ontem."
+                  ],
+    "display":  "Almocei ontem e fui ao mercado. Comprei pão e leite para o café da manhã. No caminho de volta encontrei meu vizinho e conversamos sobre o filme de ontem.",
+    "words":  [
+                  {
+                      "text":  "Almocei",
+                      "startMs":  400
+                  },
+                  {
+                      "text":  "ontem",
+                      "startMs":  990
+                  },
+                  {
+                      "text":  "e",
+                      "startMs":  1510
+                  },
+                  {
+                      "text":  "fui",
+                      "startMs":  1610
+                  },
+                  {
+                      "text":  "ao",
+                      "startMs":  1900
+                  },
+                  {
+                      "text":  "mercado",
+                      "startMs":  2050
+                  },
+                  {
+                      "text":  "Comprei",
+                      "startMs":  4309
+                  },
+                  {
+                      "text":  "pão",
+                      "startMs":  4875
+                  },
+                  {
+                      "text":  "e",
+                      "startMs":  5171
+                  },
+                  {
+                      "text":  "leite",
+                      "startMs":  5277
+                  },
+                  {
+                      "text":  "para",
+                      "startMs":  5711
+                  },
+                  {
+                      "text":  "o",
+                      "startMs":  5976
+                  },
+                  {
+                      "text":  "café",
+                      "startMs":  6048
+                  },
+                  {
+                      "text":  "da",
+                      "startMs":  6507
+                  },
+                  {
+                      "text":  "manhã",
+                      "startMs":  6647
+                  },
+                  {
+                      "text":  "No",
+                      "startMs":  8552
+                  },
+                  {
+                      "text":  "caminho",
+                      "startMs":  8692
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  9237
+                  },
+                  {
+                      "text":  "volta",
+                      "startMs":  9406
+                  },
+                  {
+                      "text":  "encontrei",
+                      "startMs":  9884
+                  },
+                  {
+                      "text":  "meu",
+                      "startMs":  10586
+                  },
+                  {
+                      "text":  "vizinho",
+                      "startMs":  10845
+                  },
+                  {
+                      "text":  "e",
+                      "startMs":  11498
+                  },
+                  {
+                      "text":  "conversamos",
+                      "startMs":  11605
+                  },
+                  {
+                      "text":  "sobre",
+                      "startMs":  12555
+                  },
+                  {
+                      "text":  "o",
+                      "startMs":  12930
+                  },
+                  {
+                      "text":  "filme",
+                      "startMs":  13013
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  13592
+                  },
+                  {
+                      "text":  "ontem",
+                      "startMs":  13780
+                  }
+              ],
+    "silence":  [
+                    {
+                        "start":  0,
+                        "end":  0.3
+                    },
+                    {
+                        "start":  3.711,
+                        "end":  4.211
+                    },
+                    {
+                        "start":  7.955,
+                        "end":  8.455
+                    },
+                    {
+                        "start":  15.117,
+                        "end":  15.717
+                    }
+                ]
+}

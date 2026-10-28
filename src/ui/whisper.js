@@ -221,11 +221,12 @@ export class WhisperController {
       });
 
       const language = this.els.langSelect?.value || 'pt';
+      const model = this.state.whisper?.requestedModel || MODEL;
       worker.postMessage({
         type: 'start',
         audio,
         language,
-        model: MODEL,
+        model,
         preferWebgpu: false,
       }, [audio.buffer]);
     });
