@@ -28,6 +28,8 @@ function waitEvent(target, event, timeout = 10000) {
 
 function pickMime() {
   const options = [
+    'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+    'video/mp4',
     'video/webm;codecs=vp9,opus',
     'video/webm;codecs=vp8,opus',
     'video/webm',
@@ -53,6 +55,7 @@ export class ExportController {
     exportCancel?.addEventListener('click', () => this.cancel());
     exportClose?.addEventListener('click', () => this.close());
     sampleExport?.addEventListener('change', () => this.updateExportUI());
+    window.addEventListener('kit:export', () => this.openExport());
   }
 
   openExport() {
@@ -368,8 +371,9 @@ export class ExportController {
 
     if (downloadLink) {
       const index = this.state.clips.findIndex((c) => c.id === clip.id) + 1;
+      const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
       downloadLink.href = url;
-      downloadLink.download = `apollocut-corte-${index}.webm`;
+      downloadLink.download = `apollocut-corte-${index}.${ext}`;
       downloadLink.textContent = 'Baixar corte';
       downloadLink.setAttribute('data-size', String(blob.size));
       downloadLink.setAttribute('data-duration', String(this.sampleDuration(clip)));
@@ -379,7 +383,8 @@ export class ExportController {
       const mb = (blob.size / 1024 / 1024).toFixed(2);
       const ratio = this.state.settings.ratio || '9:16';
       const dims = RATIOS[ratio] || RATIOS['9:16'];
-      exportFileInfo.textContent = `${mb} MB • WebM ${dims.w}×${dims.h} • ${this.sampleDuration(clip).toFixed(1)}s • ${clip.duration > this.sampleDuration(clip) ? 'amostra' : 'corte inteiro'}`;
+      const label = blob.type.includes('mp4') ? 'MP4 H.264' : 'WebM';
+      exportFileInfo.textContent = `${mb} MB • ${label} ${dims.w}×${dims.h} • ${this.sampleDuration(clip).toFixed(1)}s • ${clip.duration > this.sampleDuration(clip) ? 'amostra' : 'corte inteiro'}`;
     }
   }
 

@@ -5,6 +5,11 @@
    ============================================================ */
 
 import { parseSubtitles } from '../captions/index.js';
+import { syncTabState } from './tabs.js';
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
 
 function pad(value, size = 2) {
   return String(value).padStart(size, '0');
@@ -72,6 +77,8 @@ export class CaptionController {
       }
     });
 
+    this.setupCueEditor();
+
     exportSrtBtn?.addEventListener('click', () => this.exportSubtitles('srt'));
     exportAssBtn?.addEventListener('click', () => this.exportSubtitles('ass'));
 
@@ -96,6 +103,77 @@ export class CaptionController {
 
   parseSRT(text) {
     return parseSubtitles(text);
+  }
+
+  setupCueEditor() {
+    const { addCueBtn, cueList } = this.els;
+    addCueBtn?.addEventListener('click', () => this.addCue());
+
+    cueList?.addEventListener('input', (event) => {
+      const row = event.target.closest('[data-cue]');
+      if (!row) return;
+      const cue = this.state.cues[Number(row.dataset.cue)];
+      if (!cue) return;
+      if (event.target.matches('textarea')) {
+        cue.text = event.target.value;
+        this.lastCue = null;
+        this.renderAt(this.els.previewVideo?.currentTime || 0);
+      } else if (event.target.dataset.cueTime) {
+        const value = Math.max(0, Number(event.target.value) || 0);
+        cue[event.target.dataset.cueTime] = value;
+      }
+    });
+
+    cueList?.addEventListener('click', (event) => {
+      const del = event.target.closest('.cue-del');
+      if (!del) return;
+      const row = del.closest('[data-cue]');
+      this.state.cues.splice(Number(row.dataset.cue), 1);
+      this.afterCuesChanged();
+      this.toast.show('Bloco removido');
+    });
+
+    cueList?.addEventListener('change', (event) => {
+      if (event.target.dataset.cueTime) this.afterCuesChanged();
+    });
+  }
+
+  renderCueEditor() {
+    const { cueList, cueEmpty } = this.els;
+    if (!cueList) return;
+    cueList.innerHTML = this.state.cues
+      .map((cue, index) => `
+        <div class="cue-row" data-cue="${index}">
+          <input type="number" min="0" step="0.1" value="${Number(cue.start || 0).toFixed(1)}" data-cue-time="start" aria-label="In&iacute;cio do bloco ${index + 1}" />
+          <input type="number" min="0" step="0.1" value="${Number(cue.end || 0).toFixed(1)}" data-cue-time="end" aria-label="Fim do bloco ${index + 1}" />
+          <textarea rows="2" aria-label="Texto do bloco ${index + 1}">${escapeHtml(cue.text)}</textarea>
+          <button class="cue-del" type="button" aria-label="Excluir bloco ${index + 1}">&times;</button>
+        </div>`)
+      .join('');
+    if (cueEmpty) cueEmpty.hidden = this.state.cues.length > 0;
+  }
+
+  addCue() {
+    const time = this.els.previewVideo?.currentTime || 0;
+    const limit = this.state.duration || time + 2;
+    const start = Math.min(time, Math.max(0, limit - 0.2));
+    this.state.cues.push({
+      start,
+      end: Math.min(limit, start + 2),
+      text: '',
+    });
+    this.state.cueSource = this.state.cueSource || 'manual';
+    this.afterCuesChanged();
+    const rows = this.els.cueList?.querySelectorAll('.cue-row');
+    rows?.[rows.length - 1]?.querySelector('textarea')?.focus();
+  }
+
+  afterCuesChanged() {
+    this.state.cues.sort((a, b) => a.start - b.start);
+    this.lastCue = null;
+    this.updateCaptionUI();
+    this.renderAt(this.els.previewVideo?.currentTime || 0);
+    window.dispatchEvent(new CustomEvent('cues:changed'));
   }
 
   onWhisperResult(detail) {
@@ -135,15 +213,19 @@ export class CaptionController {
   updateCaptionUI() {
     const { captionStatus, captionStatusTitle, captionStatusText, styleGrid } = this.els;
 
+    if (captionStatus) captionStatus.hidden = false;
     if (this.state.cues.length) {
-      if (captionStatus) captionStatus.hidden = false;
       if (captionStatusTitle) captionStatusTitle.textContent = 'Legendas carregadas';
       if (captionStatusText) {
         captionStatusText.textContent = `${this.state.cues.length} blocos • Fonte: ${this.state.cueSource || 'manual'}`;
       }
-    } else if (captionStatus) {
-      captionStatus.hidden = true;
+    } else {
+      if (captionStatusTitle) captionStatusTitle.textContent = 'Sem legendas';
+      if (captionStatusText) captionStatusText.textContent = 'Importe um .srt/.vtt, transcreva o corte ou crie um bloco à mão.';
     }
+
+    this.renderCueEditor();
+    syncTabState(this.state);
 
     if (styleGrid) {
       styleGrid.querySelectorAll('[data-style]').forEach((btn) => {
