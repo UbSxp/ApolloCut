@@ -95,3 +95,52 @@ Como a evidência foi coletada: Chromium 1248 via Playwright, servidor `tools/se
 | Vídeo de 5 minutos | Carrega (300 s) e analisa (B6) |
 
 Resultado completo: `docs/evidencias/resultado.json` e `docs/evidencias/e2e-run.log`.
+
+---
+
+## Rodada 07 — auditoria total (branch fix/app-100-funcional)
+
+Evidência coletada no navegador embutido (Chromium do OpenCode) em `http://127.0.0.1:4173`, servidor `tools/servir.mjs`. Console sem erros; as falhas eram silenciosas.
+
+### A. Aba II · Legendas não abre
+
+**Reprodução.** Carregar `fala-ptbr.mp4`, clicar em `II · Legendas`. O painel `#tabCaptions` continua `hidden`.
+
+**Evidência (DOM):**
+
+```
+buttons .console-tab => [{t:"scene", id:null}, {t:"captions", id:null}, {t:"publish", id:null}]
+panels => [{id:"tabScene", hidden:false}, {id:"tabCaptions", hidden:true}, {id:"tabPublish", hidden:true}]
+```
+
+**Causa.** `src/ui/dom.js:296-311` monta a lista de abas com `els.tabScene`, `els.tabCaptions`, `els.tabPublish`. Esses IDs são dos **painéis** (`<div id="tabCaptions">`), não dos botões (`.console-tab[data-tab]`). O `addEventListener('click')` foi para o painel escondido; o botão nunca recebeu handler. Nenhum erro no console porque o listener foi registrado com sucesso no elemento errado.
+
+**Hipóteses descartadas.** Não é bloqueio por estado (`aria-disabled`/`locked` não existem no HTML), não é overlay (o `elementFromPoint` no centro da aba devolve o próprio botão), não é rota por hash (não há) e não é erro JS (console vazio).
+
+### B. Prévia dos cortes não aparece
+
+**Reprodução.** Após "Ler o filme", 4 cartões aparecem. As miniaturas nunca aparecem: fica um brilho animado.
+
+**Evidência (DOM):**
+
+```
+clip-card 1 => {hasImg:true, imgComplete:true, imgW:320, shimmerExists:true}
+```
+
+**Causa.** `src/ui/clips.js` desenha `<span class="clip-thumb-loading">` no `renderClipGrid()` e, quando o quadro chega, `loadThumbs()` insere o `<img>` com `insertAdjacentHTML('afterbegin', ...)` **sem remover o span**. `.clip-thumb-loading` é `position:absolute; inset:0`, portanto pinta por cima da imagem. A imagem existe e está completa; o placeholder é que a cobre.
+
+**Causa secundária.** Selecionar um cartão (`selectClip`) só grava `activeId`: não move o player para `clip.start`, não atualiza `#previewLabel` nem o texto "Corte em tela". A prévia do trecho no teatro não acompanhava a escolha.
+
+### C. Outros elementos mortos encontrados na varredura
+
+| Elemento | Evidência | Efeito |
+|---|---|---|
+| `#studioBack` | nenhum `addEventListener` em `src/ui` | não é possível sair do ateliê |
+| `#quickCaptionsBtn` | nenhum handler | atalho "Legendar" morto |
+| `#quickCoverBtn` | nenhum handler | atalho "Criar capa" morto |
+| `#analysisCancel` (X do modal) | só `#analysisCancelBtn` tem handler | X não cancela |
+| `.js-copy` (ficha) | nenhum handler | botões "copiar" mortos |
+| `#kitTitle/#kitDescription/#kitHashtags` | `kit.js` usa `.value` em `<p>` | ficha sempre vazia |
+| `#kitExport` | `toast.show('... (simulado)')` | exportação da ficha não existe |
+| `#coverTitle`, `#coverPreset` | não lidos por `cover.js` | capa ignora título e tratamento |
+| edição de legendas | não há UI | impossível editar o texto das legendas |

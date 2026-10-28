@@ -117,3 +117,51 @@
 - Escolha provisória: manter CDN e download sob demanda nesta rodada, registrar como pendência P1.
 - Motivo: embarcar o modelo é uma mudança grande de repositório e de estratégia de distribuição; remover Whisper reduziria funcionalidade. A correção de qualidade não deve ser bloqueada por essa decisão de empacotamento. O usuário precisa decidir o formato de distribuição offline.
 - Reversão: nenhuma mudança de dados; trocar `WHISPER_CDN`/`WHISPER_MODEL` e empacotar os arquivos.
+
+## 28/10/2026 — rodada 07 (auditoria total, branch `fix/app-100-funcional`)
+
+### Abas: uma função só para trocar de aba
+
+- Contexto: o clique das abas ia para os **painéis** (`#tabScene/#tabCaptions/#tabPublish`) em vez dos botões (`.console-tab[data-tab]`), então a aba II nunca abria. Vários controllers também mexiam em `hidden` de painel por conta própria.
+- Opções: corrigir o seletor dentro de `dom.js`; criar um módulo de abas; deixar cada controller controlar seu painel.
+- Escolha: módulo `src/ui/tabs.js` com `setTab(state, tab)`, `syncTabState(state)` e `setupTabs(state)`. Nenhum outro módulo altera `hidden` de painel.
+- Motivo: o defeito nasceu de estado de UI espalhado. Uma fonte única impede a reincidência e concentra teclado (`←`/`→`), `aria-selected` e dicas.
+- Reversão: `git revert` do commit `fix(abas)`.
+
+### Aba bloqueada abre com dica, não com botão morto
+
+- Contexto: publicar/legendar sem pré-requisito deixaria a aba vazia e sem saída.
+- Opções: desabilitar o botão da aba; abrir a aba e mostrar dica com botão que leva ao passo que falta.
+- Escolha: a aba sempre abre. `#captionsHint` e `#publishHint` aparecem quando falta pré-requisito, com `#publishGoScene` levando à aba I. Os botões de ação (`#coverBtn`, `#kitBtn`, `#exportBtn`, `#exportSrtBtn`, `#exportAssBtn`) ficam `disabled` até o estado existir.
+- Motivo: o pedido é "nenhuma aba morta". Desabilitar a aba esconde o caminho; a dica ensina o caminho.
+- Reversão: `git revert` do commit `fix(abas)`.
+
+### Exportação: MP4/H.264 primeiro, WebM como queda
+
+- Contexto: a UI prometia "MP4 · H.264 + AAC", mas `pickMime()` só tentava WebM. Neste Chromium `MediaRecorder.isTypeSupported('video/mp4;codecs=avc1.42E01E,mp4a.40.2')` é `true`.
+- Opções: manter WebM e mudar o texto; tentar MP4 e cair para WebM; instalar FFmpeg.wasm.
+- Escolha: tentar `video/mp4;codecs=avc1…` → `video/mp4` → WebM VP9/VP8. Extensão, `download` e rótulo saem do `blob.type`.
+- Motivo: entrega o formato prometido sem dependência nova. O MP4 do `MediaRecorder` é fragmentado (sem `moov` no início), mas abre em navegador e é lido por `ffprobe`.
+- Reversão: `git revert` do commit `feat(export-mp4)`.
+
+### Ficha e capa passam a ler o que o usuário vê
+
+- Contexto: `kit.js` escrevia `.value` em `<p>` (ficha sempre vazia), `.js-copy` não tinha listener, `#kitExport` só mostrava "simulado", `cover.js` ignorava `#coverTitle`/`#coverPreset`.
+- Opções: criar campos novos; usar os elementos existentes.
+- Escolha: `textContent` nos `<p>`, `navigator.clipboard` nos `.js-copy`, `#kitExport` dispara `kit:export` e o `ExportController` abre o modal. A capa lê título e preset e espera `readyState >= 2`.
+- Motivo: os elementos já existiam e já estavam no design; faltava ligação.
+- Reversão: `git revert` dos commits `fix(publicacao)` e `fix(capa)`.
+
+### Legendas editáveis em blocos
+
+- Contexto: não havia como corrigir o texto vindo do Whisper nem ajustar tempos.
+- Opções: editar só o texto; lista de blocos com início/fim/texto/excluir.
+- Escolha: lista de blocos (`#cueList`) com início, fim, texto e excluir, mais "+ adicionar bloco". `afterCuesChanged()` reordena, redesenha o quadro e atualiza SRT/ASS.
+- Motivo: o Whisper erra nomes; sem edição o SRT exportado sai errado.
+- Reversão: `git revert` do commit `feat(legendas-editaveis)`.
+
+### Suíte E2E abre a aba II antes de baixar SRT/ASS
+
+- Contexto: os botões de download vivem dentro de `#tabCaptions`. Fora da aba eles ficam `hidden` e `page.click` espera visibilidade; o teste antigo não abria a aba e o download estourava timeout.
+- Escolha: a suíte clica em `.console-tab[data-tab="captions"]` antes de `#exportSrtBtn`/`#exportAssBtn`.
+- Motivo: reproduz o caminho real do usuário em vez de furar a UI por `evaluate`.

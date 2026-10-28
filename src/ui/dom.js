@@ -2,6 +2,8 @@
    APOLLOCUT — DOM Utilities
    ============================================================ */
 
+import { setupTabs, setTab, syncTabState } from './tabs.js';
+
 export function $id(id) {
   return document.getElementById(id);
 }
@@ -81,7 +83,14 @@ export function setupGlobalListeners(controllers) {
   }
   
   // Tab switching
-  setupTabs(els);
+  setupTabs(state);
+  window.addEventListener('clips:changed', () => syncTabState(state));
+
+  // Atalhos do teatro e saida do atelie (estavam sem listener).
+  els.studioBack?.addEventListener('click', () => leaveStudio(state, els, player));
+  els.quickCaptionsBtn?.addEventListener('click', () => setTab(state, 'captions'));
+  els.quickCoverBtn?.addEventListener('click', () => cover.openCover());
+  els.analysisCancel?.addEventListener('click', () => analysis.cancel());
   
   // Settings
   if (els.settingsOverlay) {
@@ -166,6 +175,7 @@ async function handleFileSelect(event, state, els, player, toast) {
     // para sempre (nasciam disabled no HTML e ninguém os reabilitava).
     if (els.analyzeBtn) els.analyzeBtn.disabled = false;
     if (els.whisperBtn) els.whisperBtn.disabled = false;
+    syncTabState(state);
 
     toast.show('Vídeo carregado com sucesso');
     if (els.fileInput) els.fileInput.value = '';
@@ -269,6 +279,7 @@ function resetToLanding(state, els) {
   if (els.fileMeta) els.fileMeta.textContent = '';
   if (els.analyzeBtn) els.analyzeBtn.disabled = true;
   if (els.whisperBtn) els.whisperBtn.disabled = true;
+  syncTabState(state);
 
   const root = document.documentElement;
   const prevBehavior = root.style.scrollBehavior;
@@ -292,29 +303,19 @@ function openStudio(state, els) {
 }
 
 /**
- * Setup tab switching
+ * Leave the studio without losing the loaded film.
  */
-function setupTabs(els) {
-  const tabs = [
-    { btn: els.tabScene, panelId: 'tabScene' },
-    { btn: els.tabCaptions, panelId: 'tabCaptions' },
-    { btn: els.tabPublish, panelId: 'tabPublish' },
-  ];
-  
-  tabs.forEach(({ btn, panelId }) => {
-    if (btn) {
-      btn.addEventListener('click', () => {
-        tabs.forEach(t => {
-          if (t.btn) t.btn.classList.remove('active');
-          const sec = document.getElementById(t.panelId);
-          if (sec) sec.hidden = true;
-        });
-        btn.classList.add('active');
-        const activeSec = document.getElementById(panelId);
-        if (activeSec) activeSec.hidden = false;
-      });
-    }
-  });
+function leaveStudio(state, els, player) {
+  if (player) player.pause?.();
+  else els.previewVideo?.pause();
+  if (els.studioScreen) els.studioScreen.hidden = true;
+  if (els.landing) els.landing.hidden = false;
+  document.body.classList.remove('studio-open');
+  const root = document.documentElement;
+  const prevBehavior = root.style.scrollBehavior;
+  root.style.scrollBehavior = 'auto';
+  window.scrollTo(0, 0);
+  requestAnimationFrame(() => { root.style.scrollBehavior = prevBehavior; });
 }
 
 /**

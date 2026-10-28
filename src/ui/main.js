@@ -122,6 +122,7 @@ function cacheElements() {
     analysisSummary sumSamples sumSelected sumScore sumNote activeClipInfo activeClipTitle activeClipMeta
     captionStatus captionStatusTitle captionStatusText importSrtBtn whisperBtn styleGrid styleHint
     exportSrtBtn exportAssBtn langSelect brandInput tabScene tabCaptions tabPublish clipsSection clipsMeta clipGrid
+    cueEditor cueList cueEmpty addCueBtn captionsHint publishHint publishGoScene
     analysisOverlay analysisBar analysisPct analysisStage analysisSheet analysisCounter analysisCancel analysisCancelBtn analysisSub analysisTitle
     whisperOverlay whisperBar whisperPct whisperStage whisperLog whisperWave whisperClip whisperStart whisperCancel whisperClose
     coverOverlay coverCanvas coverTitle coverSub coverPreset coverRandomBtn coverDownload coverClose coverLoading
