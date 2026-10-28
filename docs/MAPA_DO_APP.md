@@ -26,7 +26,7 @@ pelo `index.html`; não faz parte do app.
 | `.js-pick`, `#openStudioBtn` | `setupGlobalListeners` (dom.js) | abre seletor / abre o ateliê |
 | `#fileInput` (change) | `handleFileSelect` (dom.js) | valida, cria object URL, carrega no player, abre o ateliê |
 | `#dropzone` (drop/paste) | `setupDropzone` | entrega o arquivo ao `#fileInput` |
-| `#faqSearch` etc. | script inline da landing | filtra/expande o FAQ |
+| `#faqSearch`, `.faq-categories`, `#faqExpandAll`, `#faqCollapseAll` | `setupFaq` (`src/ui/faq.js`) | filtra por texto e categoria, expande/recolhe |
 
 ### Teatro (prévia)
 | Seletor | Handler | Resultado |
@@ -35,26 +35,26 @@ pelo `index.html`; não faz parte do app.
 | `#seekRange` (input/change) | `onSeekInput` / `onSeekChange` | move o vídeo, atualiza tempo |
 | `#previewVideo` (timeupdate/seeked) | player + captions | tempo, marcadores e legenda sincronizada |
 | `#focusRange` | `EditorController` | `--focus` do enquadramento |
-| `#quickCaptionsBtn` | **sem handler** | deveria abrir a aba II |
-| `#quickCoverBtn` | **sem handler** | deveria abrir a capa |
+| `#quickCaptionsBtn` | `setTab(state, "captions")` (dom.js) | abre a aba II |
+| `#quickCoverBtn` | `CoverController.openCover` (dom.js) | abre a capa no quadro atual |
 | `#markInBtn` / `#markOutBtn` | `EditorController` | marca início/fim (`I` / `O`) |
 | `#addClipBtn` | `EditorController.addClip` | cria corte manual |
 | `#splitClipBtn` | `EditorController.split` | divide o corte ativo (`S`) |
 | `#deleteClipBtn` | `EditorController.deleteActive` | apaga o corte ativo (`Delete`) |
 | `#undoBtn` / `#redoBtn` | `EditorController` | desfaz/refaz (`Ctrl+Z`, `Ctrl+Shift+Z`) |
-| `#newFilmBtn` | `resetToLanding` | volta para a landing e limpa o estado |
-| `#studioBack` | **sem handler** | deveria sair do ateliê |
+| `#newFilmBtn` | `resetToLanding` (dom.js) | volta para a landing e limpa o estado |
+| `#studioBack` | `leaveStudio` (dom.js) | volta para a landing sem perder o filme |
 | `#diagnosticsBtn` / `Ctrl+Shift+D` | `DiagnosticsController` | abre o relatório |
 
 ### Aba I · Cena
 | Seletor | Handler | Resultado |
 |---|---|---|
-| `.console-tab[data-tab]` | **quebrado** (listener ia para o painel) | deveria trocar de aba |
+| `.console-tab[data-tab]` | `setTab` em `src/ui/tabs.js` | troca painel, `aria-selected` e `tabIndex`; setas ←/→ |
 | `#lenRange` | `SettingsController` | `settings.length`, rótulo `#lenLabel` |
 | `#countRange` | `SettingsController` | `settings.count`, rótulo `#countLabel` |
 | `#ratioGrid [data-ratio]` | `EditorController` + `SettingsController` | classe `r916/r11/r169`, `#previewFormat` |
 | `#analyzeBtn` | `AnalysisController` | lê o filme, gera cortes, abre `#analysisOverlay` |
-| `#analysisCancel` / `#analysisCancelBtn` | só o segundo tem handler | cancelar análise |
+| `#analysisCancel` / `#analysisCancelBtn` | `AnalysisController.cancel` | cancela a leitura |
 | `#clipGrid` (delegação) | `ClipController` | selecionar, tocar trecho, mover, apagar |
 
 ### Aba II · Legendas
@@ -68,22 +68,22 @@ pelo `index.html`; não faz parte do app.
 | `#styleGrid [data-style]` | `CaptionController` + settings | estilo da legenda no frame |
 | `#langSelect` | lido pelo Whisper | idioma |
 | `#brandInput` | `SettingsController` | assinatura/marca |
-| edição de blocos | **não existe** | deveria permitir editar o texto das legendas |
+| `#cueList` (input/click/change) | `CaptionController` | edita início/fim/texto, exclui e adiciona blocos |
 
 ### Aba III · Publicar
 | Seletor | Handler | Resultado |
 |---|---|---|
 | `#coverBtn` | `CoverController` | abre capa, desenha quadro atual |
-| `#coverTitle`, `#coverPreset` | **ignorados** | deveriam compor a capa |
+| `#coverTitle`, `#coverPreset` | `CoverController` | título e tratamento entram na capa |
 | `#coverRandomBtn` | `CoverController` | sorteia quadro |
 | `#coverDownload` | `CoverController` | baixa PNG |
 | `#kitBtn` | `KitController` | abre ficha |
-| `.js-copy` | **sem handler** | deveria copiar título/descrição/hashtags |
+| `.js-copy` | `KitController.copy` | copia título/descrição/hashtags |
 | `#kitDownloadCover` / `#kitDownloadTxt` | `KitController` | baixa capa / `.txt` |
-| `#kitExport` | `KitController` | **simulado** (só toast) |
+| `#kitExport` | `KitController.exportVideo` | fecha a ficha e abre o modal de exportação |
 | `#exportBtn` | `ExportController` | abre render |
-| `#exportStart` | `ExportController` | canvas + MediaRecorder → WebM |
-| `#downloadLink` | link nativo | baixa o WebM |
+| `#exportStart` | `ExportController` | canvas + MediaRecorder → MP4/H.264 (WebM se não houver suporte) |
+| `#downloadLink` | link nativo | baixa o MP4 (ou WebM) |
 | `#burnCaptions`, `#sampleExport`, `#brandWatermarkToggle` | lidos na exportação | opções do render |
 
 ### Ajustes

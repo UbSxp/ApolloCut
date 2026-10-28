@@ -23,7 +23,9 @@ Não há FFmpeg no PATH e o app é 100% navegador. A exportação usa `MediaReco
 - ausência de quadros pretos/congelados nas bordas;
 - bitrate/CRF controlados.
 
-O MP4 gerado no Edge foi validado por assinatura de container (`ftyp`, `moov`, `avc1`, `mp4a`), perfil `avcC` High/nível 4.2 e reprodução no próprio Edge (1080×1920, 9,97 s). O `mvhd` registra duração 0 por ser MP4 fragmentado. Não foi validado por `ffprobe` nem em iPhone/Android.
+O MP4 gerado no Edge foi validado por assinatura de container (`ftyp`, `moov`, `avc1`, `mp4a`), perfil `avcC` High/nível 4.2 e reprodução no próprio Edge (1080×1920, 9,97 s). O `mvhd` registra duração 0 por ser MP4 fragmentado.
+
+Na rodada 07 (28/10/2026) o MP4 do `MediaRecorder` passou a ser o formato preferido e foi validado com `ffprobe`: container `mov,mp4,m4a,3gp,3g2,mj2`, vídeo `h264` 720×1280, 4,98 s e 120 quadros. Continua fragmentado — o `moov` fica no fim do arquivo, não há `faststart` e alguns players mostram duração 0 até terminar a leitura. O WebM (VP9/Opus) segue como queda quando o navegador não suporta MP4. Ainda não foi validado em iPhone/Android.
 
 Decisão necessária: aceitar a limitação do navegador ou autorizar uma etapa futura com backend local FFmpeg.
 
