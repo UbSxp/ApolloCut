@@ -75,3 +75,17 @@ Relato do usuário no vídeo real: legenda não correspondia à fala, "Baixar co
 - **Vídeo real do usuário** (35 s): 53 → **88 palavras**, último bloco 55,7 s → **39,96 s** (corte termina em 40,72 s).
 - **Download**: causa medida no navegador embutido — blobs de 1 MB e 4 MB concluem, 8 MB e o corte de 10,8 MB chegam com 0 byte. "Baixar corte" agora grava em `~/Downloads` via `POST /salvar` (`tools/servir.mjs`); a suíte E2E copia `state.export.savedPath` em vez de esperar o evento `download`.
 - `npm run testes` 24/24, `npm run teste` 14/14, `npm run fumaca` 10/10. Detalhe em `docs/legendas/resultados.md` (Rodada 3).
+
+## Rodada 10 — subcaminho GitHub Pages (2026-10-29)
+
+| # | Correção | Estado |
+|---|---|---|
+| 1 | Import dinâmico `transformers.bundle.mjs` relativo via `import.meta.url` | Feito — `src/ui/whisper-worker.js` |
+| 2 | `wasmPaths` do ONNX Runtime relativo | Feito — `src/ui/whisper-worker.js` |
+| 3 | `manifest.webmanifest`: `start_url: "."` + shortcut `"./?new=true"` | Feito |
+| 4 | `vendor/` removido do `.gitignore` (binários < 100 MB versionados) | Feito |
+| 5 | `tools/servir-subcaminho.mjs` + teste `tests/legendas/subcaminho.mjs` no `auditoria` | Feito |
+
+- `npm run testes` 24/24, `npm run auditoria` (E2E + auditar + subcaminho) ✅, `npm run fumaca` 10/10.
+- Commit: `1db7b92` na branch `fix/caminhos-github-pages` (base `checkpoint/pre-subcaminho`).
+- Próximo: push da branch, validar deploy em `https://ubsxp.github.io/ApolloCut/`, tag de release se OK.
