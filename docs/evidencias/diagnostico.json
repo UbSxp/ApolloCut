@@ -1,5 +1,5 @@
 {
-  "geradoEm": "2026-10-28T23:13:45.143Z",
+  "geradoEm": "2026-10-29T01:14:58.776Z",
   "mode": "http://127.0.0.1:4173",
   "crossOriginIsolated": true,
   "sharedArrayBuffer": true,
@@ -15,8 +15,8 @@
   "hardwareConcurrency": 12,
   "serviceWorker": true,
   "errors": [],
-  "whisperModel": "onnx-community/whisper-base_timestamped",
-  "whisperLastMs": 15447,
+  "whisperModel": "onnx-community/whisper-small_timestamped",
+  "whisperLastMs": 36861,
   "video": {
     "duracao": 20,
     "largura": 1280,
@@ -24,7 +24,7 @@
     "tamanhoMB": 0
   },
   "cortes": 0,
-  "legendas": 6,
+  "legendas": 5,
   "tema": "dark",
   "errosRecentes": []
 }

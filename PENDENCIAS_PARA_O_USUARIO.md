@@ -62,3 +62,21 @@ Os scripts de automação de fluxo ainda estão em `C:\Users\DUARDIN\AppData\Loc
 ## 6. Nome e identidade
 
 O app continua com o nome `ApolloCut`. Nenhuma troca de nome foi feita. A sugestão de três nomes alternativos ainda não foi produzida.
+
+## 7. Nomes próprios no áudio real (limite do modelo)
+
+O `whisper-small` ainda troca nomes próprios em áudio de tribunal: `Prado` → "Zimprado", `Ambiental` → "Unitar", `advogado` → "abeio". O campo **"Palavras difíceis"** corrige por esqueleto consonantal (`Prado` casa com "Zimprado"), mas o caminho automático não.
+
+Opções:
+
+- usar `whisper-large-v3-turbo` (≈1,5 GB, ~5× mais lento no navegador) como modo "preciso";
+- manter o `small` e ensinar o usuário a preencher "Palavras difíceis" com nomes do caso;
+- enviar o áudio para um serviço de transcrição (quebra a regra de tudo local).
+
+Enquanto não houver decisão, o app usa `small` e o campo de vocabulário.
+
+## 8. Download no navegador embutido do app
+
+O botão "Baixar corte" agora grava o arquivo em `~/Downloads` pelo endpoint `POST /salvar` do `tools/servir.mjs` (o app precisa estar rodando por esse servidor). O download direto do navegador falha acima de ~5 MB no navegador embutido do app: 1 MB e 4 MB concluem, 8 MB e o corte de 10,8 MB chegam com 0 byte.
+
+Se o app for aberto por outro servidor estático (sem `/salvar`), o botão cai na caixa nativa de salvar e, por último, no download comum. Nesse caso, para arquivos grandes, use o Chrome/Edge em `http://127.0.0.1:4173`.

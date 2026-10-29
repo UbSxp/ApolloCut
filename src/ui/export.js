@@ -50,14 +50,82 @@ export class ExportController {
   }
 
   setupExport() {
-    const { exportBtn, exportStart, exportCancel, exportClose, sampleExport } = this.els;
+    const { exportBtn, exportStart, exportCancel, exportClose, sampleExport, downloadLink } = this.els;
 
     exportBtn?.addEventListener('click', () => this.openExport());
     exportStart?.addEventListener('click', () => this.startExport());
     exportCancel?.addEventListener('click', () => this.cancel());
     exportClose?.addEventListener('click', () => this.close());
     sampleExport?.addEventListener('change', () => this.updateExportUI());
+    downloadLink?.addEventListener('click', (event) => this.saveExport(event));
     window.addEventListener('kit:export', () => this.openExport());
+  }
+
+  /**
+   * Salva o corte de verdade.
+   *
+   * O download por <a download> falha em arquivos grandes no navegador
+   * embutido do app (o gerenciador entrega 0 byte acima de ~5 MB, e o corte
+   * tem 10 MB+). Ordem: gravar pelo servidor local (sem limite, cai direto
+   * em Downloads) → caixa nativa de salvar → download comum.
+   */
+  async saveExport(event) {
+    const blob = this.state.export.blob;
+    const name = this.els.downloadLink?.download || 'apollocut-corte.webm';
+    if (!blob) return;
+
+    event.preventDefault();
+
+    const caminho = await this.salvarNoServidor(blob, name);
+    if (caminho) {
+      this.state.export.savedPath = caminho;
+      // Fica no painel (e selecionável) — o toast some em 4 s.
+      if (this.els.exportFileInfo) {
+        this.els.exportFileInfo.textContent = `Salvo em ${caminho}`;
+        this.els.exportFileInfo.classList.add('selectable');
+      }
+      this.toast.show('Corte salvo em Downloads');
+      return;
+    }
+
+    if (typeof window.showSaveFilePicker === 'function') {
+      const mp4 = blob.type.includes('mp4');
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: name,
+          types: [{
+            description: mp4 ? 'Vídeo MP4' : 'Vídeo WebM',
+            accept: { [mp4 ? 'video/mp4' : 'video/webm']: [mp4 ? '.mp4' : '.webm'] },
+          }],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        this.toast.show('Corte salvo');
+        return;
+      } catch (error) {
+        if (error?.name === 'AbortError') return;
+        console.warn('saveExport:', error);
+      }
+    }
+
+    const a = document.createElement('a');
+    a.href = this.state.export.url;
+    a.download = name;
+    a.click();
+    this.toast.show('Use o download do navegador: o servidor local não respondeu', 'error');
+  }
+
+  /** Grava o blob em Downloads pelo servidor local. null se indisponível. */
+  async salvarNoServidor(blob, name) {
+    try {
+      const res = await fetch(`/salvar?name=${encodeURIComponent(name)}`, { method: 'POST', body: blob });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.path || null;
+    } catch (_) {
+      return null;
+    }
   }
 
   openExport() {
@@ -351,6 +419,8 @@ export class ExportController {
     if (this.state.export.url) URL.revokeObjectURL(this.state.export.url);
     const url = URL.createObjectURL(blob);
     this.state.export.url = url;
+    this.state.export.blob = blob;
+    this.state.export.savedPath = null;
 
     if (downloadLink) {
       const index = this.state.clips.findIndex((c) => c.id === clip.id) + 1;

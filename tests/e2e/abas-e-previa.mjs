@@ -6,6 +6,7 @@
 
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
+import { copyFileSync, unlinkSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import ffprobe from 'ffprobe-static';
 
@@ -171,11 +172,17 @@ try {
   await page.waitForTimeout(300);
   await page.click('#exportStart');
   await page.waitForSelector('#exportResult:not([hidden])', { timeout: 90000 });
-  const downloadPromise = page.waitForEvent('download', { timeout: 60000 });
   await page.click('#downloadLink');
-  const download = await downloadPromise;
+  // Gravação pelo servidor local (/salvar): download do navegador falha > 5 MB.
+  await page.waitForFunction(
+    () => window.__APOLLO_DEBUG__.state.export.savedPath,
+    null,
+    { timeout: 60000 },
+  );
+  const salvo = await page.evaluate(() => window.__APOLLO_DEBUG__.state.export.savedPath);
   const outFile = join(ROOT, 'docs', 'evidencias', 'corte-rodada07.mp4');
-  await download.saveAs(outFile);
+  copyFileSync(salvo, outFile);
+  try { unlinkSync(salvo); } catch (_) { /* arquivo já removido */ }
   const info = await new Promise((done) => {
     const child = spawn(ffprobe.path, ['-v', 'error', '-count_packets', '-print_format', 'json', '-show_format', '-show_streams', outFile]);
     let text = '';

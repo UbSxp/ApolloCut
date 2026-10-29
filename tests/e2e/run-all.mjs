@@ -7,7 +7,7 @@
 
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
-import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync, readFileSync, copyFileSync, unlinkSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import ffprobe from 'ffprobe-static';
 
@@ -190,13 +190,20 @@ async function run() {
   });
   await page.waitForTimeout(300);
   await page.click('#exportStart');
-  // O app não baixa sozinho: espera o resultado e clica no link.
+  // O app não baixa sozinho: espera o resultado e clica no link. O arquivo é
+  // gravado pelo servidor local (/salvar) — o download do navegador embutido
+  // falha acima de ~5 MB e o corte passa disso.
   await page.waitForSelector('#exportResult:not([hidden])', { timeout: 90000 });
-  const downloadPromise = page.waitForEvent('download', { timeout: 60000 });
   await page.click('#downloadLink');
-  const download = await downloadPromise;
+  await page.waitForFunction(
+    () => window.__APOLLO_DEBUG__.state.export.savedPath,
+    null,
+    { timeout: 60000 },
+  );
+  const salvo = await page.evaluate(() => window.__APOLLO_DEBUG__.state.export.savedPath);
   const outFile = join(EVID, 'corte-exportado.mp4');
-  await download.saveAs(outFile);
+  copyFileSync(salvo, outFile);
+  try { unlinkSync(salvo); } catch (_) { /* arquivo já removido */ }
   await page.waitForTimeout(500);
   await shot('04-exportacao');
 
@@ -225,7 +232,7 @@ async function run() {
   await page.waitForFunction(() => {
     const log = document.getElementById('whisperLog')?.textContent || '';
     return /Pronto:|Erro:|Falhou/.test(log);
-  }, { timeout: 300000 });
+  }, null, { timeout: 300000 });
   await page.waitForTimeout(800);
   const whisper = await page.evaluate(() => ({
     cues: window.__APOLLO_DEBUG__.state.cues,
@@ -285,7 +292,7 @@ async function run() {
   await page.evaluate(() => document.getElementById('whisperBtn').click());
   await page.waitForTimeout(200);
   await page.click('#whisperStart');
-  await page.waitForFunction(() => /Erro:|Falhou/.test(document.getElementById('whisperLog')?.textContent || ''), { timeout: 60000 });
+  await page.waitForFunction(() => /Erro:|Falhou/.test(document.getElementById('whisperLog')?.textContent || ''), null, { timeout: 60000 });
   const muteMsg = await page.evaluate(() => document.getElementById('whisperLog').textContent);
   check('B1. Vídeo sem áudio falha com mensagem clara', /mudo|inaudível|sem áudio|não tem áudio/i.test(muteMsg), muteMsg.split('\n').pop().slice(0, 90));
   await page.evaluate(() => window.__APOLLO_DEBUG__.whisper.overlays.close(document.getElementById('whisperOverlay')));

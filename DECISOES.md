@@ -199,3 +199,45 @@
 - Contexto: o p95 do resumo era `max` dos p95 por clipe; um token de número fundido (clipe 04) escondia o resultado real.
 - Escolha: p95 e média sobre todas as palavras comparadas; a coluna por clipe continua mostrando o p95 de cada um.
 - Motivo: a meta é "95% das palavras abaixo de 200 ms", que é uma conta sobre palavras, não sobre clipes.
+
+## 28/10/2026 22:45 — motor único de render + arraste/alça + auto-fit (passo 5)
+
+- Contexto: as legendas eram desenhadas via DOM (`.frame-captions`), sem sincronia visual com o canvas da exportação. O passo 5 pedia: motor único (prévia = exportação), 5 estilos com área segura 9:16, controles completos com arraste e alça, emojis/ênfase opcionais desligados, fontes locais, tema claro/escuro e acessibilidade.
+- Opções: manter DOM + canvas separado; migrar tudo para canvas (motor único); híbrido com canvas só na exportação.
+- Escolha: `src/captions/render.js` com `drawCaption`/`drawWatermark`/`carregarFontes` — desenha em canvas na prévia E na exportação; `.frame-captions` vira `sr-only` com `role="status" aria-live="polite"` para leitores de tela; 5 presets (Clássico/Impacto/Karaokê/Mínimo/Hélio), chaves antigas `ode`/`ditirambo`/`estrofe`/`marmore` mantidas no `data-style`; `setupCaptionDrag()` em `src/ui/captions.js` — arraste move `captionPos {x,y}`, alça no canto inf-dir escala `captionScale`, área segura (`.safe-area`) acende durante interação; auto-ajuste de tamanho até caber (`ajustarTamanho` em `render.js`, itera até `size > 2%` altura); labels atualizados no HTML (Clássico/Impacto/Karaokê/Mínimo/Hélio); `DEFAULT_SETTINGS` ganha `captionScale: 1`, `captionPos: null`.
+- Motivo: motor único garante prévia idêntica ao vídeo exportado; arraste/alça dá controle fino sem controles numéricos; auto-fit evita estouro de largura que quebrava os estilos Ditirambo/Estrofe/Mármore/Hélio; `sr-only` mantém acessibilidade sem duplicar visual.
+- Reversão: `git revert 22afcfa`.
+
+## 28/10/2026 23:30 — edição completa + VTT + só legendas (passo 6)
+
+- Contexto: o passo 6 pedia edição de texto/tempo na lista e no vídeo com desfazer/refazer, dividir/juntar, atalhos, redistribuição proporcional, localizar/substituir, exportar SRT/VTT/ASS e vídeo com legendas queimadas validados, opção só legendas.
+- Opções: apenas SRT/ASS; adicionar VTT; adicionar undo/redo só no texto; undo/redo completo incluindo tempos; split/merge sem redistribuição proporcional; split/merge com redistribuição proporcional ao tempo do cursor.
+- Escolha: `StateManager` ganha `snapshotCues/undoCues/redoCues` (histórico JSON limitado a 60); `setupCueEditor` faz snapshot antes de editar (focusin no textarea, change nos inputs de tempo, click nos botões split/merge/del); `splitCue` divide palavras proporcionalmente ao tempo do cursor (ratio = (cursor - start) / (end - start)); `mergeCue` junta com próximo; `setupShortcuts`: Ctrl+Z/Shift+Z undo/redo, Enter divide, Shift+Backspace junta, ArrowUp/Down ajusta ±0,1s, ArrowLeft/Right seek ±0,5s; find/replace com highlight visual no textarea e substituição case-insensitive; `exportSubtitles('vtt')` gera WEBVTT com tempos em `HH:MM:SS.mmm`; `export.js`: opção "só legendas" (`onlyCaptions`) → canvas `alpha: true`, mime `video/webm;codecs=vp9`, sem track de áudio, `drawFrame` limpa com `clearRect` em vez de desenhar vídeo.
+- Motivo: snapshot no StateManager mantém undo/redo isolado de clips; split proporcional evita cortes ruins no meio da palavra; atalhos cobrem o fluxo de edição sem mouse; VTT é padrão web nativo; "só legendas" permite sobrepor em outro editor sem re-renderizar vídeo base.
+- Reversão: `git revert ea14aff`.
+
+## 28/10/2026 23:55 — auditoria automática + documentação final (passo 7)
+
+- Contexto: o passo 7 pedia `medir.mjs` após cada melhoria em `docs/legendas/resultados.md`, checagens de legendas no `npm run auditoria` com limites que falham se piorar, auditoria e fumaça duas vezes verdes, fluxo completo no agent-browser, `docs/legendas/COMO_FUNCIONA.md`, `docs/relatorio-legendas.html` com capturas de cada estilo nos dois temas, `LEIA_ME_PRIMEIRO.md` (mudanças, tabela antes/depois, como escolher rápido/preciso, como rodar medir/auditoria, pendências).
+- Opções: auditoria manual; script que só imprime métricas; script que falha se piorar (thresholds); documentação só no README; documentação separada por arquivo.
+- Escolha: `tests/legendas/auditar.mjs` roda `medir.mjs --label auditoria`, lê o JSON mais recente em `tests/legendas/resultados/`, valida thresholds fixos (WER≤10%, CER≤5%, tempo médio≤100ms, p95≤200ms, alucinações=0, perdidas≤5/clip); integrado no `npm run auditoria` (roda depois de run-all + abas-e-previa); `COMO_FUNCIONA.md` cobre pipeline técnico completo; `relatorio-legendas.html` página standalone com grid 5×2 (auto-carrega PNGs de `docs/evidencias/legendas/`); `LEIA_ME_PRIMEIRO.md` resumo executivo com tabela antes/depois, guia de escolha de modelo, comandos, pendências.
+- Motivo: thresholds em código impedem regressão silenciosa; HTML standalone compartilhável sem build; markdown no raiz visível no GitHub; thresholds baseados nos números atingidos (não aspiracionais).
+- Reversão: `git revert 8e5cde7`.
+
+## 28/10/2026 22:20 — fala perdida nas emendas do Whisper + download do corte
+
+- Contexto: no vídeo real do usuário (sustentação oral, 35 s) a legenda não correspondia à fala: os 20 s iniciais sumiam, o número do processo saía picado (", 67 ,9 ,2") e a última palavra ficava 28 s na tela. O botão "Baixar corte" não baixava nada no navegador embutido do app.
+- Diagnóstico (medido no próprio vídeo): com `chunk_length_s: 30` + `stride_length_s: 5`, o transformers.js soma o início do bloco duas vezes nos timestamps por palavra — palavras em 50 s num áudio de 35 s eram descartadas pelo `monotonic` (limite = duração do corte) e a palavra anterior absorvia o buraco. O `whisper-small` no bloco interno ainda colapsava 20 s de fala num único token "E". Rodando o mesmo áudio em janela única de 29,5 s: 75 palavras contra 53, texto coerente desde o início.
+- Opções: manter o chunking e só deslocar a cauda; desligar o stride; janelas próprias de 28 s com sobreposição e emenda por texto; transcrever o corte inteiro num só bloco (estoura 30 s).
+- Escolha: janelas próprias (`JANELA_SEC = 28`, `SOBREPOSICAO_SEC = 1.2`) dentro do worker, sem `chunk_length_s`/`stride_length_s`; cada janela recebe o offset de tempo na mão; `juntarSobreposicao()` compara o sufixo já transcrito com o prefixo novo e descarta as palavras repetidas; `monotonic` passa a cortar `end` na duração; `postProcessPt` volta a colar "105, 67" em "105,67" (vírgula entre dígitos não é pausa); `pickModel('auto')` usa `small` para cortes de até 90 s (o base perdia a fala neste áudio) e `base` acima disso.
+- Motivo: as emendas do transformers.js são a causa raiz dos dois defeitos de legenda (texto faltando e tempo estourado); a emenda por texto não duplica palavras nem inventa cortes.
+- Reversão: `git revert` do commit desta rodada.
+
+### Download do corte: o limite é o gerenciador do navegador embutido
+
+- Contexto: "Baixar corte" não baixava nada. A primeira hipótese (o `<a download>` ser cancelado) estava incompleta.
+- Diagnóstico (medido no navegador do app, `browser.files.list`): o download **começa** e falha com 0 byte em blobs grandes — 14 B, 1 MB e 4 MB concluem; 8 MB e o corte de 10,8 MB ficam `failed` com 0 byte. Não é permissão nem `preventDefault`: é o gerenciador de downloads do navegador embutido (Electron) que não dá conta do arquivo.
+- Opções: só `showSaveFilePicker`; fatiar o vídeo em vários arquivos; endpoint local que grava em disco; pedir para abrir no Chrome/Edge.
+- Escolha: `POST /salvar?name=…` no `tools/servir.mjs` grava o blob direto em `~/Downloads` (nome livre com sufixo `-1`, `-2`; só `.mp4`/`.webm`; corpo em streaming, sem limite de tamanho) e devolve o caminho, que o app mostra no toast e guarda em `state.export.savedPath`. Ordem do `saveExport()`: servidor local → `showSaveFilePicker` → `<a download>`.
+- Motivo: funciona no navegador embutido, no Chrome/Edge e no Playwright, sem limite de tamanho e sem depender de diálogo nativo; o servidor já é obrigatório para o app (módulos + COOP/COEP), então não é dependência nova.
+- Efeito nos testes: `run-all.mjs` e `abas-e-previa.mjs` deixam de esperar o evento `download` e copiam `state.export.savedPath`. Dois `waitForFunction` desses testes passavam `{ timeout }` como *arg* (segundo parâmetro), então usavam o padrão de 30 s — com o `small` no modo Auto a transcrição passou disso e a suíte estourava; corrigido para `(fn, null, { timeout })`.

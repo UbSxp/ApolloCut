@@ -1,25 +1,21 @@
 1
-00:00:00,020 --> 00:00:01,080
-Ao no sei -on
+00:00:00,020 --> 00:00:03,020
+Almocei ontem e fui ao mercado
 
 2
-00:00:01,080 --> 00:00:02,980
--tem e fui ao mercado
+00:00:05,340 --> 00:00:07,360
+Comprei pela Libra Olay
 
 3
-00:00:05,340 --> 00:00:06,880
-Comprei pela Libra
-
-4
-00:00:06,880 --> 00:00:12,840
--Oilete. No caminho de
+00:00:07,360 --> 00:00:12,860
+Late. No caminho de
 Volta encontrei meu
 
-5
-00:00:12,840 --> 00:00:16,540
+4
+00:00:12,860 --> 00:00:16,540
 Vizinho e
 Conversamos sobre o filme de
 
-6
+5
 00:00:16,540 --> 00:00:17,140
 Ontem

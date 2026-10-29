@@ -8,8 +8,9 @@
    ============================================================ */
 
 import { createServer } from 'node:http';
-import { createReadStream, existsSync, statSync } from 'node:fs';
-import { resolve, extname, sep } from 'node:path';
+import { createReadStream, createWriteStream, existsSync, statSync } from 'node:fs';
+import { resolve, extname, sep, basename, join } from 'node:path';
+import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)));
@@ -68,7 +69,55 @@ function send(res, status, body, type = 'text/plain; charset=utf-8') {
   res.end(body);
 }
 
+/* ---------- salvar o corte no disco ----------
+   O download do navegador embutido do app falha em arquivos grandes
+   (> ~5 MB): o gerenciador de downloads entrega 0 byte. Aqui o vídeo é
+   gravado direto na pasta Downloads, sem limite de tamanho. */
+
+const DOWNLOADS = join(homedir(), 'Downloads');
+
+function destinoLivre(dir, nome) {
+  const ext = extname(nome);
+  const base = basename(nome, ext).slice(0, 80) || 'apollocut-corte';
+  let alvo = join(dir, base + ext);
+  for (let i = 1; existsSync(alvo) && i < 1000; i++) alvo = join(dir, `${base}-${i}${ext}`);
+  return alvo;
+}
+
+function salvar(req, res) {
+  const params = new URL(req.url, `http://${HOST}`).searchParams;
+  const pedido = basename(params.get('name') || 'apollocut-corte.webm');
+  const nome = pedido.replace(/[^\w.\- ]+/g, '_');
+  const ext = extname(nome).toLowerCase();
+  if (ext !== '.mp4' && ext !== '.webm') {
+    send(res, 400, 'Extensão não permitida (use .mp4 ou .webm)');
+    return;
+  }
+
+  const dir = existsSync(DOWNLOADS) ? DOWNLOADS : ROOT;
+  const alvo = destinoLivre(dir, nome);
+  const out = createWriteStream(alvo);
+  let bytes = 0;
+  req.on('data', (chunk) => { bytes += chunk.length; });
+
+  const falhar = (error) => {
+    console.error('salvar:', error.message);
+    send(res, 500, `Falha ao gravar: ${error.message}`);
+  };
+  req.on('error', falhar);
+  out.on('error', falhar);
+  out.on('finish', () => {
+    send(res, 200, JSON.stringify({ path: alvo, bytes }), 'application/json; charset=utf-8');
+  });
+  req.pipe(out);
+}
+
 const server = createServer((req, res) => {
+  if (req.method === 'POST' && req.url.startsWith('/salvar')) {
+    salvar(req, res);
+    return;
+  }
+
   if (req.method !== 'GET' && req.method !== 'HEAD') {
     send(res, 405, 'Método não permitido');
     return;

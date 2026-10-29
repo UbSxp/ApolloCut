@@ -18,6 +18,8 @@
 | **Controles** | Nenhum | **Arraste + alça** (posição/escala) + safe-area visual |
 | **Edição** | Só texto | **Undo/Redo, Split/Merge, Atalhos, Find/Replace, Nudge** |
 | **Exportação** | SRT/ASS | **+ VTT** + **Vídeo só legendas** (WebM/VP9 alpha) |
+| **Download do vídeo** | `<a download>` falha com 0 byte acima de ~5 MB no navegador embutido | **Grava em `~/Downloads`** pelo `POST /salvar` do servidor local |
+| **Seleção de texto** | Tudo selecionável por acidente | Só campos de formulário, logs e `.selectable` |
 | **Auditoria** | Manual | **`npm run auditoria` inclui `auditar.mjs` (falha se piorar)** |
 
 ---
@@ -42,10 +44,10 @@
 | Modo | Modelo | Tempo (1 min áudio) | Qualidade | Quando usar |
 |------|--------|---------------------|-----------|-------------|
 | **Rápido** | `whisper-tiny_timestamped` | ~12 s | Boa | Rascunho, conferência rápida |
-| **Auto** (padrão) | `whisper-base_timestamped` | ~18 s | **Recomendada** | Produção geral |
+| **Auto** (padrão) | `whisper-small_timestamped` até 90 s · `base` acima | ~50 s (curto) | **Recomendada** | Produção geral |
 | **Preciso** | `whisper-small_timestamped` | ~49 s | Melhor em ruído | Áudio ruim, muitos nomes próprios |
 
-> O app usa **Auto** por padrão. Troque em `window.__APOLLO_DEBUG__.state.whisper.requestedModel` se quiser testar outro.
+> O app usa **Auto** por padrão. Desde 28/10 o Auto usa o `small` em cortes de até 90 s: no áudio real de sustentação oral o `base` perdia 20 s de fala e inventava termos. Acima de 90 s o Auto volta ao `base` para não travar a máquina.
 
 ---
 

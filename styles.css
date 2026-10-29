@@ -165,6 +165,24 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   transition: background-color var(--t-theme) var(--ease-out), color var(--t-theme) var(--ease-out);
+  /* A interface é um app, não um documento: nada de seleção acidental.
+     Campos de formulário, logs e o que for marcado com .selectable voltam a
+     permitir seleção (ver regra logo abaixo). */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+input,
+textarea,
+select,
+option,
+[contenteditable="true"],
+.selectable,
+pre,
+code,
+#whisperLog {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 body.studio-open { background: var(--bg); }
