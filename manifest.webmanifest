@@ -2,7 +2,7 @@
   "name": "ApolloCut",
   "short_name": "ApolloCut",
   "description": "Ateliê local de cortes verticais com legendas e exportação no navegador",
-  "start_url": "/",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#f6efe3",
   "theme_color": "#f6efe3",
@@ -27,7 +27,7 @@
       "name": "Novo Filme",
       "short_name": "Novo",
       "description": "Criar novo corte",
-      "url": "/?new=true",
+      "url": "./?new=true",
       "icons": [{ "src": "assets/brand/icon-192.svg", "sizes": "192x192" }]
     }
   ]

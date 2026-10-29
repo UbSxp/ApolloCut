@@ -20,6 +20,7 @@
 | **Exportação** | SRT/ASS | **+ VTT** + **Vídeo só legendas** (WebM/VP9 alpha) |
 | **Download do vídeo** | `<a download>` falha com 0 byte acima de ~5 MB no navegador embutido | **Grava em `~/Downloads`** pelo `POST /salvar` do servidor local |
 | **Seleção de texto** | Tudo selecionável por acidente | Só campos de formulário, logs e `.selectable` |
+| **Caminhos absolutos** | `/vendor/...`, `/ort/`, `start_url: "/"` quebram no GitHub Pages (subcaminho `/ApolloCut/`) | Caminhos relativos via `new URL(..., import.meta.url)`; `start_url: "."`; `vendor/` versionado; teste de subcaminho no `auditoria` |
 | **Auditoria** | Manual | **`npm run auditoria` inclui `auditar.mjs` (falha se piorar)** |
 
 ---
@@ -76,6 +77,7 @@ npm run auditoria
 #   - run-all.mjs (14 checks)
 #   - abas-e-previa.mjs (10 checks)
 #   - auditar.mjs (valida thresholds)
+#   - subcaminho.mjs (servidor local sob /ApolloCut/ e busca do bundle transformers)
 # Falha se qualquer métrica piorar além do limite.
 ```
 
@@ -108,6 +110,26 @@ Se `npm run auditoria` falhar no `auditar.mjs`, a rodada **não passa** — corr
 | **Voz TTS única** | Só `Microsoft Maria Desktop` | Variação via SSML `rate` (-2, 0, +5) |
 | **Número fundido no p95** | Token `,20.` ≠ "vinte centavos" | É artefato de métrica, não de sincronia; clipe 04 excluído da média real |
 | **Emojis/ênfase** | Desligados por pedido | Motor suporta (`preset.emoji`, `preset.emphasis`) — pronto para ativar |
+
+---
+
+## Correção de subcaminho (GitHub Pages /ApolloCut/)
+
+**Problema:** ao publicar em `https://ubsxp.github.io/ApolloCut/`, o import dinâmico `import('/vendor/transformers.bundle.mjs')` resolvia para a raiz do domínio (`https://ubsxp.github.io/vendor/...`) em vez de `https://ubsxp.github.io/ApolloCut/vendor/...`. O mesmo ocorria com `wasmPaths = '/vendor/ort/'` e `start_url: "/"` no manifest.
+
+**Correção:** todos os caminhos passaram a ser relativos ao arquivo que os referencia:
+- `src/ui/whisper-worker.js`: `new URL('../../vendor/transformers.bundle.mjs', import.meta.url)` e `new URL('../../vendor/ort/', import.meta.url)`
+- `manifest.webmanifest`: `start_url: "."` e atalho `"./?new=true"`
+- `.gitignore`: `vendor/` removido (binários < 100 MB versionados)
+- Adicionado `tools/servir-subcaminho.mjs` (serve sob `/ApolloCut/` com COOP/COEP) e teste automatizado `tests/legendas/subcaminho.mjs` no `npm run auditoria`
+
+**Como testar localmente:**
+```bash
+node tools/servir-subcaminho.mjs 4174 /ApolloCut/
+# Abre http://127.0.0.1:4174/ApolloCut/ — fluxo completo deve funcionar
+```
+
+**Regressão:** `npm run auditoria` agora falha se qualquer recurso em `/ApolloCut/` der 404.
 
 ---
 

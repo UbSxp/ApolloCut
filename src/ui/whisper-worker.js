@@ -36,12 +36,15 @@ let libPromise = null;
 
 async function loadLib() {
   if (!libPromise) {
-    libPromise = import('/vendor/transformers.bundle.mjs').then((mod) => {
+    const base = new URL('.', import.meta.url);
+    const transformersUrl = new URL('../../vendor/transformers.bundle.mjs', base).href;
+    const ortPath = new URL('../../vendor/ort/', base).href;
+    libPromise = import(transformersUrl).then((mod) => {
       mod.env.allowLocalModels = false;
       mod.env.allowRemoteModels = true;
       mod.env.useBrowserCache = true;
       // wasm do onnxruntime servido localmente (sem CDN).
-      mod.env.backends.onnx.wasm.wasmPaths = '/vendor/ort/';
+      mod.env.backends.onnx.wasm.wasmPaths = ortPath;
       mod.env.backends.onnx.wasm.numThreads = self.crossOriginIsolated ? 2 : 1;
       return mod;
     });

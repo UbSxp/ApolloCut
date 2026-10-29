@@ -178,6 +178,6 @@
       ]
     }
   ],
-  "log": "[22:14:19] Iniciando transcrição…\n[22:14:19] Áudio pronto: 20.0s, nível 0.063.\n[22:14:56] Modelo onnx-community/whisper-small_timestamped (wasm) em 36.9s.\n[22:14:56] Pronto: 5 blocos.",
+  "log": "[00:02:06] Iniciando transcrição…\n[00:02:06] Áudio pronto: 20.0s, nível 0.063.\n[00:02:44] Modelo onnx-community/whisper-small_timestamped (wasm) em 37.8s.\n[00:02:44] Pronto: 5 blocos.",
   "model": "onnx-community/whisper-small_timestamped"
 }

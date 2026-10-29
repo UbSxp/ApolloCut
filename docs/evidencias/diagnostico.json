@@ -1,5 +1,5 @@
 {
-  "geradoEm": "2026-10-29T01:14:58.776Z",
+  "geradoEm": "2026-10-29T03:02:46.097Z",
   "mode": "http://127.0.0.1:4173",
   "crossOriginIsolated": true,
   "sharedArrayBuffer": true,
@@ -16,7 +16,7 @@
   "serviceWorker": true,
   "errors": [],
   "whisperModel": "onnx-community/whisper-small_timestamped",
-  "whisperLastMs": 36861,
+  "whisperLastMs": 37789,
   "video": {
     "duracao": 20,
     "largura": 1280,
