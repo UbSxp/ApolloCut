@@ -642,15 +642,24 @@
               </div>
               <div class="caption-buttons">
                 <button class="btn btn-line" id="exportSrtBtn" type="button"><svg class="icon" aria-hidden="true"><use href="#i-download"></use></svg>Baixar .srt</button>
+                <button class="btn btn-line" id="exportVttBtn" type="button"><svg class="icon" aria-hidden="true"><use href="#i-download"></use></svg>Baixar .vtt</button>
                 <button class="btn btn-line" id="exportAssBtn" type="button"><svg class="icon" aria-hidden="true"><use href="#i-download"></use></svg>Baixar .ass</button>
               </div>
 
-              <p class="fine-print tab-hint" id="captionsHint" hidden>Carregue um v&iacute;deo na aba I &middot; Cena para transcrever. Voc&ecirc; tamb&eacute;m pode importar um .srt/.vtt.</p>
-
               <div class="cue-editor" id="cueEditor">
                 <div class="field-top"><label>Blocos de legenda</label><button class="link-btn" id="addCueBtn" type="button">+ adicionar bloco</button></div>
+                <div class="find-replace">
+                  <input type="text" id="findInput" placeholder="Localizar..." aria-label="Localizar no texto" />
+                  <input type="text" id="replaceInput" placeholder="Substituir por..." aria-label="Substituir por" />
+                  <button class="btn btn-line" id="replaceBtn" type="button">Substituir</button>
+                  <button class="btn btn-line" id="replaceAllBtn" type="button">Todas</button>
+                </div>
                 <div class="cue-list" id="cueList"></div>
                 <p class="fine-print" id="cueEmpty">Nenhum bloco ainda. Importe um SRT, transcreva com o Whisper ou crie um bloco &agrave; m&atilde;o.</p>
+              </div>
+              <div class="caption-buttons">
+                <button class="btn btn-line" id="undoCueBtn" type="button" title="Desfazer (Ctrl+Z)"><svg class="icon" aria-hidden="true"><use href="#i-undo"></use></svg></button>
+                <button class="btn btn-line" id="redoCueBtn" type="button" title="Refazer (Ctrl+Shift+Z)"><svg class="icon" aria-hidden="true"><use href="#i-redo"></use></svg></button>
               </div>
               <p class="fine-print">O SRT é a via mais rápida e exata. O Whisper roda no seu navegador: baixa o modelo na primeira vez e captura o áudio do corte em tempo real.</p>
 
@@ -890,6 +899,11 @@
         <label class="switch-row">
           <span>Queimar legendas no vídeo</span>
           <input type="checkbox" id="burnCaptions" checked />
+          <i aria-hidden="true"></i>
+        </label>
+        <label class="switch-row">
+          <span>Só legendas (fundo transparente)</span>
+          <input type="checkbox" id="onlyCaptions" />
           <i aria-hidden="true"></i>
         </label>
         <label class="switch-row">

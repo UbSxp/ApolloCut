@@ -32,6 +32,14 @@ function assTime(seconds) {
   return `${h}:${pad(m)}:${pad(s)}.${pad(cs % 100)}`;
 }
 
+function vttTime(seconds) {
+  const ms = Math.max(0, Math.round(seconds * 1000));
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  return `${pad(h)}:${pad(m)}:${pad(s)}.${pad(ms % 1000, 3)}`;
+}
+
 function downloadText(name, text, type) {
   const blob = new Blob([text], { type });
   const url = URL.createObjectURL(blob);
@@ -81,7 +89,12 @@ export class CaptionController {
     this.setupCueEditor();
 
     exportSrtBtn?.addEventListener('click', () => this.exportSubtitles('srt'));
+    exportVttBtn?.addEventListener('click', () => this.exportSubtitles('vtt'));
     exportAssBtn?.addEventListener('click', () => this.exportSubtitles('ass'));
+
+    const { undoCueBtn, redoCueBtn } = this.els;
+    undoCueBtn?.addEventListener('click', () => this.undoCues());
+    redoCueBtn?.addEventListener('click', () => this.redoCues());
 
     styleGrid?.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-style]');
@@ -121,7 +134,7 @@ export class CaptionController {
   }
 
   setupCueEditor() {
-    const { addCueBtn, cueList } = this.els;
+    const { addCueBtn, cueList, findInput, replaceInput, replaceBtn, replaceAllBtn } = this.els;
     addCueBtn?.addEventListener('click', () => this.addCue());
 
     cueList?.addEventListener('input', (event) => {
@@ -141,16 +154,189 @@ export class CaptionController {
 
     cueList?.addEventListener('click', (event) => {
       const del = event.target.closest('.cue-del');
-      if (!del) return;
-      const row = del.closest('[data-cue]');
-      this.state.cues.splice(Number(row.dataset.cue), 1);
-      this.afterCuesChanged();
-      this.toast.show('Bloco removido');
+      if (del) {
+        const row = del.closest('[data-cue]');
+        this.state.snapshotCues();
+        this.state.cues.splice(Number(row.dataset.cue), 1);
+        this.afterCuesChanged();
+        this.toast.show('Bloco removido');
+        return;
+      }
+      const split = event.target.closest('.cue-split');
+      if (split) {
+        const row = split.closest('[data-cue]');
+        this.splitCue(Number(row.dataset.cue));
+        return;
+      }
+      const merge = event.target.closest('.cue-merge');
+      if (merge) {
+        const row = merge.closest('[data-cue]');
+        this.mergeCue(Number(row.dataset.cue));
+        return;
+      }
     });
 
     cueList?.addEventListener('change', (event) => {
-      if (event.target.dataset.cueTime) this.afterCuesChanged();
+      if (event.target.dataset.cueTime) {
+        this.state.snapshotCues();
+        this.afterCuesChanged();
+      }
     });
+
+    cueList?.addEventListener('focusin', (event) => {
+      if (event.target.matches('textarea')) {
+        this.state.snapshotCues();
+      }
+    });
+
+    // Find/Replace
+    findInput?.addEventListener('input', () => this.highlightFind(findInput.value));
+    replaceBtn?.addEventListener('click', () => this.replaceFind(findInput.value, replaceInput.value, false));
+    replaceAllBtn?.addEventListener('click', () => this.replaceFind(findInput.value, replaceInput.value, true));
+
+    // Atalhos de teclado
+    this.setupShortcuts();
+  }
+
+  setupShortcuts() {
+    const video = this.els.previewVideo;
+    if (!video) return;
+
+    const onKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      const cues = this.state.cues;
+      if (!cues.length) return;
+
+      const cue = cues.find((c) => video.currentTime >= c.start && video.currentTime <= c.end);
+      const idx = cues.indexOf(cue);
+      if (idx === -1) return;
+
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) this.redoCues(); else this.undoCues();
+      } else if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        this.splitCue(idx);
+      } else if (e.key === 'Backspace' && e.shiftKey) {
+        e.preventDefault();
+        this.mergeCue(idx);
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        const step = e.key === 'ArrowUp' ? -0.1 : 0.1;
+        this.nudgeCueTime(idx, step);
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        const step = e.key === 'ArrowLeft' ? -0.5 : 0.5;
+        video.currentTime = Math.max(0, Math.min(this.state.duration, video.currentTime + step));
+      }
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+    this._captionShortcuts = onKeyDown;
+  }
+
+  splitCue(index) {
+    const cues = this.state.cues;
+    const cue = cues[index];
+    if (!cue || !cue.text.trim()) return;
+    const video = this.els.previewVideo;
+    const currentTime = video?.currentTime || (cue.start + cue.end) / 2;
+    const midTime = Math.max(cue.start + 0.3, Math.min(cue.end - 0.3, currentTime));
+    const words = cue.text.trim().split(/\s+/);
+    if (words.length < 2) return;
+
+    // Divide palavras proporcionalmente ao tempo
+    const totalDur = cue.end - cue.start;
+    const firstDur = midTime - cue.start;
+    const ratio = firstDur / totalDur;
+    const splitAt = Math.max(1, Math.min(words.length - 1, Math.round(words.length * ratio)));
+
+    const firstText = words.slice(0, splitAt).join(' ');
+    const secondText = words.slice(splitAt).join(' ');
+
+    this.state.snapshotCues();
+    cues[index] = { ...cue, end: midTime, text: firstText };
+    cues.splice(index + 1, 0, { start: midTime, end: cue.end, text: secondText });
+    this.afterCuesChanged();
+    this.toast.show('Bloco dividido');
+  }
+
+  mergeCue(index) {
+    const cues = this.state.cues;
+    if (index >= cues.length - 1) return;
+    const a = cues[index];
+    const b = cues[index + 1];
+    this.state.snapshotCues();
+    cues[index] = { start: a.start, end: b.end, text: (a.text + ' ' + b.text).trim() };
+    cues.splice(index + 1, 1);
+    this.afterCuesChanged();
+    this.toast.show('Blocos unidos');
+  }
+
+  nudgeCueTime(index, delta) {
+    const cues = this.state.cues;
+    const cue = cues[index];
+    if (!cue) return;
+    const newStart = Math.max(0, cue.start + delta);
+    const newEnd = Math.max(newStart + 0.3, cue.end + delta);
+    const nextCue = cues[index + 1];
+    const prevCue = cues[index - 1];
+    if (nextCue && newEnd > nextCue.start) return;
+    if (prevCue && newStart < prevCue.end) return;
+    this.state.snapshotCues();
+    cue.start = newStart;
+    cue.end = newEnd;
+    this.afterCuesChanged();
+  }
+
+  highlightFind(term) {
+    const { cueList } = this.els;
+    if (!cueList) return;
+    const rows = cueList.querySelectorAll('.cue-row');
+    const t = term?.toLowerCase() || '';
+    rows.forEach((row) => {
+      const ta = row.querySelector('textarea');
+      if (!ta) return;
+      if (!t) {
+        ta.value = ta.value.replace(/<mark>|<\/mark>/g, '');
+        return;
+      }
+      const val = ta.value;
+      const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+      ta.value = val.replace(regex, '<mark>$1</mark>');
+    });
+  }
+
+  replaceFind(findTerm, replaceTerm, all) {
+    if (!findTerm) return;
+    const cues = this.state.cues;
+    let count = 0;
+    this.state.snapshotCues();
+    cues.forEach((cue) => {
+      const regex = new RegExp(findTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), all ? 'gi' : 'i');
+      const newText = cue.text.replace(regex, () => { count++; return replaceTerm; });
+      if (newText !== cue.text) cue.text = newText;
+    });
+    if (count) {
+      this.afterCuesChanged();
+      this.toast.show(`${count} substituição${count > 1 ? 'ões' : ''}`);
+    } else {
+      this.toast.show('Nenhuma ocorrência');
+    }
+  }
+
+  undoCues() {
+    if (this.state.undoCues()) {
+      this.updateCaptionUI();
+      this.toast.show('Desfeito');
+    }
+  }
+
+  redoCues() {
+    if (this.state.redoCues()) {
+      this.updateCaptionUI();
+      this.toast.show('Refeito');
+    }
   }
 
   renderCueEditor() {
@@ -159,9 +345,11 @@ export class CaptionController {
     cueList.innerHTML = this.state.cues
       .map((cue, index) => `
         <div class="cue-row" data-cue="${index}">
-          <input type="number" min="0" step="0.1" value="${Number(cue.start || 0).toFixed(1)}" data-cue-time="start" aria-label="In&iacute;cio do bloco ${index + 1}" />
+          <input type="number" min="0" step="0.1" value="${Number(cue.start || 0).toFixed(1)}" data-cue-time="start" aria-label="Início do bloco ${index + 1}" />
           <input type="number" min="0" step="0.1" value="${Number(cue.end || 0).toFixed(1)}" data-cue-time="end" aria-label="Fim do bloco ${index + 1}" />
           <textarea rows="2" aria-label="Texto do bloco ${index + 1}">${escapeHtml(cue.text)}</textarea>
+          <button class="cue-split" type="button" aria-label="Dividir bloco ${index + 1}" title="Dividir (Enter)">⎘</button>
+          <button class="cue-merge" type="button" aria-label="Juntar com próximo" title="Juntar (Shift+Backspace)">⎯</button>
           <button class="cue-del" type="button" aria-label="Excluir bloco ${index + 1}">&times;</button>
         </div>`)
       .join('');
@@ -494,6 +682,12 @@ export class CaptionController {
         return `${index + 1}\n${srtTime(cue.start)} --> ${srtTime(cue.end)}\n${text}\n`;
       }).join('\n');
       downloadText('apollocut-legendas.srt', body, 'application/x-subrip;charset=utf-8');
+    } else if (format === 'vtt') {
+      const body = cues.map((cue) => {
+        const text = String(cue.text || '').trim();
+        return `${vttTime(cue.start)} --> ${vttTime(cue.end)}\n${text}\n`;
+      }).join('\n\n');
+      downloadText('apollocut-legendas.vtt', `WEBVTT\n\n${body}\n`, 'text/vtt;charset=utf-8');
     } else {
       const header = `[Script Info]
 ScriptType: v4.00+

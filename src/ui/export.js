@@ -5,6 +5,8 @@
    Sem upload, sem ffmpeg.wasm, sem servidor.
    ============================================================ */
 
+import { drawCaption, drawWatermark, carregarFontes } from '../captions/render.js';
+
 const RATIOS = {
   '9:16': { w: 720, h: 1280 },
   '1:1': { w: 900, h: 900 },
@@ -186,22 +188,29 @@ export class ExportController {
     const srcAspect = vw / vh;
     const outAspect = w / h;
 
-    let sx = 0;
-    let sy = 0;
-    let sw = vw;
-    let sh = vh;
-    if (srcAspect > outAspect) {
-      // Fonte mais larga: corta nas laterais, guiado pelo enquadramento.
-      sw = vh * outAspect;
-      sx = (vw - sw) * focus;
-    } else {
-      sh = vw / outAspect;
-      sy = (vh - sh) / 2;
-    }
+    const onlyCaptions = this.els.onlyCaptions?.checked;
 
-    ctx.fillStyle = '#0c1420';
-    ctx.fillRect(0, 0, w, h);
-    ctx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
+    if (!onlyCaptions) {
+      let sx = 0;
+      let sy = 0;
+      let sw = vw;
+      let sh = vh;
+      if (srcAspect > outAspect) {
+        // Fonte mais larga: corta nas laterais, guiado pelo enquadramento.
+        sw = vh * outAspect;
+        sx = (vw - sw) * focus;
+      } else {
+        sh = vw / outAspect;
+        sy = (vh - sh) / 2;
+      }
+
+      ctx.fillStyle = '#0c1420';
+      ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
+    } else {
+      // Só legendas: fundo transparente
+      ctx.clearRect(0, 0, w, h);
+    }
 
     this.drawCaptions(ctx, video.currentTime, w, h);
     this.drawWatermark(ctx, w, h);
@@ -211,52 +220,20 @@ export class ExportController {
     if (!this.els.burnCaptions?.checked || !this.state.cues?.length) return;
     const cue = this.state.cues.find((c) => time >= c.start && time <= c.end);
     if (!cue) return;
-
-    const text = cue.text.replace(/\s+/g, ' ').trim();
-    if (!text) return;
-
-    const fontSize = Math.round(h * 0.045);
-    ctx.font = `700 ${fontSize}px "Manrope", "Segoe UI", sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-
-    // Quebra em até 3 linhas.
-    const maxWidth = w * 0.84;
-    const words = text.split(' ');
-    const lines = [];
-    let line = '';
-    for (const word of words) {
-      const candidate = line ? `${line} ${word}` : word;
-      if (ctx.measureText(candidate).width > maxWidth && line) {
-        lines.push(line);
-        line = word;
-      } else {
-        line = candidate;
-      }
-    }
-    if (line) lines.push(line);
-
-    const lineHeight = fontSize * 1.24;
-    const baseY = h * 0.82 - ((lines.length - 1) * lineHeight) / 2;
-    ctx.lineJoin = 'round';
-    ctx.lineWidth = Math.max(4, fontSize * 0.16);
-    ctx.strokeStyle = 'rgba(0,0,0,0.85)';
-    ctx.fillStyle = '#fff8e9';
-    lines.forEach((text2, index) => {
-      const y = baseY + index * lineHeight;
-      ctx.strokeText(text2, w / 2, y);
-      ctx.fillText(text2, w / 2, y);
+    // Motor único: o mesmo desenho da prévia, com o tamanho do quadro exportado.
+    drawCaption(ctx, cue, {
+      width: w,
+      height: h,
+      preset: this.state.settings.style,
+      time,
+      scale: Number(this.state.settings.captionScale) || 1,
+      pos: this.state.settings.captionPos || null,
     });
   }
 
   drawWatermark(ctx, w, h) {
     if (!this.els.brandWatermarkToggle?.checked) return;
-    const size = Math.round(h * 0.022);
-    ctx.font = `600 ${size}px "Manrope", "Segoe UI", sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = 'rgba(255, 248, 233, 0.72)';
-    ctx.fillText('ApolloCut', w / 2, h * 0.945);
+    drawWatermark(ctx, w, h);
   }
 
   async exportClip(clip) {
@@ -266,27 +243,33 @@ export class ExportController {
 
     const ratio = this.state.settings.ratio || '9:16';
     const dims = RATIOS[ratio] || RATIOS['9:16'];
+    const onlyCaptions = this.els.onlyCaptions?.checked;
+    // As fontes locais precisam estar prontas antes do primeiro quadro.
+    await carregarFontes();
     const canvas = document.createElement('canvas');
     canvas.width = dims.w;
     canvas.height = dims.h;
-    const ctx = canvas.getContext('2d', { alpha: false });
+    const ctx = canvas.getContext('2d', { alpha: onlyCaptions });
 
     const start = clip.start;
     const end = clip.start + this.sampleDuration(clip);
 
-    // Áudio do próprio <video>, duplicado para o MediaRecorder.
+    // Áudio do próprio <video>, duplicado para o MediaRecorder (só se não for só legendas).
     const audio = this.ensureAudio();
     const stream = canvas.captureStream(30);
-    if (audio?.dest) {
+    if (!onlyCaptions && audio?.dest) {
       audio.dest.stream.getAudioTracks().forEach((track) => stream.addTrack(track));
     }
 
-    const mimeType = pickMime();
+    // Para só legendas, força WebM/VP9 que suporta alpha; caso contrário usa pickMime normal.
+    const mimeType = onlyCaptions
+      ? (window.MediaRecorder?.isTypeSupported?.('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm')
+      : pickMime();
     if (!window.MediaRecorder) throw new Error('MediaRecorder não suportado neste navegador');
     const recorder = new MediaRecorder(stream, {
       ...(mimeType ? { mimeType } : {}),
       videoBitsPerSecond: 5_000_000,
-      audioBitsPerSecond: 128_000,
+      audioBitsPerSecond: onlyCaptions ? 0 : 128_000,
     });
     this.recorder = recorder;
     this.state.export.recorder = recorder;

@@ -90,6 +90,35 @@ export class StateManager {
   }
 
   /**
+   * Histórico de legendas (desfazer / refazer)
+   */
+  snapshotCues() {
+    this._cueUndo = this._cueUndo || [];
+    this._cueRedo = this._cueRedo || [];
+    this._cueUndo.push(JSON.stringify(this.cues));
+    if (this._cueUndo.length > 60) this._cueUndo.shift();
+    this._cueRedo.length = 0;
+  }
+
+  undoCues() {
+    if (!this._cueUndo || !this._cueUndo.length) return false;
+    this._cueRedo = this._cueRedo || [];
+    this._cueRedo.push(JSON.stringify(this.cues));
+    this.cues = JSON.parse(this._cueUndo.pop());
+    this.lastCue = null;
+    return true;
+  }
+
+  redoCues() {
+    if (!this._cueRedo || !this._cueRedo.length) return false;
+    this._cueUndo = this._cueUndo || [];
+    this._cueUndo.push(JSON.stringify(this.cues));
+    this.cues = JSON.parse(this._cueRedo.pop());
+    this.lastCue = null;
+    return true;
+  }
+
+  /**
    * Get current clip
    */
   getActiveClip() {

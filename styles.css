@@ -1464,9 +1464,14 @@ html.theme-transition .studio-header { transition: background-color 560ms var(--
 .cue-editor { display: grid; gap: 8px; margin-top: 14px; }
 .cue-editor .field-top { align-items: center; }
 .cue-list { display: grid; gap: 8px; max-height: 320px; overflow: auto; padding-right: 2px; }
-.cue-row { display: grid; grid-template-columns: 68px 68px 1fr 28px; gap: 6px; align-items: start; padding: 8px; border: 1px solid var(--line); border-radius: var(--r-sm, 6px); background: var(--surface); }
+.cue-row { display: grid; grid-template-columns: 68px 68px 1fr 28px 28px 28px; gap: 6px; align-items: start; padding: 8px; border: 1px solid var(--line); border-radius: var(--r-sm, 6px); background: var(--surface); }
 .cue-row input { width: 100%; padding: 5px 6px; font: inherit; font-size: 11px; color: inherit; background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; }
 .cue-row textarea { width: 100%; min-height: 42px; resize: vertical; padding: 5px 6px; font: inherit; font-size: 12px; color: inherit; background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; }
-.cue-del { display: grid; place-items: center; width: 26px; height: 26px; border: 1px solid var(--line); border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer; }
+.cue-del, .cue-split, .cue-merge { display: grid; place-items: center; width: 26px; height: 26px; border: 1px solid var(--line); border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer; font-size: 14px; line-height: 1; }
 .cue-del:hover { color: var(--gold); border-color: var(--gold); }
+.cue-split:hover, .cue-merge:hover { color: var(--gold); border-color: var(--gold); }
+
+.find-replace { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+.find-replace input { flex: 1; min-width: 140px; padding: 6px 8px; font: inherit; font-size: 12px; color: inherit; background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; }
+.find-replace button { white-space: nowrap; }
 #cueEmpty[hidden] { display: none; }
