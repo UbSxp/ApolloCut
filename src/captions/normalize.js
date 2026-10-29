@@ -225,6 +225,8 @@ export function postProcessPt(text, options = {}) {
   out = out
     .replace(/\s+([,.;:!?])/g, '$1')
     .replace(/([,;:])(?=\S)/g, '$1 ')
+    // "12, 5" é decimal, não pausa: o espaço depois da vírgula volta a colar.
+    .replace(/(\d)\s*,\s*(\d)/g, '$1,$2')
     .replace(/\s{2,}/g, ' ')
     .trim();
 

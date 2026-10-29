@@ -241,11 +241,12 @@ export class WhisperController {
   chooseModel() {
     if (this.state.whisper?.requestedModel) return this.state.whisper.requestedModel;
     const nav = typeof navigator === 'undefined' ? {} : navigator;
+    const clip = this.getTargetClip();
     return pickModel(this.els.qualitySelect?.value || 'auto', {
       webgpu: !!nav.gpu,
       memory: Number(nav.deviceMemory) || 8,
       cores: Number(nav.hardwareConcurrency) || 8,
-    });
+    }, clip ? Math.max(0, clip.end - clip.start) : 0);
   }
 
   toGroups(words, clip) {

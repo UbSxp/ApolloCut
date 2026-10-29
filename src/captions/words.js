@@ -96,6 +96,9 @@ export function monotonic(words, duration = Infinity) {
     if (w.start < last) w.start = last;
     if (w.end <= w.start) w.end = w.start + 0.06;
     if (w.start > duration) { w.start = duration; w.end = duration; }
+    // O modelo pode devolver o fim do último bloco além do áudio (chunk com
+    // stride); sem este corte a legenda fica 20 s pendurada no fim do corte.
+    else if (w.end > duration) w.end = duration;
     last = w.end;
   }
   return list.filter((w) => w.end > w.start);

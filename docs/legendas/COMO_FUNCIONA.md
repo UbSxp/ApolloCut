@@ -18,11 +18,12 @@ Modelos suportados (escolhidos por modo):
 | Modo | Modelo | Uso |
 |------|--------|-----|
 | `fast` | `whisper-tiny_timestamped` | Rápido, menor qualidade |
-| `auto` (padrão) | `whisper-base_timestamped` | Equilibrado |
+| `auto` (padrão) | `whisper-small_timestamped` até 90 s; `base` acima | Melhor fidelidade no corte curto |
 | `precise` | `whisper-small_timestamped` | Mais lento, melhor em ruído |
 
 - `return_timestamps: 'word'` → o modelo devolve início/fim **por palavra**.
-- `chunk_length_s: 30`, `stride_length_s: 5` → contexto longo, menos erros de borda.
+- Janelas próprias de 28 s com 1,2 s de sobreposição (`src/ui/whisper-worker.js`). O `chunk_length_s`/`stride_length_s` do transformers.js foi removido: ele somava o início do bloco duas vezes nos timestamps por palavra (palavras em 50 s num áudio de 35 s) e o `whisper-small` chegava a colapsar 20 s de fala num token só.
+- A emenda entre janelas compara o sufixo já transcrito com o prefixo novo (`juntarSobreposicao`) e descarta as palavras repetidas da sobreposição.
 - O áudio do corte inteiro é transcrito de uma vez (não por segmento) → coerência de vocabulário.
 
 ---
@@ -140,6 +141,7 @@ Arquivo: `src/ui/export.js`
   - **Só legendas** (`onlyCaptions`): canvas `alpha: true`, WebM/VP9, sem áudio, fundo transparente — para sobrepor em outro editor.
   - **Amostra 12 s**: render rápido para conferir.
   - **Assinatura**: `drawWatermark` com `brand` do usuário.
+- **Salvar o corte**: `saveExport()` tenta `POST /salvar?name=…` no servidor local, que grava o blob em `~/Downloads` e devolve o caminho (mostrado no toast e em `state.export.savedPath`). Sem o servidor, cai em `showSaveFilePicker` e, por último, em `<a download>`. O download direto do navegador embutido falha com 0 byte acima de ~5 MB — por isso a gravação pelo servidor é o caminho padrão.
 
 ---
 

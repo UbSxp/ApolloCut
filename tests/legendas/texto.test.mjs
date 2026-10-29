@@ -112,3 +112,16 @@ test('monotonic descarta tempo negativo', () => {
   const saida = monotonic([{ text: 'x', start: -2, end: -1 }]);
   assert.ok(saida[0].start >= 0);
 });
+
+test('monotonic não deixa a última palavra passar do fim do áudio', () => {
+  const saida = monotonic([
+    { text: 'a', start: 0, end: 1 },
+    { text: 'b', start: 1, end: 49.98 },
+  ], 35);
+  assert.equal(saida[1].end, 35);
+});
+
+test('vírgula entre dígitos não vira pausa', () => {
+  assert.equal(postProcessPt('o processo 105, 67 e 9', { numbers: false }), 'O processo 105,67 e 9.');
+  assert.equal(postProcessPt('e o resto, tudo bem', { numbers: false }), 'E o resto, tudo bem.');
+});

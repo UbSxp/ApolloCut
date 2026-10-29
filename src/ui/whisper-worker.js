@@ -7,7 +7,30 @@
 
 import { trimSilence, alignWordsToSpeech, speechRegions } from '../captions/vad.js';
 import { cleanWords, applyVocabulary, monotonic } from '../captions/words.js';
+import { normalizeForCompare } from '../captions/normalize.js';
 import { MODELS, DEFAULT_MODEL } from '../captions/models.js';
+
+const RATE = 16000;
+const JANELA_SEC = 28;
+const SOBREPOSICAO_SEC = 1.2;
+
+/**
+ * Junta duas janelas descartando as palavras repetidas da sobreposição.
+ * Compara o sufixo já transcrito com o prefixo novo; sem isso a emenda
+ * duplica uma ou duas palavras.
+ */
+function juntarSobreposicao(anteriores, novas) {
+  const chave = (w) => normalizeForCompare(w.text).join(' ');
+  const max = Math.min(anteriores.length, novas.length, 12);
+  for (let k = max; k > 0; k--) {
+    let igual = true;
+    for (let i = 0; i < k && igual; i++) {
+      igual = chave(anteriores[anteriores.length - k + i]) === chave(novas[i]);
+    }
+    if (igual) return anteriores.concat(novas.slice(k));
+  }
+  return anteriores.concat(novas);
+}
 
 let libPromise = null;
 
@@ -135,15 +158,39 @@ self.addEventListener('message', async (event) => {
 
     const rodar = async (nome, gpu) => {
       const { pipe, device } = await getPipeline(nome, gpu, progresso);
-      post({ type: 'stage', stage: 'infer', pct: 45, note: `Transcrevendo (${device.toUpperCase()})…` });
-      const result = await pipe(entrada, {
+      const opcoes = {
         language: language === 'auto' ? undefined : language,
         task: 'transcribe',
         return_timestamps: 'word',
-        chunk_length_s: 30,
-        stride_length_s: 5,
-      });
-      return { result, device, nome };
+      };
+
+      // Janelas próprias em vez do chunking do transformers.js: com
+      // chunk_length_s/stride ele soma o início do bloco duas vezes nos
+      // timestamps por palavra e chega a colapsar 20 s de fala num token só.
+      const janela = Math.round(JANELA_SEC * RATE);
+      const passo = Math.max(1, Math.round((JANELA_SEC - SOBREPOSICAO_SEC) * RATE));
+      const total = entrada.length;
+      const varias = total > janela;
+
+      let palavras = [];
+      let chunks = 0;
+      for (let from = 0; from < total; from += passo) {
+        if (varias && total - from < 1.5 * RATE) break;
+        const fim = Math.min(total, from + janela);
+        const fatia = varias ? entrada.subarray(from, fim) : entrada;
+        post({
+          type: 'stage',
+          stage: 'infer',
+          pct: 45 + Math.round((from / total) * 50),
+          note: `Transcrevendo (${device.toUpperCase()}) ${Math.round((fim / total) * 100)}%…`,
+        });
+        const r = await pipe(fatia, opcoes);
+        chunks += (r.chunks || []).length;
+        const lote = toWords(r.chunks, offset + from / RATE, vocabulary);
+        palavras = palavras.length ? juntarSobreposicao(palavras, lote) : lote;
+        if (fim >= total) break;
+      }
+      return { palavras, chunks, device, nome };
     };
 
     let saida;
@@ -164,14 +211,14 @@ self.addEventListener('message', async (event) => {
       }
     }
 
-    const brutas = toWords(saida.result.chunks, offset, vocabulary);
+    const brutas = monotonic(saida.palavras);
     const words = monotonic(alignWordsToSpeech(brutas, audio));
     post({
       type: 'result',
       text: words.map((w) => w.text).join(' '),
       words,
       debug: { brutas, regioes: speechRegions(audio, 16000, { minGap: 0.4 }) },
-      chunks: saida.result.chunks || [],
+      chunks: saida.chunks,
       model: saida.nome,
       device: saida.device,
       trimmed: offset,

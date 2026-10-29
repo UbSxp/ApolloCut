@@ -67,6 +67,32 @@ em vez de tirar média das médias; os CER **por clipe** não mudaram.
 - **Modo "mais preciso" (`whisper-small`)**: medido em 3 clipes —
   01 63 ms/p95 175 ms, 04 183 ms/p95 1209 ms, 08 47 ms/p95 117 ms.
   Custa ~49 s por minuto de áudio (2,7× o `base`), por isso não é o padrão.
+
+## Rodada 3 — janelas próprias + `small` como padrão (2026-10-29)
+
+Motivo: no vídeo real do usuário (sustentação oral, 35 s) o `base` com o
+chunking do `transformers.js` perdia 20 s de fala e a última palavra ficava
+28 s na tela. A causa está documentada em `DECISOES.md` (offset do bloco somado
+duas vezes nos timestamps por palavra).
+
+| métrica | rodada 08 (`base`) | agora (`small` + janelas) | meta | |
+|---|---:|---:|---:|---|
+| WER global | 4,3% | **2,0%** | ≤ 10% | ✅ |
+| CER global | 1,2% | **1,1%** | ≤ 5% | ✅ |
+| erro médio de tempo | 77 ms | **70 ms** | < 100 ms | ✅ |
+| p95 de tempo | 199 ms | **177 ms** | < 200 ms | ✅ |
+| alucinações | 0 | **0** | 0 | ✅ |
+| perdidas (máx/clipe) | 2 | **2** | ≤ 5 | ✅ |
+| custo | 18 067 ms/min | 45 150 ms/min | — | 2,5× mais lento |
+
+- **12-longo**: 6,9% → **0,0%** — o clipe longo é o que mais usa as janelas.
+- **07-gírias**: 14,3% → 17,9% (sem vocabulário). O `small` erra gíria de outro
+  jeito (`Tá`→"Está", `Cé`→"Se"). Com o campo "Palavras difíceis" (`mó role`)
+  volta para 7,1%.
+- **Vídeo real**: 88 palavras (antes 53), último bloco em 39,96 s de um corte
+  que termina em 40,72 s (antes esticava até 55,7 s). Nomes próprios ainda
+  erram (`Prado`→"Zimprado", `Ambiental`→"Unitar") — é limite do `small`; o
+  campo "Palavras difíceis" corrige por esqueleto consonantal.
 - **Alinhamento forçado** (etapa 3 do plano) não entrou: o erro residual é
   viés de +50 a +90 ms do próprio modelo, dentro da meta de 100 ms. Um
   desconto fixo de latência foi medido e **piorou** (77 → 148 ms).

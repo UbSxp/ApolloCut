@@ -12,12 +12,14 @@ export const MODELS = {
 
 export const DEFAULT_MODEL = MODELS.base;
 
-export function pickModel(quality = 'auto', device = {}) {
+export function pickModel(quality = 'auto', device = {}, seconds = 0) {
   if (quality === 'fast') return MODELS.tiny;
   if (quality === 'precise') return MODELS.small;
-  // "auto" = base: medido como melhor equilíbrio no navegador (WER baixo,
-  // ~1/3 do tempo do small). O small fica para "mais preciso".
   const { memory = 8 } = device;
   if (memory <= 2) return MODELS.tiny;
+  // "auto": em corte curto o small erra muito menos (medição no áudio real do
+  // usuário: base perdia 20 s de fala). Até 90 s o custo (~30 s de CPU) cabe;
+  // acima disso fica o base para não travar a máquina.
+  if (seconds > 0 && seconds <= 90) return MODELS.small;
   return MODELS.base;
 }

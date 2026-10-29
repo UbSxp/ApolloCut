@@ -119,7 +119,7 @@ export async function initUI(initialSettings) {
 function cacheElements() {
   const ids = `opening openingSkip landing studioScreen studioBack studioBrand newFilmBtn openStudioBtn fileInput srtInput
     dropzone fileName fileMeta studioKind studioStateLabel analysisBadge studioSteps
-    frame previewVideo captions frameCaptionNote frameWatermark frameEmpty previewLabel previewFormat
+    frame previewVideo captions captionCanvas frameCaptionNote frameWatermark frameEmpty previewLabel previewFormat
     playBtn seekRange seekMarks timeLabel focusRange focusVal quickCaptionsBtn quickCoverBtn coverBtn kitBtn exportBtn
     markInBtn markOutBtn addClipBtn splitClipBtn deleteClipBtn undoBtn redoBtn markLabel editTools
     lenRange lenLabel countRange countLabel ratioGrid analyzeBtn analysisHint analysisNote
